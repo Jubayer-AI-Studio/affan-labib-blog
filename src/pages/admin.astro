@@ -9,51 +9,8 @@ import defaultBookshelf from '../data/bookshelf.json';
   title="লেখক স্টুডিও | আফফান লাবীব"
   description="আফফান লাবীবের ব্যক্তিগত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।"
 >
-  <!-- Screen 1: PIN Screen -->
-  <div
-    id="pin-screen"
-    class="max-w-md mx-auto my-12 p-8 rounded-3xl border border-paper-border dark:border-night-border bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-2xl text-center space-y-6"
-  >
-    <div class="w-16 h-16 mx-auto rounded-2xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-3xl shadow-sm">
-      🔐
-    </div>
-
-    <div class="space-y-1.5">
-      <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
-        লেখক স্টুডিও প্রবেশদ্বার
-      </h1>
-      <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-        এটি লেখক আফফান লাবীবের একান্ত কাজের জায়গা। প্রবেশ করতে গোপন পিন কোড লিখুন।
-      </p>
-    </div>
-
-    <div class="space-y-4">
-      <input
-        id="pin-input"
-        type="password"
-        maxlength="6"
-        placeholder="••••"
-        autofocus
-        class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3.5 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"
-      />
-      <p id="pin-error" class="hidden text-xs text-red-600 font-sans font-medium">
-        ❌ পিন কোড ভুল! সঠিক পিন লিখুন।
-      </p>
-      <button
-        id="pin-submit-btn"
-        type="button"
-        class="w-full py-3 rounded-xl bg-paper-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer"
-      >
-        স্টুডিও আনলক করুন →
-      </button>
-      <p class="text-[11px] text-paper-muted dark:text-night-muted opacity-75">
-        (ডিফল্ট পিন: 1234 — স্টুডিওর সেটিংসে গিয়ে যেকোনো সময় পরিবর্তন করা যাবে)
-      </p>
-    </div>
-  </div>
-
-  <!-- Screen 2: Studio Screen -->
-  <div id="studio-screen" class="hidden space-y-8">
+  <!-- Writer Studio Main Screen -->
+  <div id="studio-screen" class="space-y-8">
     <!-- Studio Header Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs">
       <div class="flex items-center gap-3">
@@ -79,13 +36,6 @@ import defaultBookshelf from '../data/bookshelf.json';
         <a href="/" class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans hover:border-paper-accent transition-colors">
           সাইট দেখুন ↗
         </a>
-        <button
-          id="admin-logout-btn"
-          type="button"
-          class="px-3 py-1.5 rounded-xl bg-red-600/10 text-red-700 dark:text-red-400 border border-red-600/20 text-xs font-sans hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
-        >
-          লগআউট
-        </button>
       </div>
     </div>
 
@@ -99,9 +49,6 @@ import defaultBookshelf from '../data/bookshelf.json';
       </button>
       <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-bookshelf">
         📖 বুকশেলফ পরিচালনা
-      </button>
-      <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-security">
-        🔒 পিন ও নিরাপত্তা
       </button>
     </div>
 
@@ -258,70 +205,12 @@ import defaultBookshelf from '../data/bookshelf.json';
       </div>
     </div>
 
-    <!-- TAB 4: Security / PIN -->
-    <div id="tab-security" class="studio-pane hidden space-y-6">
-      <div class="max-w-md p-6 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 space-y-4">
-        <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-          লেখক পিন কোড পরিবর্তন
-        </h3>
-        <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-          আপনার গোপন ৪-সংখ্যার নতুন পিন কোড লিখুন:
-        </p>
-
-        <input id="new-pin-input" type="password" maxlength="6" placeholder="নতুন পিন" class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-center text-xl tracking-widest font-mono" />
-        <button id="save-pin-btn" type="button" class="w-full py-2.5 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold cursor-pointer">
-          নতুন পিন সংরক্ষণ করুন
-        </button>
-      </div>
     </div>
   </div>
 </Layout>
 
 <script is:inline define:vars={{ posts, defaultBookshelf }}>
   (() => {
-    const pinScreen = document.getElementById('pin-screen');
-    const studioScreen = document.getElementById('studio-screen');
-    const pinInput = document.getElementById('pin-input');
-    const pinBtn = document.getElementById('pin-submit-btn');
-    const pinErr = document.getElementById('pin-error');
-    const logoutBtn = document.getElementById('admin-logout-btn');
-
-    function isAuthed() {
-      return sessionStorage.getItem('kherokhata_admin_auth') === 'true';
-    }
-
-    function syncScreens() {
-      if (isAuthed()) {
-        pinScreen?.classList.add('hidden');
-        studioScreen?.classList.remove('hidden');
-      } else {
-        pinScreen?.classList.remove('hidden');
-        studioScreen?.classList.add('hidden');
-      }
-    }
-    syncScreens();
-
-    function checkPin() {
-      const correctPin = localStorage.getItem('kherokhata_admin_pin') || '1234';
-      const entered = pinInput?.value.trim();
-      if (entered === correctPin) {
-        sessionStorage.setItem('kherokhata_admin_auth', 'true');
-        syncScreens();
-      } else {
-        pinErr?.classList.remove('hidden');
-        pinInput?.classList.add('border-red-500');
-        setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
-      }
-    }
-
-    pinBtn?.addEventListener('click', checkPin);
-    pinInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPin(); });
-
-    logoutBtn?.addEventListener('click', () => {
-      sessionStorage.removeItem('kherokhata_admin_auth');
-      syncScreens();
-    });
-
     // Tab Switching
     const tabBtns = document.querySelectorAll('.studio-tab-btn');
     const panes = document.querySelectorAll('.studio-pane');
@@ -537,17 +426,6 @@ ${body}`;
       }
 
       alert(`✓ "${title}" সফলভাবে ডিলিট করা হয়েছে!`);
-    });
-
-    // Change PIN
-    document.getElementById('save-pin-btn')?.addEventListener('click', () => {
-      const np = document.getElementById('new-pin-input')?.value.trim();
-      if (np && np.length >= 4) {
-        localStorage.setItem('kherokhata_admin_pin', np);
-        alert('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে!');
-      } else {
-        alert('কমপক্ষে ৪ সংখ্যার পিন লিখুন।');
-      }
     });
 
     // Download Bookshelf JSON
