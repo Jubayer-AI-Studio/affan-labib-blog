@@ -1,0 +1,296 @@
+---
+// src/components/Header.astro
+---
+
+<header class="border-b border-paper-border/80 dark:border-night-border/80 bg-paper-bg/85 dark:bg-night-bg/85 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
+  <!-- Serene Literary Top Bar (Replaced intrusive neon chronometer) -->
+  <div class="w-full py-1.5 px-3 sm:px-6 border-b border-paper-border/40 dark:border-night-border/40 bg-paper-surface/50 dark:bg-night-surface/50">
+    <div class="max-w-5xl mx-auto flex items-center justify-between text-xs text-paper-muted dark:text-night-muted font-sans">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 dark:bg-amber-400/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 dark:border-amber-400/20">
+          <span>📜</span>
+          <span>খেরোখাতা</span>
+        </span>
+        <span class="hidden sm:inline opacity-80" data-i18n="tagline">চিন্তা ও পাঠের নিভৃত আঙিনা</span>
+      </div>
+      <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
+        <span>🗓️</span>
+        <span id="header-live-date" class="font-medium text-paper-text dark:text-night-text">
+          মঙ্গলবার, ১৩ অক্টোবর ২০২৬
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
+    <!-- Brand / Title -->
+    <div>
+      <a href="/" class="group block">
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors font-serif">
+          আফফান লাবীব
+        </h1>
+        <p class="text-xs text-paper-muted dark:text-night-muted font-sans tracking-wide mt-0.5" data-i18n="tagline">
+          চিন্তা ও পাঠের নিভৃত আঙিনা
+        </p>
+      </a>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium">
+      <a href="/category/chinta" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_chinta">চিন্তা</span>
+      </a>
+      <a href="/category/pathalap" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_pathalap">পাঠালাপ</span>
+      </a>
+      <a href="/category/itihas" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_itihas">ইতিহাস</span>
+      </a>
+      <a href="/category/boi-alochona" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_boi">বই-আলোচনা</span>
+      </a>
+      <a href="/category/onubad" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_onubad">অনুবাদ</span>
+      </a>
+      <a href="/bookshelf" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_bookshelf">বুকশেলফ</span>
+      </a>
+      <a href="/about" class="px-2.5 py-1.5 rounded-md transition-colors text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40">
+        <span data-i18n="nav_about">আমার সম্পর্কে</span>
+      </a>
+
+      <!-- Search Button -->
+      <a href="/search" class="p-2 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/50 transition-colors" title="অনুসন্ধান করুন" aria-label="Search">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </a>
+
+      <!-- Install App Button -->
+      <button type="button" onclick="window.openInstallModal && window.openInstallModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md font-sans font-medium text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 dark:hover:bg-night-accent/10 border border-paper-accent/30 dark:border-night-accent/30 transition-colors cursor-pointer" title="মোবাইল বা পিসিতে অ্যাপ ইনস্টল করুন">
+        <span>📲</span>
+        <span data-i18n="install">অ্যাপ নামান</span>
+      </button>
+
+      <!-- Author Studio Quick Entrance -->
+      <a href="/admin" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/40 border border-paper-border/60 dark:border-night-border/60 transition-colors cursor-pointer" title="আফফান লাবীব — লেখক স্টুডিও">
+        <span>✍️</span>
+        <span class="hidden lg:inline" data-i18n="studio">লেখক স্টুডিও</span>
+      </a>
+
+      <!-- Theme Mode Toggle -->
+      <button type="button" aria-label="Toggle Reading Theme Mode" class="theme-toggle-btn group relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95" title="রিডিং মোড পরিবর্তন করুন (দিন · সেপিয়া বই · রাত)">
+        <span class="theme-icon-light text-amber-600 dark:text-amber-400 text-sm leading-none flex items-center">☀️</span>
+        <span class="theme-icon-sepia hidden text-amber-700 text-sm leading-none items-center">📜</span>
+        <span class="theme-icon-dark hidden text-indigo-400 text-sm leading-none items-center">🌙</span>
+        <span class="theme-label hidden sm:inline font-medium text-paper-text dark:text-night-text select-none">দিন</span>
+      </button>
+
+      <!-- Language Toggle -->
+      <button type="button" aria-label="Toggle Language" class="lang-toggle-btn group relative inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95" title="ভাষা পরিবর্তন করুন (বাংলা / English)">
+        <span class="text-xs leading-none">🌐</span>
+        <span class="lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none">বাং</span>
+        <span class="text-paper-muted/50 dark:text-night-muted/50 text-[10px]">/</span>
+        <span class="lang-text-en font-medium text-paper-muted dark:text-night-muted select-none">EN</span>
+      </button>
+    </nav>
+
+    <!-- Mobile Action Buttons -->
+    <div class="flex items-center space-x-1.5 md:hidden">
+      <a href="/admin" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" title="লেখক স্টুডিও" aria-label="Author Studio">
+        ✍️
+      </a>
+      <a href="/search" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" aria-label="Search">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </a>
+
+      <!-- Mobile Theme Toggle -->
+      <button type="button" aria-label="Toggle Reading Theme Mode" class="theme-toggle-btn p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent">
+        <span class="theme-icon-light text-amber-600 dark:text-amber-400 text-sm">☀️</span>
+        <span class="theme-icon-sepia hidden text-amber-700 text-sm">📜</span>
+        <span class="theme-icon-dark hidden text-indigo-400 text-sm">🌙</span>
+      </button>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button id="mobile-menu-btn" type="button" class="p-1.5 rounded-md text-paper-muted dark:text-night-muted hover:text-paper-accent" aria-label="Toggle menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-paper-border/60 dark:border-night-border/60 px-4 pt-2 pb-4 bg-paper-bg dark:bg-night-bg space-y-1">
+    <a href="/category/chinta" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_chinta">চিন্তা</span>
+    </a>
+    <a href="/category/pathalap" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_pathalap">পাঠালাপ</span>
+    </a>
+    <a href="/category/itihas" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_itihas">ইতিহাস</span>
+    </a>
+    <a href="/category/boi-alochona" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_boi">বই-আলোচনা</span>
+    </a>
+    <a href="/category/onubad" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_onubad">অনুবাদ</span>
+    </a>
+    <a href="/bookshelf" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_bookshelf">বুকশেলফ</span>
+    </a>
+    <a href="/about" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
+      <span data-i18n="nav_about">আমার সম্পর্কে</span>
+    </a>
+    <button type="button" onclick="window.openInstallModal && window.openInstallModal(); document.getElementById('mobile-menu')?.classList.add('hidden');" class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-md text-base font-serif text-paper-accent dark:text-night-accent hover:bg-paper-border/30 dark:hover:bg-night-border/30 border border-paper-accent/30 dark:border-night-accent/30 mt-2 bg-paper-accent/5 dark:bg-night-accent/5 cursor-pointer">
+      <span class="flex items-center gap-2">
+        <span data-i18n="install_full">📲 অ্যাপ নামান / ইনস্টল</span>
+      </span>
+      <span class="text-xs font-sans px-2 py-0.5 rounded-full bg-paper-accent/15 text-paper-accent dark:text-night-accent font-medium" data-i18n="install_badge">
+        অফলাইন রিডিং
+      </span>
+    </button>
+  </div>
+</header>
+
+<!-- Global Header Interactions Script (Single Instance) -->
+<script is:inline>
+  (() => {
+    // 1. Mobile Menu Toggle
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn?.addEventListener('click', () => {
+      mobileMenu?.classList.toggle('hidden');
+    });
+
+    // 2. Calm Live Date Updater (Bengali & English)
+    const dateEl = document.getElementById('header-live-date');
+    const bnMonths = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+    const bnDays = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    function toBn(n) {
+      return n.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+    }
+
+    function updateDate() {
+      if (!dateEl) return;
+      const now = new Date();
+      const dayName = bnDays[now.getDay()];
+      const dayNum = toBn(now.getDate());
+      const month = bnMonths[now.getMonth()];
+      const year = toBn(now.getFullYear());
+      dateEl.textContent = `${dayName}, ${dayNum} ${month} ${year}`;
+    }
+    updateDate();
+
+    // 3. Theme Toggle Engine
+    const MODES = ['light', 'sepia', 'dark'];
+    const LABELS = {
+      bn: { light: 'দিন', sepia: 'সেপিয়া', dark: 'রাত' },
+      en: { light: 'Day', sepia: 'Sepia', dark: 'Night' }
+    };
+
+    function getCurrentTheme() {
+      if (document.documentElement.classList.contains('dark')) return 'dark';
+      if (document.documentElement.classList.contains('sepia')) return 'sepia';
+      return 'light';
+    }
+
+    function syncThemeUI(mode) {
+      const currentMode = mode || getCurrentTheme();
+      const lang = localStorage.getItem('kherokhata_lang') || 'bn';
+      const labelText = (LABELS[lang] || LABELS.bn)[currentMode] || 'দিন';
+
+      document.querySelectorAll('.theme-icon-light').forEach((el) => el.classList.toggle('hidden', currentMode !== 'light'));
+      document.querySelectorAll('.theme-icon-sepia').forEach((el) => el.classList.toggle('hidden', currentMode !== 'sepia'));
+      document.querySelectorAll('.theme-icon-dark').forEach((el) => el.classList.toggle('hidden', currentMode !== 'dark'));
+      document.querySelectorAll('.theme-label').forEach((el) => { el.textContent = labelText; });
+    }
+
+    function applyTheme(mode) {
+      document.documentElement.classList.remove('dark', 'sepia');
+      if (mode === 'dark') document.documentElement.classList.add('dark');
+      else if (mode === 'sepia') document.documentElement.classList.add('sepia');
+      try { localStorage.setItem('theme', mode); } catch (e) {}
+      syncThemeUI(mode);
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.theme-toggle-btn');
+      if (!btn) return;
+      const cur = getCurrentTheme();
+      const next = MODES[(MODES.indexOf(cur) + 1) % MODES.length];
+      applyTheme(next);
+    });
+    syncThemeUI();
+
+    // 4. Language Switcher Engine
+    const DICT = {
+      bn: {
+        tagline: 'চিন্তা ও পাঠের নিভৃত আঙিনা',
+        nav_chinta: 'চিন্তা',
+        nav_pathalap: 'পাঠালাপ',
+        nav_itihas: 'ইতিহাস',
+        nav_boi: 'বই-আলোচনা',
+        nav_onubad: 'অনুবাদ',
+        nav_bookshelf: 'বুকশেলফ',
+        nav_about: 'আমার সম্পর্কে',
+        install: 'অ্যাপ নামান',
+        install_full: '📲 অ্যাপ নামান / ইনস্টল',
+        install_badge: 'অফলাইন রিডিং',
+        studio: 'লেখক স্টুডিও'
+      },
+      en: {
+        tagline: 'A Haven of Thought and Reading',
+        nav_chinta: 'Reflections',
+        nav_pathalap: 'Dialogues',
+        nav_itihas: 'History',
+        nav_boi: 'Book Reviews',
+        nav_onubad: 'Translations',
+        nav_bookshelf: 'Bookshelf',
+        nav_about: 'About Me',
+        install: 'Install App',
+        install_full: '📲 Install App / PWA',
+        install_badge: 'Offline Reading',
+        studio: 'Author Studio'
+      }
+    };
+
+    function syncLangUI(lang) {
+      const current = lang || localStorage.getItem('kherokhata_lang') || 'bn';
+      const d = DICT[current] || DICT.bn;
+
+      document.querySelectorAll('.lang-toggle-btn').forEach((btn) => {
+        const bnEl = btn.querySelector('.lang-text-bn');
+        const enEl = btn.querySelector('.lang-text-en');
+        if (current === 'en') {
+          if (bnEl) bnEl.className = 'lang-text-bn font-medium text-paper-muted dark:text-night-muted select-none';
+          if (enEl) enEl.className = 'lang-text-en font-bold text-paper-accent dark:text-night-accent select-none';
+        } else {
+          if (bnEl) bnEl.className = 'lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none';
+          if (enEl) enEl.className = 'lang-text-en font-medium text-paper-muted dark:text-night-muted select-none';
+        }
+      });
+
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (key && d[key]) el.textContent = d[key];
+      });
+
+      syncThemeUI();
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.lang-toggle-btn');
+      if (!btn) return;
+      const cur = localStorage.getItem('kherokhata_lang') || 'bn';
+      const next = cur === 'bn' ? 'en' : 'bn';
+      localStorage.setItem('kherokhata_lang', next);
+      syncLangUI(next);
+    });
+    syncLangUI();
+  })();
+</script>

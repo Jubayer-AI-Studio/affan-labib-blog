@@ -1,0 +1,296 @@
+---
+// src/pages/[slug].astro
+import Layout from '../layouts/Layout.astro';
+import posts from '../data/posts.json';
+
+export async function getStaticPaths() {
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+
+const categoryLabels: Record<string, string> = {
+  chinta: 'চিন্তা',
+  pathalap: 'পাঠালাপ',
+  itihas: 'ইতিহাস',
+  'boi-alochona': 'বই-আলোচনা',
+  onubad: 'অনুবাদ'
+};
+
+const categoryName = categoryLabels[post.category] || post.category;
+const readTime = Math.max(1, Math.ceil((post.wordCount || 200) / 100));
+const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+
+// Format body paragraphs (handles markdown headers, bolding, paragraphs)
+function renderBody(body: string) {
+  const paragraphs = body.split('\n\n');
+  return paragraphs
+    .map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('### ')) {
+        return `<h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-3">${trimmed.slice(4)}</h3>`;
+      }
+      if (trimmed.startsWith('## ')) {
+        return `<h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mt-10 mb-4">${trimmed.slice(3)}</h2>`;
+      }
+      if (trimmed === '---') {
+        return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
+      }
+
+      // Convert **bold** and *italic*
+      let formatted = trimmed
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br />');
+
+      // Convert footnote references like [1] to interactive superscripts
+      formatted = formatted.replace(/\[(\d+)\]/g, (match, num) => {
+        return `<sup class="footnote-ref inline-block mx-0.5"><a href="#fn-${num}" data-fn-id="${num}" class="text-paper-accent dark:text-night-accent font-bold hover:underline select-none">[${num}]</a></sup>`;
+      });
+
+      return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;
+    })
+    .join('');
+}
+
+const renderedContent = renderBody(post.body);
+---
+
+<Layout
+  title={`${post.title} | আফফান লাবীব`}
+  description={post.description}
+  article={{
+    publishedTime: post.publishedAt,
+    tags: post.tags
+  }}
+>
+  <!-- Reading Progress Bar -->
+  <div class="fixed top-0 inset-x-0 h-1 z-50 bg-paper-border/40 dark:border-night-border/40">
+    <div id="reading-progress" class="h-full bg-gradient-to-r from-paper-accent via-amber-500 to-orange-500 w-0 transition-all duration-75"></div>
+  </div>
+
+  <article class="max-w-3xl mx-auto space-y-8">
+    <!-- Meta Header -->
+    <header class="space-y-4 pb-8 border-b border-paper-border/80 dark:border-night-border/80">
+      <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
+        <a href="/" class="hover:underline">প্রধান পাতা</a>
+        <span>/</span>
+        <a href={`/category/${post.category}`} class="text-paper-accent dark:text-night-accent font-medium hover:underline">
+          {categoryName}
+        </a>
+      </div>
+
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold font-serif text-paper-text dark:text-night-text leading-tight tracking-tight">
+        {post.title}
+      </h1>
+
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-2 text-xs font-sans text-paper-muted dark:text-night-muted">
+        <div class="flex items-center gap-3">
+          <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-9 h-9 rounded-full object-cover ring-2 ring-paper-accent/30" />
+          <div>
+            <span class="font-bold text-paper-text dark:text-night-text block author-name-text">আফফান লাবীব</span>
+            <span class="text-[11px] author-edu-text">তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <time datetime={post.publishedAt}>{post.formattedDate}</time>
+          <span>·</span>
+          <span>{readTimeBn} মিনিটে পাঠ্য</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Post Body Content -->
+    <div class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text pt-2">
+      <Fragment set:html={renderedContent} />
+    </div>
+
+    <!-- Footnotes Section if present -->
+    {post.footnotes && post.footnotes.length > 0 && (
+      <section class="mt-12 pt-6 border-t border-paper-border/80 dark:border-night-border/80">
+        <h4 class="text-sm font-bold font-sans text-paper-accent dark:text-night-accent uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>📑</span>
+          <span>টীকা ও তথ্যসূত্র</span>
+        </h4>
+        <ol class="space-y-2 list-decimal list-inside text-xs sm:text-sm text-paper-muted dark:text-night-muted font-serif">
+          {post.footnotes.map((fn: any) => (
+            <li id={`fn-${fn.id}`} class="leading-relaxed">
+              <span class="font-serif">{fn.text}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    <!-- Footnotes JSON Store for client popover -->
+    <script id="article-footnotes-data" type="application/json" set:html={JSON.stringify(post.footnotes || [])} />
+
+    <!-- Article Footer: Tags & Action Bar -->
+    <footer class="pt-8 border-t border-paper-border/80 dark:border-night-border/80 space-y-6">
+      <!-- Tags -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-sans text-paper-muted dark:text-night-muted">ট্যাগ:</span>
+        {post.tags.map((tag) => (
+          <span class="px-3 py-1 rounded-full bg-paper-border/50 dark:bg-night-border/50 text-paper-muted dark:text-night-muted text-xs font-sans">
+            #{tag}
+          </span>
+        ))}
+      </div>
+
+      <!-- Social Share Bar & Actions -->
+      <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/60 dark:bg-night-surface/60 flex flex-wrap items-center justify-between gap-4 text-xs font-sans">
+        <span class="font-medium text-paper-text dark:text-night-text flex items-center gap-1.5">
+          <span>📤</span>
+          <span>লেখাটি শেয়ার করুন:</span>
+        </span>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Facebook Share -->
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=https://affan-labib-blog.vercel.app/${post.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
+          >
+            Facebook
+          </a>
+
+          <!-- WhatsApp Share -->
+          <a
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + ' ' + 'https://affan-labib-blog.vercel.app/' + post.slug)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
+          >
+            WhatsApp
+          </a>
+
+          <!-- Copy Link -->
+          <button
+            id="copy-link-btn"
+            type="button"
+            class="px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border hover:border-paper-accent transition-colors cursor-pointer"
+          >
+            লিঙ্ক কপি
+          </button>
+
+          <!-- Print Button -->
+          <button
+            onclick="window.print()"
+            type="button"
+            class="px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border hover:border-paper-accent transition-colors cursor-pointer"
+          >
+            🖨️ প্রিন্ট
+          </button>
+        </div>
+      </div>
+    </footer>
+  </article>
+
+  <!-- In-Situ Footnote Popover Modal -->
+  <div
+    id="footnote-popover-modal"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div
+      id="footnote-popover-card"
+      class="bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 transform translate-y-8 transition-transform duration-200"
+    >
+      <div class="flex items-center justify-between pb-2 border-b border-paper-border/60 dark:border-night-border/60">
+        <span class="text-xs font-sans font-bold text-paper-accent dark:text-night-accent flex items-center gap-1.5">
+          <span>📌</span>
+          <span>টীকা <span id="fn-popover-num">[১]</span></span>
+        </span>
+        <button id="close-fn-popover-btn" type="button" class="text-paper-muted hover:text-paper-accent text-sm p-1 cursor-pointer">✕</button>
+      </div>
+      <p id="fn-popover-content" class="text-sm font-serif text-paper-text dark:text-night-text leading-relaxed">
+        টীকা লোড হচ্ছে...
+      </p>
+      <div class="pt-1 text-right">
+        <button id="done-fn-popover-btn" type="button" class="px-3 py-1 text-xs rounded-lg bg-paper-accent text-white font-medium cursor-pointer">
+          বুঝেছি
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline>
+  (() => {
+    // Reading Progress Indicator
+    window.addEventListener('scroll', () => {
+      const progressBar = document.getElementById('reading-progress');
+      if (!progressBar) return;
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      progressBar.style.width = scrolled + '%';
+    }, { passive: true });
+
+    // Copy Article Link
+    const copyBtn = document.getElementById('copy-link-btn');
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const prev = copyBtn.innerText;
+        copyBtn.innerText = 'কপি হয়েছে!';
+        setTimeout(() => { copyBtn.innerText = prev; }, 2000);
+      } catch (err) {}
+    });
+
+    // In-situ Footnote Popover
+    const modal = document.getElementById('footnote-popover-modal');
+    const card = document.getElementById('footnote-popover-card');
+    const fnNum = document.getElementById('fn-popover-num');
+    const fnContent = document.getElementById('fn-popover-content');
+    const closeBtn = document.getElementById('close-fn-popover-btn');
+    const doneBtn = document.getElementById('done-fn-popover-btn');
+
+    let footnotesMap = {};
+    const fnDataEl = document.getElementById('article-footnotes-data');
+    if (fnDataEl) {
+      try {
+        const raw = JSON.parse(fnDataEl.textContent);
+        raw.forEach((f) => { footnotesMap[f.id] = f.text; });
+      } catch (e) {}
+    }
+
+    function openFootnote(id, fallback) {
+      if (!modal || !card) return;
+      fnNum.textContent = `[${id}]`;
+      fnContent.textContent = footnotesMap[id] || fallback || 'কোনো টীকা পাওয়া যায়নি।';
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.remove('translate-y-8');
+      card.classList.add('translate-y-0');
+    }
+
+    function closeFootnote() {
+      if (!modal || !card) return;
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      card.classList.add('translate-y-8');
+      card.classList.remove('translate-y-0');
+    }
+
+    closeBtn?.addEventListener('click', closeFootnote);
+    doneBtn?.addEventListener('click', closeFootnote);
+    modal?.addEventListener('click', (e) => { if (e.target === modal) closeFootnote(); });
+
+    document.querySelectorAll('.footnote-ref a').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fnId = link.getAttribute('data-fn-id') || link.textContent.replace(/[^\d]/g, '');
+        const targetLi = document.getElementById(`fn-${fnId}`);
+        const fallback = targetLi ? targetLi.textContent : '';
+        openFootnote(fnId, fallback);
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,364 @@
+---
+// src/pages/admin.astro
+import Layout from '../layouts/Layout.astro';
+import posts from '../data/posts.json';
+import defaultBookshelf from '../data/bookshelf.json';
+import author from '../data/author.json';
+---
+
+<Layout
+  title="লেখক স্টুডিও | আফফান লাবীব"
+  description="আফফান লাবীবের ব্যক্তিগত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।"
+>
+  <!-- Screen 1: PIN Screen -->
+  <div
+    id="pin-screen"
+    class="max-w-md mx-auto my-12 p-8 rounded-3xl border border-paper-border dark:border-night-border bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-2xl text-center space-y-6"
+  >
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-3xl shadow-sm">
+      🔐
+    </div>
+
+    <div class="space-y-1.5">
+      <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
+        লেখক স্টুডিও প্রবেশদ্বার
+      </h1>
+      <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+        এটি লেখক আফফান লাবীবের একান্ত কাজের জায়গা। প্রবেশ করতে পিন কোড লিখুন।
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <input
+        id="pin-input"
+        type="password"
+        maxlength="6"
+        placeholder="••••"
+        autofocus
+        class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3.5 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"
+      />
+      <p id="pin-error" class="hidden text-xs text-red-600 font-sans font-medium">
+        ❌ পিন কোড ভুল! সঠিক পিন লিখুন।
+      </p>
+      <button
+        id="pin-submit-btn"
+        type="button"
+        class="w-full py-3 rounded-xl bg-paper-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer"
+      >
+        স্টুডিও আনলক করুন →
+      </button>
+      <p class="text-[11px] text-paper-muted dark:text-night-muted opacity-75">
+        (ডিফল্ট পিন: 1234 — স্টুডিওর সেটিংসে গিয়ে যেকোনো সময় পরিবর্তন করা যাবে)
+      </p>
+    </div>
+  </div>
+
+  <!-- Screen 2: Studio Screen (Hidden by default until PIN verified) -->
+  <div id="studio-screen" class="hidden space-y-8">
+    <!-- Studio Header -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs">
+      <div class="flex items-center gap-3">
+        <img src="/images/affan-labib.jpg" alt="লেখক" class="author-avatar-img w-10 h-10 rounded-xl object-cover ring-2 ring-paper-accent/30" />
+        <div>
+          <h2 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+            লেখক স্টুডিও · আফফান লাবীব
+          </h2>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+            নিভৃত কন্টেন্ট ও রচনা ব্যবস্থাপনা ড্যাশবোর্ড
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="/" class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans hover:border-paper-accent transition-colors">
+          সাইট দেখুন ↗
+        </a>
+        <button id="admin-logout-btn" type="button" class="px-3 py-1.5 rounded-xl bg-red-600/10 text-red-700 dark:text-red-400 border border-red-600/20 text-xs font-sans hover:bg-red-600 hover:text-white transition-colors cursor-pointer">
+          লগআউট
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar text-xs font-sans border-b border-paper-border/60 dark:border-night-border/60">
+      <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-semibold bg-paper-accent text-white" data-target="tab-editor">
+        ✍️ নতুন রচনা লিখুন
+      </button>
+      <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-posts">
+        📚 প্রকাশিত লেখা ({posts.length})
+      </button>
+      <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-bookshelf">
+        📖 বুকশেলফ পরিচালনা
+      </button>
+      <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-security">
+        🔒 পিন ও নিরাপত্তা
+      </button>
+    </div>
+
+    <!-- TAB 1: Markdown Writer Studio -->
+    <div id="tab-editor" class="studio-pane space-y-6">
+      <div class="p-6 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 shadow-sm space-y-4">
+        <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+          <span>✍️</span>
+          <span>নতুন লেখা প্রস্তুত করুন</span>
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-sans font-semibold text-paper-muted dark:text-night-muted mb-1">রচনার শিরোনাম *</label>
+            <input id="new-post-title" type="text" placeholder="যেমন: কিতাবের নিভৃত আলাপ..." class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-sm font-serif" />
+          </div>
+          <div>
+            <label class="block text-xs font-sans font-semibold text-paper-muted dark:text-night-muted mb-1">বিভাগ (Category) *</label>
+            <select id="new-post-category" class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-sm font-sans">
+              <option value="chinta">চিন্তা</option>
+              <option value="pathalap">পাঠালাপ</option>
+              <option value="itihas">ইতিহাস</option>
+              <option value="boi-alochona">বই-আলোচনা</option>
+              <option value="onubad">অনুবাদ</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-sans font-semibold text-paper-muted dark:text-night-muted mb-1">সংক্ষিপ্ত সারমর্ম (Description / Excerpt) *</label>
+          <textarea id="new-post-desc" rows="2" placeholder="লেখাটির এক/দুই লাইনের সারমর্ম..." class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-sm font-serif"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-sans font-semibold text-paper-muted dark:text-night-muted mb-1">ট্যাগসমূহ (কমা দিয়ে আলাদা করুন)</label>
+          <input id="new-post-tags" type="text" placeholder="চিন্তা, কিতাব, রমজান, ইতিহাস" class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-sm font-sans" />
+        </div>
+
+        <!-- Markdown Body Editor -->
+        <div>
+          <div class="flex items-center justify-between mb-1 text-xs font-sans">
+            <span class="font-semibold text-paper-muted dark:text-night-muted">মূল রচনার বক্তব্য (Markdown) *</span>
+            <span id="word-counter" class="text-paper-accent font-bold">০ শব্দ</span>
+          </div>
+          <textarea id="new-post-body" rows="12" placeholder="এখানে স্বাচ্ছন্দ্যে আপনার চিন্তা ও অনুভূতির কথা লিখুন..." class="w-full p-3.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-base font-serif leading-relaxed"></textarea>
+        </div>
+
+        <!-- Export & Save Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-paper-border/60 dark:border-night-border/60">
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+            💡 লেখা প্রস্তুত হলে এক ক্লিকে ডাউনলোড বা কোড কপি করে নিতে পারেন।
+          </p>
+
+          <div class="flex items-center gap-2">
+            <button id="copy-markdown-btn" type="button" class="px-4 py-2 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans font-semibold hover:border-paper-accent cursor-pointer">
+              📋 মার্কডাউন কপি
+            </button>
+            <button id="download-markdown-btn" type="button" class="px-4 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 shadow-md cursor-pointer">
+              📥 .md ফাইল ডাউনলোড
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Posts List -->
+    <div id="tab-posts" class="studio-pane hidden space-y-4">
+      <div class="p-6 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 space-y-4">
+        <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+          প্রকাশিত সকল রচনা ({posts.length} টি)
+        </h3>
+
+        <div class="space-y-3">
+          {posts.map((p) => (
+            <div class="p-4 rounded-xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 flex items-center justify-between gap-4 text-xs font-sans">
+              <div>
+                <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent font-bold text-[10px] mr-2">
+                  {p.category}
+                </span>
+                <span class="font-bold text-sm font-serif text-paper-text dark:text-night-text">
+                  {p.title}
+                </span>
+                <span class="text-paper-muted dark:text-night-muted ml-2">
+                  ({p.formattedDate})
+                </span>
+              </div>
+              <a href={`/${p.slug}`} target="_blank" class="text-paper-accent hover:underline shrink-0">
+                পড়ুন ↗
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Bookshelf Manager -->
+    <div id="tab-bookshelf" class="studio-pane hidden space-y-6">
+      <div class="p-6 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 space-y-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+            বুকশেলফ ডেটা এক্সপোর্ট
+          </h3>
+          <button id="download-bookshelf-json" type="button" class="px-4 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold cursor-pointer">
+            📥 bookshelf.json ডাউনলোড
+          </button>
+        </div>
+        <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+          বুকশেলফের বর্তমান তালিকা প্রজেক্টের <code>src/data/bookshelf.json</code> হিসেবে সংরক্ষিত রয়েছে।
+        </p>
+      </div>
+    </div>
+
+    <!-- TAB 4: Security / PIN -->
+    <div id="tab-security" class="studio-pane hidden space-y-6">
+      <div class="max-w-md p-6 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 space-y-4">
+        <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+          লেখক পিন কোড পরিবর্তন
+        </h3>
+        <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+          আপনার গোপন ৪-সংখ্যার নতুন পিন কোড লিখুন:
+        </p>
+
+        <input id="new-pin-input" type="password" maxlength="6" placeholder="নতুন পিন" class="w-full p-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-center text-xl tracking-widest font-mono" />
+        <button id="save-pin-btn" type="button" class="w-full py-2.5 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold cursor-pointer">
+          নতুন পিন সংরক্ষণ করুন
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline define:vars={{ posts, defaultBookshelf }}>
+  (() => {
+    const pinScreen = document.getElementById('pin-screen');
+    const studioScreen = document.getElementById('studio-screen');
+    const pinInput = document.getElementById('pin-input');
+    const pinBtn = document.getElementById('pin-submit-btn');
+    const pinErr = document.getElementById('pin-error');
+    const logoutBtn = document.getElementById('admin-logout-btn');
+
+    function isAuthed() {
+      return sessionStorage.getItem('kherokhata_admin_auth') === 'true';
+    }
+
+    function syncScreens() {
+      if (isAuthed()) {
+        pinScreen?.classList.add('hidden');
+        studioScreen?.classList.remove('hidden');
+      } else {
+        pinScreen?.classList.remove('hidden');
+        studioScreen?.classList.add('hidden');
+      }
+    }
+    syncScreens();
+
+    function checkPin() {
+      const correctPin = localStorage.getItem('kherokhata_admin_pin') || '1234';
+      const entered = pinInput?.value.trim();
+      if (entered === correctPin) {
+        sessionStorage.setItem('kherokhata_admin_auth', 'true');
+        syncScreens();
+      } else {
+        pinErr?.classList.remove('hidden');
+        pinInput?.classList.add('border-red-500');
+        setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
+      }
+    }
+
+    pinBtn?.addEventListener('click', checkPin);
+    pinInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPin(); });
+
+    logoutBtn?.addEventListener('click', () => {
+      sessionStorage.removeItem('kherokhata_admin_auth');
+      syncScreens();
+    });
+
+    // Tab Switching
+    const tabBtns = document.querySelectorAll('.studio-tab-btn');
+    const panes = document.querySelectorAll('.studio-pane');
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target');
+        tabBtns.forEach((b) => {
+          b.className = 'studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent';
+        });
+        btn.className = 'studio-tab-btn px-4 py-2 rounded-xl font-semibold bg-paper-accent text-white';
+
+        panes.forEach((p) => p.classList.add('hidden'));
+        document.getElementById(target)?.classList.remove('hidden');
+      });
+    });
+
+    // Word counter
+    const bodyInput = document.getElementById('new-post-body');
+    const counter = document.getElementById('word-counter');
+    bodyInput?.addEventListener('input', () => {
+      const words = (bodyInput.value.trim().match(/\S+/g) || []).length;
+      if (counter) counter.textContent = `${words} শব্দ`;
+    });
+
+    // Download Markdown Handler
+    document.getElementById('download-markdown-btn')?.addEventListener('click', () => {
+      const title = document.getElementById('new-post-title')?.value.trim();
+      const cat = document.getElementById('new-post-category')?.value;
+      const desc = document.getElementById('new-post-desc')?.value.trim();
+      const tagsStr = document.getElementById('new-post-tags')?.value.trim();
+      const body = document.getElementById('new-post-body')?.value.trim();
+
+      if (!title || !body) {
+        alert('অনুগ্রহ করে শিরোনাম ও মূল বক্তব্য লিখুন।');
+        return;
+      }
+
+      const tags = tagsStr ? tagsStr.split(',').map((t) => t.trim()).filter(Boolean) : [cat];
+      const today = new Date().toISOString().split('T')[0];
+      const slug = title.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-').replace(/^-+|-+$/g, '') || `post-${Date.now()}`;
+
+      const mdContent = `---
+title: "${title}"
+category: "${cat}"
+description: "${desc}"
+publishedAt: "${today}"
+tags: ${JSON.stringify(tags)}
+---
+
+${body}`;
+
+      const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${slug}.md`;
+      a.click();
+    });
+
+    // Copy Markdown
+    document.getElementById('copy-markdown-btn')?.addEventListener('click', async () => {
+      const title = document.getElementById('new-post-title')?.value.trim();
+      const body = document.getElementById('new-post-body')?.value.trim();
+      if (!title || !body) {
+        alert('অনুগ্রহ করে শিরোনাম ও মূল বক্তব্য লিখুন।');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(`# ${title}\n\n${body}`);
+        alert('মার্কডাউন কপি হয়েছে!');
+      } catch (e) {}
+    });
+
+    // Change PIN
+    document.getElementById('save-pin-btn')?.addEventListener('click', () => {
+      const np = document.getElementById('new-pin-input')?.value.trim();
+      if (np && np.length >= 4) {
+        localStorage.setItem('kherokhata_admin_pin', np);
+        alert('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে!');
+      } else {
+        alert('কমপক্ষে ৪ সংখ্যার পিন লিখুন।');
+      }
+    });
+
+    // Download Bookshelf JSON
+    document.getElementById('download-bookshelf-json')?.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(defaultBookshelf, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'bookshelf.json';
+      a.click();
+    });
+  })();
+</script>

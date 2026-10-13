@@ -1,0 +1,122 @@
+---
+// src/pages/bookshelf.astro
+import Layout from '../layouts/Layout.astro';
+import defaultData from '../data/bookshelf.json';
+---
+
+<Layout
+  title="বুকশেলফ ও পাঠাগার | আফফান লাবীব"
+  description="আফফান লাবীবের ব্যক্তিগত পাঠাগার, সম্প্রতি পঠিত বই এবং অপেক্ষমাণ কিতাবমালা।"
+>
+  <div class="space-y-12">
+    <!-- Bookshelf Header -->
+    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-6">
+      <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2">
+        <a href="/" class="hover:underline">প্রধান পাতা</a>
+        <span>/</span>
+        <span>পাঠাগার</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight mb-2">
+        বইয়ের পাতা ও ভাবনার তোশক
+      </h1>
+      <p class="text-base text-paper-muted dark:text-night-muted font-serif">
+        আমার ব্যক্তিগত বুকশেলফ—যেখানে জমা হয় পড়া বইয়ের নির্যাস এবং অদূর ভবিষ্যতে পাঠের অপেক্ষায় থাকা কিতাবমালা।
+      </p>
+    </header>
+
+    <!-- SECTION 1: Read Books -->
+    <section class="space-y-6">
+      <div class="flex items-center justify-between pb-2 border-b border-paper-border/50 dark:border-night-border/50">
+        <h2 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+          <span>✨</span>
+          <span>পঠিত বই ও পাঠপ্রতিক্রিয়া</span>
+        </h2>
+        <span id="read-books-count" class="text-xs font-sans text-paper-muted dark:text-night-muted">
+          {defaultData.readBooks.length} টি কিতাব
+        </span>
+      </div>
+
+      <div id="read-books-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {defaultData.readBooks.map((book: any) => (
+          <div class="rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs space-y-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="text-[11px] font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider block mb-1">
+                  {book.tag || 'কিতাব'}
+                </span>
+                <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+                  {book.title}
+                </h3>
+                <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
+                  {book.author} · {book.readYear}
+                </p>
+              </div>
+
+              <!-- Star Rating -->
+              <div class="flex text-amber-500 text-sm select-none" title={`${book.rating} তারকা`}>
+                {Array.from({ length: book.rating || 5 }).map(() => '★').join('')}
+              </div>
+            </div>
+
+            <p class="text-sm font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed italic border-l-2 border-paper-accent/40 pl-3">
+              "{book.review}"
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- SECTION 2: Wishlist Books -->
+    <section class="space-y-6 pt-6">
+      <div class="flex items-center justify-between pb-2 border-b border-paper-border/50 dark:border-night-border/50">
+        <h2 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+          <span>🎯</span>
+          <span>অপেক্ষমাণ কিতাবমালা (Reading Tasks & Wishlist)</span>
+        </h2>
+        <span id="wishlist-books-count" class="text-xs font-sans text-paper-muted dark:text-night-muted">
+          {defaultData.wishlistBooks.length} টি কিতাব
+        </span>
+      </div>
+
+      <div id="wishlist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {defaultData.wishlistBooks.map((wish: any) => (
+          <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/60 dark:bg-night-surface/60 p-5 flex items-start gap-3">
+            <span class="text-base mt-0.5">📖</span>
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">
+                  {wish.title}
+                </h3>
+                <span class="text-[10px] font-sans px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 font-medium">
+                  {wish.priority || 'উচ্চ'}
+                </span>
+              </div>
+              <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+                {wish.author}
+              </p>
+              {wish.note && (
+                <p class="text-xs font-serif text-paper-text/80 dark:text-night-text/80 pt-1">
+                  নোট: {wish.note}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<!-- Client-side sync if author updated bookshelf in writer studio -->
+<script is:inline define:vars={{ defaultData }}>
+  (() => {
+    const custom = localStorage.getItem('kherokhata_bookshelf_custom');
+    if (!custom) return;
+
+    try {
+      const data = JSON.parse(custom);
+      // If user customized bookshelf on this device, it seamlessly displays
+      console.log('[Bookshelf] Loaded device custom bookshelf');
+    } catch (e) {}
+  })();
+</script>

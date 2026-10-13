@@ -1,0 +1,228 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import InstallModal from '../components/InstallModal.astro';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  article?: {
+    publishedTime: string;
+    tags?: string[];
+  };
+}
+
+const {
+  title = 'আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা',
+  description = 'সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।',
+  image = '/images/og-default.jpg',
+  article
+} = Astro.props;
+
+const siteUrl = 'https://affan-labib-blog.vercel.app';
+const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
+const absoluteImageURL = new URL(image, siteUrl).href;
+
+// JSON-LD Schema
+const schemaData = article
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: title,
+      description: description,
+      image: absoluteImageURL,
+      datePublished: article.publishedTime,
+      author: {
+        '@type': 'Person',
+        name: 'আফফান লাবীব',
+        url: `${siteUrl}/about`
+      },
+      publisher: {
+        '@type': 'Person',
+        name: 'আফফান লাবীব'
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': canonicalURL
+      }
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'আফফান লাবীব - খেরোখাতা',
+      url: siteUrl,
+      description: description,
+      author: {
+        '@type': 'Person',
+        name: 'আফফান লাবীব',
+        jobTitle: 'লেখক ও গবেষক',
+        url: `${siteUrl}/about`
+      }
+    };
+---
+
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- High-Performance Non-Blocking Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap"
+      />
+    </noscript>
+
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="author" content="আফফান লাবীব" />
+
+    <!-- Open Graph / Facebook / WhatsApp (FIXED: Absolute Image URLs) -->
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteImageURL} />
+    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
+    {article?.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
+    {article?.tags?.map((t) => <meta property="article:tag" content={t} />)}
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={absoluteImageURL} />
+
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="আফফান লাবীব - RSS Feed" href="/rss.xml" />
+
+    <!-- PWA Manifest & Mobile Configuration -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#9A3412" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="খেরোখাতা" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+
+    <!-- Anti-flicker 3-Mode Theme Script (Light, Sepia, Dark) -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+
+      document.documentElement.classList.remove('dark', 'sepia');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'sepia') {
+        document.documentElement.classList.add('sepia');
+      }
+
+      try {
+        const savedLang = localStorage.getItem('kherokhata_lang');
+        if (savedLang) {
+          document.documentElement.lang = savedLang;
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body
+    id="top"
+    class="bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text min-h-screen flex flex-col font-sans selection:bg-orange-200 dark:selection:bg-orange-950 relative"
+  >
+    <!-- Ambient Literary Glow Orbs -->
+    <div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden select-none" aria-hidden="true">
+      <div class="absolute -top-24 -left-24 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent dark:from-amber-400/5 dark:via-orange-500/5 blur-3xl opacity-60"></div>
+      <div class="absolute top-1/3 -right-24 w-80 sm:w-[28rem] h-80 sm:h-[28rem] rounded-full bg-gradient-to-bl from-teal-500/10 via-emerald-500/5 to-transparent dark:from-teal-400/5 dark:via-cyan-500/5 blur-3xl opacity-50"></div>
+      <div class="absolute -bottom-24 left-1/4 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-gradient-to-tr from-rose-500/8 via-amber-500/5 to-transparent dark:from-orange-500/5 dark:via-amber-400/5 blur-3xl opacity-50"></div>
+      <div class="absolute inset-0 bg-radial-vignette opacity-40"></div>
+    </div>
+
+    <!-- Global Header -->
+    <Header />
+
+    <!-- Main Content Slot -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <slot />
+    </main>
+
+    <!-- Global Footer -->
+    <Footer />
+
+    <!-- Global PWA Install Modal -->
+    <InstallModal />
+
+    <!-- Author Profile Sync Everywhere -->
+    <script is:inline>
+      (function syncAuthorProfile() {
+        const savedAvatar = localStorage.getItem('kherokhata_author_avatar');
+        if (savedAvatar) {
+          document.querySelectorAll('.author-avatar-img').forEach((img) => {
+            img.src = savedAvatar;
+          });
+        }
+
+        const customProfile = localStorage.getItem('kherokhata_author_custom');
+        if (customProfile) {
+          try {
+            const data = JSON.parse(customProfile);
+            if (data.name) document.querySelectorAll('.author-name-text').forEach((el) => { el.textContent = data.name; });
+            if (data.education) document.querySelectorAll('.author-edu-text').forEach((el) => { el.textContent = data.education; });
+            if (data.tagline) document.querySelectorAll('.author-tagline-text').forEach((el) => { el.textContent = data.tagline; });
+            if (data.bio) document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.textContent = data.bio; });
+            if (data.avatar) document.querySelectorAll('.author-avatar-img').forEach((img) => { img.src = data.avatar; });
+          } catch (e) {}
+        }
+      })();
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(
+            (reg) => {
+              console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+            },
+            (err) => {
+              console.warn('[PWA] ServiceWorker failed:', err);
+            }
+          );
+        });
+      }
+    </script>
+  </body>
+</html>

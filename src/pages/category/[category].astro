@@ -1,0 +1,78 @@
+---
+// src/pages/category/[category].astro
+import Layout from '../../layouts/Layout.astro';
+import PostCard from '../../components/PostCard.astro';
+import posts from '../../data/posts.json';
+
+export async function getStaticPaths() {
+  const categories = [
+    { id: 'chinta', title: 'চিন্তা', desc: 'সরল মনন, জীবন ও দৈনন্দিন ভাবনার নানা প্রসঙ্গ' },
+    { id: 'pathalap', title: 'পাঠালাপ', desc: 'বই পড়তে পড়তে জেগে ওঠা চিন্তা ও আলাপচারিতা' },
+    { id: 'itihas', title: 'ইতিহাস', desc: 'অতীত ঐতিহ্য, মনীষী জীবন ও ইতিহাসের গভীর অনুসন্ধান' },
+    { id: 'boi-alochona', title: 'বই-আলোচনা', desc: 'পঠিত প্রিয় বইগুলোর ব্যক্তিগত পর্যালোচনা ও পাঠপ্রতিক্রিয়া' },
+    { id: 'onubad', title: 'অনুবাদ', desc: 'আরবি ও অন্যান্য ভাষার ধ্রুপদী ও সমকালীন সাহিত্যের অনুবাদ' }
+  ];
+
+  return categories.map((cat) => ({
+    params: { category: cat.id },
+    props: {
+      categoryInfo: cat,
+      categoryPosts: posts.filter((p) => p.category === cat.id)
+    }
+  }));
+}
+
+const { categoryInfo, categoryPosts } = Astro.props;
+
+const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+function toBn(n: number) {
+  return n.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+}
+---
+
+<Layout
+  title={`${categoryInfo.title} | আফফান লাবীব`}
+  description={`${categoryInfo.title} বিভাগের সকল লেখা — আফফান লাবীবের খেরোখাতা।`}
+>
+  <div class="space-y-12">
+    <!-- Category Header -->
+    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-6">
+      <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2">
+        <a href="/" class="hover:underline">প্রধান পাতা</a>
+        <span>/</span>
+        <span>বিভাগ</span>
+      </div>
+
+      <h1 class="text-3xl sm:text-4xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight mb-2">
+        {categoryInfo.title}
+      </h1>
+      <p class="text-base text-paper-muted dark:text-night-muted font-serif">
+        {categoryInfo.desc}
+      </p>
+      <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-2">
+        মোট {toBn(categoryPosts.length)} টি রচনা
+      </p>
+    </header>
+
+    <!-- Post Grid or Empty State -->
+    {categoryPosts.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {categoryPosts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    ) : (
+      <div class="py-16 text-center space-y-4">
+        <p class="text-paper-muted dark:text-night-muted font-serif text-lg">
+          এই বিভাগে এখনও কোনো লেখা প্রকাশিত হয়নি।
+        </p>
+        <a
+          href="/"
+          class="inline-block text-sm font-sans font-medium text-paper-accent dark:text-night-accent hover:underline"
+        >
+          ← প্রধান পাতায় ফিরে যান
+        </a>
+      </div>
+    )}
+  </div>
+</Layout>

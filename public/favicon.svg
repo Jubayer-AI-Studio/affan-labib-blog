@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9A3412"/>
+      <stop offset="100%" stop-color="#7C2D12"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background with subtle rounded corners -->
+  <rect width="512" height="512" rx="104" fill="url(#bgGrad)"/>
+
+  <!-- Inner border representing kherokhata traditional stitch margin -->
+  <rect x="28" y="28" width="456" height="456" rx="84" fill="none" stroke="#FAF8F5" stroke-width="6" stroke-opacity="0.4" stroke-dasharray="14 10"/>
+
+  <!-- Open Kherokhata / Book Pages & Quill Motif -->
+  <g filter="url(#shadow)" transform="translate(0, -10)">
+    <!-- Book Left Page -->
+    <path d="M128 340 C190 325 240 330 256 348 C256 190 256 160 256 160 C238 144 190 140 128 152 Z" fill="#FAF8F5"/>
+    <!-- Book Right Page -->
+    <path d="M384 340 C322 325 272 330 256 348 C256 190 256 160 256 160 C274 144 322 140 384 152 Z" fill="#F5EFE6"/>
+    <!-- Spine Line -->
+    <path d="M256 160 L256 352" stroke="#9A3412" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Red ribbon tie (খেরোখাতার সুতা) -->
+    <path d="M256 156 Q230 110 200 130 Q180 145 195 170" fill="none" stroke="#FDBA74" stroke-width="6" stroke-linecap="round"/>
+    
+    <!-- Bengali Letter 'লা' Motif stylized as an elegant literary glyph -->
+    <text x="256" y="278" font-family="'Noto Serif Bengali', 'Kalpurush', serif" font-size="100" font-weight="bold" fill="#7C2D12" text-anchor="middle" dominant-baseline="middle">লা</text>
+  </g>
+
+  <!-- Title Subtitle in Bengali -->
+  <text x="256" y="420" font-family="'Noto Serif Bengali', 'Hind Siliguri', sans-serif" font-size="34" font-weight="600" fill="#FAF8F5" text-anchor="middle" letter-spacing="2">খেরোখাতা</text>
+</svg>

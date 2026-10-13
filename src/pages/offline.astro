@@ -1,0 +1,32 @@
+---
+// src/pages/offline.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="অফলাইন মোড | আফফান লাবীব"
+  description="আপনি বর্তমানে অফলাইনে আছেন। পূর্বে পঠিত লেখাগুলো পড়তে পারবেন।"
+>
+  <div class="max-w-md mx-auto py-16 text-center space-y-6">
+    <div class="w-20 h-20 mx-auto rounded-3xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-4xl shadow-sm">
+      📶
+    </div>
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
+        আপনি অফলাইনে রয়েছেন
+      </h1>
+      <p class="text-sm font-serif text-paper-muted dark:text-night-muted leading-relaxed">
+        ইন্টারনেট সংযোগ বিচ্ছিন্ন থাকলেও আপনি পূর্বে লোড হওয়া বা ক্যাশকৃত সকল লেখা ও বুকশেলফ সাবলীলভাবে পড়তে পারবেন।
+      </p>
+    </div>
+    <div>
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-paper-accent text-white font-sans text-sm font-semibold shadow-md hover:opacity-95 cursor-pointer"
+      >
+        <span>🏠</span>
+        <span>প্রধান পাতায় যান</span>
+      </a>
+    </div>
+  </div>
+</Layout>

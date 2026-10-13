@@ -1,0 +1,109 @@
+---
+// src/pages/about.astro
+import Layout from '../layouts/Layout.astro';
+import author from '../data/author.json';
+---
+
+<Layout
+  title="আমার সম্পর্কে | আফফান লাবীব"
+  description="আফফান লাবীবের সংক্ষিপ্ত পরিচয়, পড়াশোনা ও খেরোখাতা রচনার প্রেক্ষাপট।"
+>
+  <div class="max-w-3xl mx-auto space-y-12">
+    <!-- Header -->
+    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-6">
+      <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2">
+        <a href="/" class="hover:underline">প্রধান পাতা</a>
+        <span>/</span>
+        <span>লেখক পরিচিতি</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight mb-2">
+        আফফান লাবীব
+      </h1>
+      <p class="text-base text-paper-muted dark:text-night-muted font-serif">
+        {author.tagline}
+      </p>
+    </header>
+
+    <!-- Profile Overview Card -->
+    <section class="rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      <img
+        src={author.avatar}
+        alt="আফফান লাবীব"
+        class="author-avatar-img w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover ring-2 ring-paper-accent/30 shadow-md shrink-0"
+      />
+
+      <div class="space-y-3 text-center sm:text-left">
+        <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text author-name-text">
+          {author.name}
+        </h2>
+        <p class="text-xs font-sans text-paper-accent dark:text-night-accent font-semibold author-edu-text">
+          {author.education}
+        </p>
+        <p class="text-sm font-serif text-paper-muted dark:text-night-muted leading-relaxed author-shortbio-text">
+          {author.bioShort}
+        </p>
+      </div>
+    </section>
+
+    <!-- Full Bio & Manifesto -->
+    <section class="space-y-6">
+      <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text author-manifesto-title-text">
+        {author.aboutManifestoTitle}
+      </h2>
+      <p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed author-manifesto-text">
+        {author.aboutManifesto}
+      </p>
+      <p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed author-biofull-text">
+        {author.bioFull}
+      </p>
+    </section>
+
+    <!-- Content Sections Summary -->
+    <section class="space-y-4 pt-4 border-t border-paper-border/60 dark:border-night-border/60">
+      <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+        এখানে মূলত যা পাবেন:
+      </h3>
+      <ul class="space-y-2 text-sm sm:text-base font-serif text-paper-muted dark:text-night-muted list-disc list-inside">
+        <li><strong>চিন্তা:</strong> প্রাত্যহিক জীবনের সরল পর্যবেক্ষণ ও অন্তর্দৃষ্টিমূলক ভাবনা।</li>
+        <li><strong>পাঠালাপ:</strong> বই পড়ার মধ্য দিয়ে অর্জিত উপলব্ধি ও প্রাসঙ্গিক আলোচনা।</li>
+        <li><strong>ইতিহাস:</strong> মুসলিম ইতিহাস, মনীষীদের জীবন ও ঐতিহ্যের স্মৃতিকথা।</li>
+        <li><strong>বই-আলোচনা:</strong> পছন্দের বইগুলোর সংক্ষিপ্ত পাঠপ্রতিক্রিয়া ও মূল্যায়ন।</li>
+        <li><strong>অনুবাদ:</strong> ধ্রুপদী আরবি ও অন্যান্য ভাষার সমৃদ্ধ সাহিত্যের অনুবাদ।</li>
+      </ul>
+    </section>
+
+    <!-- Contact & Social Links -->
+    <section class="p-6 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/60 dark:bg-night-surface/60 space-y-4">
+      <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+        সরাসরি যোগাযোগ
+      </h3>
+      <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+        কোনো লেখা নিয়ে মতবিনিময়, পরামর্শ বা যোগাযোগের জন্য নিচের লিঙ্কগুলো ব্যবহার করতে পারেন:
+      </p>
+      <div class="flex flex-wrap items-center gap-3 text-xs font-sans">
+        <a
+          href={author.social.facebook}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-3 py-2 rounded-xl bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
+        >
+          Facebook প্রোফাইল ↗
+        </a>
+        <a
+          href={author.social.whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-3 py-2 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
+        >
+          WhatsApp ({author.social.whatsappNumber}) ↗
+        </a>
+        <a
+          href={`mailto:${author.social.email}`}
+          class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border text-paper-text dark:text-night-text hover:border-paper-accent transition-colors"
+        >
+          ইমেইল: {author.social.email}
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>

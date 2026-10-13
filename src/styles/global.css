@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Sepia Mode Custom Palette */
+html.sepia {
+  background-color: #F6EFE2 !important;
+  color: #3E3024 !important;
+}
+
+html.sepia body {
+  background-color: #F6EFE2 !important;
+  color: #3E3024 !important;
+}
+
+html.sepia .bg-paper-surface {
+  background-color: #FCF6EC !important;
+}
+
+html.sepia .bg-paper-bg {
+  background-color: #F6EFE2 !important;
+}
+
+html.sepia .border-paper-border {
+  border-color: #DFD2BD !important;
+}
+
+html.sepia .text-paper-text {
+  color: #3E3024 !important;
+}
+
+html.sepia .text-paper-muted {
+  color: #796551 !important;
+}
+
+/* Liquid / Ambient Animations */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 12s linear infinite;
+}
+
+@keyframes liquidPulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.04); opacity: 0.9; }
+}
+
+.animate-liquid-pulse {
+  animation: liquidPulse 6s ease-in-out infinite;
+}
+
+/* Subtle Vignette Gradient */
+.bg-radial-vignette {
+  background: radial-gradient(circle at 50% 30%, transparent 50%, rgba(0, 0, 0, 0.03) 100%);
+}
+
+.dark .bg-radial-vignette {
+  background: radial-gradient(circle at 50% 30%, transparent 50%, rgba(0, 0, 0, 0.35) 100%);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,190 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import PostCard from '../components/PostCard.astro';
+import QuoteSection from '../components/QuoteSection.astro';
+import posts from '../data/posts.json';
+
+// Feature post
+const spotlightPost = posts.find((p) => p.slug === 'gazar-dinlipi') || posts[0];
+const gridPosts = posts.filter((p) => p.slug !== spotlightPost.slug);
+
+// Category counts
+const countAll = posts.length;
+const countChinta = posts.filter((p) => p.category === 'chinta').length;
+const countPathalap = posts.filter((p) => p.category === 'pathalap').length;
+const countItihas = posts.filter((p) => p.category === 'itihas').length;
+const countBoi = posts.filter((p) => p.category === 'boi-alochona').length;
+const countOnubad = posts.filter((p) => p.category === 'onubad').length;
+
+const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+function toBn(n: number) {
+  return n.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+}
+---
+
+<Layout
+  title="আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা"
+  description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
+>
+  <!-- Featured Spotlight Post -->
+  <section class="mb-14 relative group">
+    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+    <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
+      <div class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-amber-500/60 dark:via-amber-400/60 to-transparent"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 dark:border-amber-400/30 shadow-2xs">
+          <span class="animate-spin-slow">✨</span>
+          <span>প্রধান নির্বাচিত রচনা</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
+          <a href="/category/boi-alochona" class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm">
+            বই-আলোচনা
+          </a>
+          <span>·</span>
+          <time>{spotlightPost.formattedDate}</time>
+          <span>·</span>
+          <span>২ মিনিটে পাঠ্য</span>
+        </div>
+      </div>
+
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-tight mb-4">
+        <a href={`/${spotlightPost.slug}`} class="block hover:underline">
+          {spotlightPost.title}
+        </a>
+      </h2>
+
+      <p class="text-base sm:text-lg text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3 mb-7">
+        {spotlightPost.description}
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-paper-border/70 dark:border-night-border/70">
+        <div class="flex items-center gap-3">
+          <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
+          <div>
+            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block">
+              আফফান লাবীব
+            </span>
+            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted">
+              তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ
+            </span>
+          </div>
+        </div>
+
+        <a
+          href={`/${spotlightPost.slug}`}
+          class="inline-flex items-center gap-2 px-6 py-3 min-h-[48px] rounded-2xl bg-gradient-to-r from-paper-accent to-orange-700 dark:from-night-accent dark:to-orange-600 text-white font-sans text-sm font-semibold hover:shadow-lg hover:shadow-paper-accent/25 hover:scale-102 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm"
+        >
+          <span>সম্পূর্ণ রচনাটি পড়ুন</span>
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Filter & All Posts Grid -->
+  <section class="mt-14 mb-16">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+      <div>
+        <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-1">
+          <span>📑</span>
+          <span>বিষয়ভিত্তিক পাঠাগার</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
+          সকল পাঠ ও চিন্তা
+        </h2>
+      </div>
+
+      <div class="text-xs font-sans text-paper-muted dark:text-night-muted">
+        মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">{toBn(gridPosts.length)}</span> টি রচনা প্রদর্শিত হচ্ছে
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar text-xs font-sans">
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs" data-filter="all">
+        <span>সব রচনা</span> <span class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
+      </button>
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="chinta">
+        <span>চিন্তা</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countChinta)})</span>
+      </button>
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="pathalap">
+        <span>পাঠালাপ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countPathalap)})</span>
+      </button>
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="itihas">
+        <span>ইতিহাস</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countItihas)})</span>
+      </button>
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="boi-alochona">
+        <span>বই-আলোচনা</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countBoi - (spotlightPost.category === 'boi-alochona' ? 1 : 0))})</span>
+      </button>
+      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="onubad">
+        <span>অনুবাদ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countOnubad)})</span>
+      </button>
+    </div>
+
+    <!-- 2-Column Responsive Post Grid -->
+    <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300">
+      {gridPosts.map((post) => <PostCard post={post} />)}
+    </div>
+
+    <div id="empty-filter-notice" class="hidden py-12 text-center text-paper-muted dark:text-night-muted font-serif">
+      এই বিভাগে কোনো রচনা পাওয়া যায়নি।
+    </div>
+  </section>
+
+  <!-- Interactive Literary Quote Carousel -->
+  <QuoteSection />
+</Layout>
+
+<script is:inline>
+  (() => {
+    const tabs = document.querySelectorAll('.category-tab');
+    const postItems = document.querySelectorAll('.post-item');
+    const emptyNotice = document.getElementById('empty-filter-notice');
+    const visibleCount = document.getElementById('visible-count');
+
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    function toBnNum(num) {
+      return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const filter = tab.getAttribute('data-filter');
+
+        tabs.forEach((t) => {
+          t.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
+          t.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+        });
+
+        tab.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+        tab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+
+        const grid = document.getElementById('posts-grid');
+        if (grid) grid.classList.add('opacity-40');
+
+        setTimeout(() => {
+          let visible = 0;
+          postItems.forEach((item) => {
+            const itemCat = item.getAttribute('data-category');
+            if (filter === 'all' || itemCat === filter) {
+              item.classList.remove('hidden');
+              visible++;
+            } else {
+              item.classList.add('hidden');
+            }
+          });
+
+          if (visibleCount) visibleCount.innerText = toBnNum(visible);
+          if (emptyNotice) {
+            emptyNotice.classList.toggle('hidden', visible > 0);
+          }
+          if (grid) grid.classList.remove('opacity-40');
+        }, 100);
+      });
+    });
+  })();
+</script>
