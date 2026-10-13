@@ -2,26 +2,49 @@
 // src/components/Header.astro
 ---
 
-<header class="border-b border-paper-border/80 dark:border-night-border/80 bg-paper-bg/85 dark:bg-night-bg/85 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
-  <!-- Serene Literary Top Bar (Replaced intrusive neon chronometer) -->
-  <div class="w-full py-1.5 px-3 sm:px-6 border-b border-paper-border/40 dark:border-night-border/40 bg-paper-surface/50 dark:bg-night-surface/50">
-    <div class="max-w-5xl mx-auto flex items-center justify-between text-xs text-paper-muted dark:text-night-muted font-sans">
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 dark:bg-amber-400/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 dark:border-amber-400/20">
-          <span>📜</span>
-          <span>খেরোখাতা</span>
-        </span>
-        <span class="hidden sm:inline opacity-80" data-i18n="tagline">চিন্তা ও পাঠের নিভৃত আঙিনা</span>
-      </div>
-      <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
-        <span>🗓️</span>
-        <span id="header-live-date" class="font-medium text-paper-text dark:text-night-text">
-          মঙ্গলবার, ১৩ অক্টোবর ২০২৬
-        </span>
+<header class="border-b border-paper-border/80 dark:border-night-border/80 bg-paper-bg/80 dark:bg-night-bg/80 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
+  <!-- Ultra-Luxe Live Date & Ticking Seconds Chronometer (Restored as designed by User) -->
+  <div class="w-full pt-2 pb-1 px-3 sm:px-6">
+    <div class="relative group max-w-5xl mx-auto">
+      <!-- Gemini Cosmic Ambient Liquid Glow (Cyan, Indigo, Purple, Pink, Amber) -->
+      <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/25 via-purple-500/25 via-pink-500/25 to-amber-500/25 blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" aria-hidden="true"></div>
+
+      <!-- Radiant Multi-Color Gradient Border Container -->
+      <div class="relative p-[1.5px] sm:p-[2px] rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-500 to-amber-500 shadow-md shadow-purple-500/10 dark:shadow-purple-950/30 overflow-hidden">
+        <!-- Inner Glassmorphic Card Surface -->
+        <div class="relative rounded-[14px] bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-2xl px-3 py-2 sm:px-5 sm:py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-paper-text dark:text-night-text">
+          
+          <!-- Left: Gemini Live Badge + Prominent Clear English Date -->
+          <div class="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3.5 w-full sm:w-auto">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-pink-500/15 text-indigo-700 dark:text-purple-300 border border-purple-500/30 dark:border-purple-400/40 shadow-2xs shrink-0">
+              <span class="animate-pulse text-xs sm:text-sm leading-none">✨</span>
+              <span class="tracking-wider uppercase text-[10px] font-mono font-bold">GEMINI LIVE</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-left">
+              <span class="text-xs text-purple-600 dark:text-purple-400 select-none">🗓️</span>
+              <span id="gemini-live-date" class="text-xs sm:text-sm md:text-base font-bold font-sans tracking-tight text-paper-text dark:text-night-text whitespace-nowrap">
+                --
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: Prominent Digital Chronometer with Ticking Neon Seconds -->
+          <div class="flex items-center justify-center w-full sm:w-auto">
+            <div class="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 rounded-xl bg-paper-bg/95 dark:bg-night-bg/95 border border-purple-500/30 dark:border-purple-400/30 shadow-inner font-mono tabular-nums select-none" title="লাইভ ঘড়ি ও সেকেন্ড">
+              <span id="gemini-clock-hours" class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight">--</span>
+              <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">:</span>
+              <span id="gemini-clock-minutes" class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight">--</span>
+              <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">:</span>
+              <span id="gemini-clock-seconds" class="text-base sm:text-xl md:text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 dark:from-purple-400 dark:via-pink-400 dark:to-amber-400 bg-clip-text text-transparent tracking-tight">--</span>
+              <span id="gemini-clock-period" class="ml-1 sm:ml-1.5 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold font-sans uppercase bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30">--</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Main Navigation Row -->
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
     <!-- Brand / Title -->
     <div>
@@ -72,6 +95,12 @@
         <span data-i18n="install">অ্যাপ নামান</span>
       </button>
 
+      <!-- Change Avatar Button -->
+      <button type="button" onclick="window.openAvatarModal && window.openAvatarModal()" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 border border-paper-border/60 transition-colors cursor-pointer" title="ছবি বদলান">
+        <span>📷</span>
+        <span class="hidden lg:inline">ছবি বদলান</span>
+      </button>
+
       <!-- Author Studio Quick Entrance -->
       <a href="/admin" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/40 border border-paper-border/60 dark:border-night-border/60 transition-colors cursor-pointer" title="আফফান লাবীব — লেখক স্টুডিও">
         <span>✍️</span>
@@ -97,6 +126,9 @@
 
     <!-- Mobile Action Buttons -->
     <div class="flex items-center space-x-1.5 md:hidden">
+      <button type="button" onclick="window.openAvatarModal && window.openAvatarModal()" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" title="ছবি বদলান">
+        📷
+      </button>
       <a href="/admin" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" title="লেখক স্টুডিও" aria-label="Author Studio">
         ✍️
       </a>
@@ -156,6 +188,65 @@
   </div>
 </header>
 
+<!-- Restored Gemini Live Chronometer Script -->
+<script is:inline>
+  (() => {
+    const EN_MONTHS = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const EN_DAYS = [
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+
+    const dateEl = document.getElementById('gemini-live-date');
+    const hoursEl = document.getElementById('gemini-clock-hours');
+    const minutesEl = document.getElementById('gemini-clock-minutes');
+    const secondsEl = document.getElementById('gemini-clock-seconds');
+    const periodEl = document.getElementById('gemini-clock-period');
+
+    function padZero(num) {
+      return num < 10 ? '0' + num : num.toString();
+    }
+
+    function updateGeminiClock() {
+      const now = new Date();
+
+      const dayName = EN_DAYS[now.getDay()];
+      const dateNum = now.getDate();
+      const monthName = EN_MONTHS[now.getMonth()];
+      const year = now.getFullYear();
+      const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
+
+      if (dateEl && dateEl.textContent !== formattedDate) {
+        dateEl.textContent = formattedDate;
+      }
+
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const period = hours >= 12 ? 'PM' : 'AM';
+
+      const hours12 = hours % 12 || 12;
+      const hStr = padZero(hours12);
+      const mStr = padZero(minutes);
+      const sStr = padZero(seconds);
+
+      if (hoursEl) hoursEl.textContent = hStr;
+      if (minutesEl) minutesEl.textContent = mStr;
+      if (secondsEl) secondsEl.textContent = sStr;
+      if (periodEl) periodEl.textContent = period;
+    }
+
+    updateGeminiClock();
+    setInterval(updateGeminiClock, 1000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateGeminiClock();
+    });
+  })();
+</script>
+
 <!-- Global Header Interactions Script (Single Instance) -->
 <script is:inline>
   (() => {
@@ -166,27 +257,7 @@
       mobileMenu?.classList.toggle('hidden');
     });
 
-    // 2. Calm Live Date Updater (Bengali & English)
-    const dateEl = document.getElementById('header-live-date');
-    const bnMonths = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-    const bnDays = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    function toBn(n) {
-      return n.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-    }
-
-    function updateDate() {
-      if (!dateEl) return;
-      const now = new Date();
-      const dayName = bnDays[now.getDay()];
-      const dayNum = toBn(now.getDate());
-      const month = bnMonths[now.getMonth()];
-      const year = toBn(now.getFullYear());
-      dateEl.textContent = `${dayName}, ${dayNum} ${month} ${year}`;
-    }
-    updateDate();
-
-    // 3. Theme Toggle Engine
+    // 2. Theme Toggle Engine
     const MODES = ['light', 'sepia', 'dark'];
     const LABELS = {
       bn: { light: 'দিন', sepia: 'সেপিয়া', dark: 'রাত' },
@@ -227,7 +298,7 @@
     });
     syncThemeUI();
 
-    // 4. Language Switcher Engine
+    // 3. Language Switcher Engine
     const DICT = {
       bn: {
         tagline: 'চিন্তা ও পাঠের নিভৃত আঙিনা',

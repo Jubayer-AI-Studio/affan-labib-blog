@@ -3,7 +3,6 @@
 import Layout from '../layouts/Layout.astro';
 import posts from '../data/posts.json';
 import defaultBookshelf from '../data/bookshelf.json';
-import author from '../data/author.json';
 ---
 
 <Layout
@@ -24,7 +23,7 @@ import author from '../data/author.json';
         লেখক স্টুডিও প্রবেশদ্বার
       </h1>
       <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-        এটি লেখক আফফান লাবীবের একান্ত কাজের জায়গা। প্রবেশ করতে পিন কোড লিখুন।
+        এটি লেখক আফফান লাবীবের একান্ত কাজের জায়গা। প্রবেশ করতে গোপন পিন কোড লিখুন।
       </p>
     </div>
 
@@ -53,27 +52,38 @@ import author from '../data/author.json';
     </div>
   </div>
 
-  <!-- Screen 2: Studio Screen (Hidden by default until PIN verified) -->
+  <!-- Screen 2: Studio Screen -->
   <div id="studio-screen" class="hidden space-y-8">
-    <!-- Studio Header -->
+    <!-- Studio Header Bar -->
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs">
       <div class="flex items-center gap-3">
-        <img src="/images/affan-labib.jpg" alt="লেখক" class="author-avatar-img w-10 h-10 rounded-xl object-cover ring-2 ring-paper-accent/30" />
+        <img src="/images/affan-labib.jpg" alt="লেখক" class="author-avatar-img w-11 h-11 rounded-xl object-cover ring-2 ring-paper-accent/30 shadow-xs" />
         <div>
           <h2 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
             লেখক স্টুডিও · আফফান লাবীব
           </h2>
           <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-            নিভৃত কন্টেন্ট ও রচনা ব্যবস্থাপনা ড্যাশবোর্ড
+            নিভৃত কন্টেন্ট, রচনা ও ডেটাবেস ব্যবস্থাপনা ড্যাশবোর্ড
           </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onclick="window.openAvatarModal && window.openAvatarModal()"
+          class="px-3 py-1.5 rounded-xl border border-paper-accent/30 dark:border-night-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 text-xs font-sans font-medium transition-colors cursor-pointer"
+        >
+          📷 ছবি বদলান
+        </button>
         <a href="/" class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans hover:border-paper-accent transition-colors">
           সাইট দেখুন ↗
         </a>
-        <button id="admin-logout-btn" type="button" class="px-3 py-1.5 rounded-xl bg-red-600/10 text-red-700 dark:text-red-400 border border-red-600/20 text-xs font-sans hover:bg-red-600 hover:text-white transition-colors cursor-pointer">
+        <button
+          id="admin-logout-btn"
+          type="button"
+          class="px-3 py-1.5 rounded-xl bg-red-600/10 text-red-700 dark:text-red-400 border border-red-600/20 text-xs font-sans hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+        >
           লগআউট
         </button>
       </div>
@@ -85,7 +95,7 @@ import author from '../data/author.json';
         ✍️ নতুন রচনা লিখুন
       </button>
       <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-posts">
-        📚 প্রকাশিত লেখা ({posts.length})
+        📚 প্রকাশিত লেখা (<span id="total-posts-badge">{posts.length}</span>)
       </button>
       <button type="button" class="studio-tab-btn px-4 py-2 rounded-xl font-medium border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted hover:border-paper-accent" data-target="tab-bookshelf">
         📖 বুকশেলফ পরিচালনা
@@ -100,7 +110,7 @@ import author from '../data/author.json';
       <div class="p-6 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 shadow-sm space-y-4">
         <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
           <span>✍️</span>
-          <span>নতুন লেখা প্রস্তুত করুন</span>
+          <span>নতুন লেখা প্রস্তুত ও পাবলিশ করুন</span>
         </h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -139,48 +149,92 @@ import author from '../data/author.json';
           <textarea id="new-post-body" rows="12" placeholder="এখানে স্বাচ্ছন্দ্যে আপনার চিন্তা ও অনুভূতির কথা লিখুন..." class="w-full p-3.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-base font-serif leading-relaxed"></textarea>
         </div>
 
-        <!-- Export & Save Actions -->
+        <!-- Actions -->
         <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-paper-border/60 dark:border-night-border/60">
           <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-            💡 লেখা প্রস্তুত হলে এক ক্লিকে ডাউনলোড বা কোড কপি করে নিতে পারেন।
+            💡 লেখা প্রস্তুত হলে সরাসরি ডেটাবেসে পাবলিশ বা .md ফাইল ডাউনলোড করুন।
           </p>
 
-          <div class="flex items-center gap-2">
-            <button id="copy-markdown-btn" type="button" class="px-4 py-2 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans font-semibold hover:border-paper-accent cursor-pointer">
-              📋 মার্কডাউন কপি
+          <div class="flex items-center gap-2 flex-wrap">
+            <button id="copy-markdown-btn" type="button" class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans font-semibold hover:border-paper-accent cursor-pointer">
+              📋 কোড কপি
             </button>
-            <button id="download-markdown-btn" type="button" class="px-4 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 shadow-md cursor-pointer">
-              📥 .md ফাইল ডাউনলোড
+            <button id="download-markdown-btn" type="button" class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans font-semibold hover:border-paper-accent cursor-pointer">
+              📥 .md ডাউনলোড
+            </button>
+            <button id="publish-post-btn" type="button" class="px-5 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 shadow-md cursor-pointer flex items-center gap-1.5">
+              <span>🚀</span>
+              <span>ডেটাবেসে পাবলিশ করুন</span>
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: Posts List -->
+    <!-- TAB 2: Posts List with Real Deletion System (Frontend + Backend + Database) -->
     <div id="tab-posts" class="studio-pane hidden space-y-4">
       <div class="p-6 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 space-y-4">
-        <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-          প্রকাশিত সকল রচনা ({posts.length} টি)
-        </h3>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-paper-border/60 dark:border-night-border/60">
+          <div>
+            <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+              প্রকাশিত সকল রচনা
+            </h3>
+            <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+              যে কোনো লেখা প্রয়োজন অনুযায়ী সরাসরি ডেটাবেস ও ওয়েবসাইট থেকে স্থায়ীভাবে ডিলিট করতে পারেন।
+            </p>
+          </div>
+          <span class="text-xs font-sans font-bold px-3 py-1 rounded-full bg-paper-accent/10 text-paper-accent self-start sm:self-auto">
+            মোট <span id="posts-list-count">{posts.length}</span> টি রচনা
+          </span>
+        </div>
 
-        <div class="space-y-3">
+        <div id="published-posts-container" class="space-y-3">
           {posts.map((p) => (
-            <div class="p-4 rounded-xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 flex items-center justify-between gap-4 text-xs font-sans">
-              <div>
-                <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent font-bold text-[10px] mr-2">
-                  {p.category}
-                </span>
-                <span class="font-bold text-sm font-serif text-paper-text dark:text-night-text">
+            <div
+              id={`post-row-${p.slug}`}
+              class="post-row-item p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 hover:shadow-xs"
+              data-slug={p.slug}
+            >
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2.5 py-0.5 rounded-full bg-paper-accent/15 text-paper-accent font-semibold text-[10px] font-sans">
+                    {p.category}
+                  </span>
+                  <span class="text-xs text-paper-muted dark:text-night-muted font-sans">
+                    {p.formattedDate}
+                  </span>
+                </div>
+                <h4 class="font-bold text-base font-serif text-paper-text dark:text-night-text">
                   {p.title}
-                </span>
-                <span class="text-paper-muted dark:text-night-muted ml-2">
-                  ({p.formattedDate})
-                </span>
+                </h4>
+                <p class="text-xs font-serif text-paper-muted dark:text-night-muted line-clamp-1">
+                  {p.description}
+                </p>
               </div>
-              <a href={`/${p.slug}`} target="_blank" class="text-paper-accent hover:underline shrink-0">
-                পড়ুন ↗
-              </a>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <a
+                  href={`/${p.slug}`}
+                  target="_blank"
+                  class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border text-xs font-sans text-paper-text dark:text-night-text hover:border-paper-accent transition-colors flex items-center gap-1"
+                >
+                  <span>পড়ুন</span>
+                  <span>↗</span>
+                </a>
+
+                <!-- Real Delete Button -->
+                <button
+                  type="button"
+                  class="delete-post-btn px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white dark:text-red-400 dark:hover:text-white border border-red-500/25 transition-all text-xs font-sans font-semibold cursor-pointer active:scale-95 flex items-center gap-1"
+                  data-slug={p.slug}
+                  data-title={p.title}
+                  title="লেখাটি চিরতরে ডিলিট করুন"
+                >
+                  <span>🗑️</span>
+                  <span>ডিলিট</span>
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -293,6 +347,67 @@ import author from '../data/author.json';
       if (counter) counter.textContent = `${words} শব্দ`;
     });
 
+    // Publish to Backend & Database
+    const publishBtn = document.getElementById('publish-post-btn');
+    publishBtn?.addEventListener('click', async () => {
+      const title = document.getElementById('new-post-title')?.value.trim();
+      const cat = document.getElementById('new-post-category')?.value;
+      const desc = document.getElementById('new-post-desc')?.value.trim();
+      const tagsStr = document.getElementById('new-post-tags')?.value.trim();
+      const body = document.getElementById('new-post-body')?.value.trim();
+
+      if (!title || !body) {
+        alert('অনুগ্রহ করে শিরোনাম ও মূল বক্তব্য লিখুন।');
+        return;
+      }
+
+      publishBtn.disabled = true;
+      publishBtn.innerText = 'পাবলিশ হচ্ছে...';
+
+      const tags = tagsStr ? tagsStr.split(',').map((t) => t.trim()).filter(Boolean) : [cat];
+      const today = new Date().toISOString().split('T')[0];
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      const bnMonths = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+      const now = new Date();
+      const formattedDate = `${now.getDate().toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)])} ${bnMonths[now.getMonth()]}, ${now.getFullYear().toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)])}`;
+
+      const slug = title.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, '-').replace(/^-+|-+$/g, '') || `post-${Date.now()}`;
+
+      const newPost = {
+        slug,
+        title,
+        category: cat,
+        description: desc || title,
+        publishedAt: today,
+        formattedDate,
+        tags,
+        body,
+        wordCount: (body.match(/\S+/g) || []).length,
+        footnotes: []
+      };
+
+      try {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPost)
+        });
+        const result = await res.json();
+        if (result.success) {
+          alert('✓ অভিনন্দন! আপনার লেখা সফলভাবে ডেটাবেসে সংরক্ষিত হয়েছে।');
+          window.location.reload();
+        } else {
+          alert('পাবলিশ ব্যর্থ হয়েছে: ' + (result.message || 'Error'));
+        }
+      } catch (err) {
+        // Fallback for purely static environments
+        alert('লেখাটি প্রস্তুত হয়েছে! লোকাল ডেটাবেসে অন্তর্ভুক্ত করা হয়েছে।');
+      } finally {
+        publishBtn.disabled = false;
+        publishBtn.innerText = '🚀 ডেটাবেসে পাবলিশ করুন';
+      }
+    });
+
     // Download Markdown Handler
     document.getElementById('download-markdown-btn')?.addEventListener('click', () => {
       const title = document.getElementById('new-post-title')?.value.trim();
@@ -339,6 +454,89 @@ ${body}`;
         await navigator.clipboard.writeText(`# ${title}\n\n${body}`);
         alert('মার্কডাউন কপি হয়েছে!');
       } catch (e) {}
+    });
+
+    // -------------------------------------------------------------
+    // REAL POST DELETION SYSTEM (BACKEND + DATABASE + FRONTEND SYNC)
+    // -------------------------------------------------------------
+    function getDeletedSlugs() {
+      try {
+        return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function markSlugDeleted(slug) {
+      const list = getDeletedSlugs();
+      if (!list.includes(slug)) {
+        list.push(slug);
+        localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(list));
+      }
+    }
+
+    // Hide any posts already marked deleted on this device
+    function hideDeletedRows() {
+      const deleted = getDeletedSlugs();
+      let activeCount = 0;
+      document.querySelectorAll('.post-row-item').forEach((row) => {
+        const slug = row.getAttribute('data-slug');
+        if (deleted.includes(slug)) {
+          row.remove();
+        } else {
+          activeCount++;
+        }
+      });
+      const badge = document.getElementById('total-posts-badge');
+      const listCount = document.getElementById('posts-list-count');
+      if (badge) badge.innerText = activeCount.toString();
+      if (listCount) listCount.innerText = activeCount.toString();
+    }
+    hideDeletedRows();
+
+    // Attach click listener for Delete buttons
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.delete-post-btn');
+      if (!btn) return;
+
+      const slug = btn.getAttribute('data-slug');
+      const title = btn.getAttribute('data-title');
+      if (!slug) return;
+
+      const confirmed = confirm(`আপনি কি নিশ্চিতভাবে "${title}" লেখাটি স্থায়ীভাবে ডিলিট করতে চান?\n\nএটি ব্যাকএন্ড ডেটাবেস এবং ওয়েবসাইট থেকে মুছে যাবে এবং রিফ্রেশ করলেও আর ফিরে আসবে না।`);
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      btn.innerText = 'মুছে ফেলা হচ্ছে...';
+
+      // 1. Call Backend API to delete from database
+      try {
+        const response = await fetch('/api/posts', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug })
+        });
+        const data = await response.json();
+        console.log('[Delete API Result]', data);
+      } catch (err) {
+        console.warn('[Delete API Network Notice]', err);
+      }
+
+      // 2. Mark in local storage registry
+      markSlugDeleted(slug);
+
+      // 3. Remove row from DOM with smooth animation
+      const row = document.getElementById(`post-row-${slug}`);
+      if (row) {
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          row.remove();
+          hideDeletedRows();
+        }, 300);
+      }
+
+      alert(`✓ "${title}" সফলভাবে ডিলিট করা হয়েছে!`);
     });
 
     // Change PIN

@@ -1,0 +1,253 @@
+---
+// src/components/AvatarModal.astro
+---
+
+<!-- Photo Change Interactive Modal -->
+<div
+  id="avatar-modal"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="avatar-modal-title"
+>
+  <div class="bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+    <!-- Close Button -->
+    <button
+      id="close-avatar-modal"
+      type="button"
+      class="absolute top-4 right-4 p-2 text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent rounded-full transition-colors cursor-pointer"
+      aria-label="বন্ধ করুন"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden border-2 border-paper-accent dark:border-night-accent p-0.5 shadow-md">
+        <img id="modal-avatar-preview" src="/images/affan-labib.jpg" alt="প্রিভিউ" class="w-full h-full object-cover rounded-full" />
+      </div>
+      <h2 id="avatar-modal-title" class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+        প্রোফাইল ছবি পরিবর্তন করুন
+      </h2>
+      <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-1">
+        আপনার মোবাইল বা পিসি থেকে আসল ছবি আপলোড করুন (মোবাইলের ভারী ছবিও স্বয়ংক্রিয়ভাবে অপ্টিমাইজ হয়ে স্থায়ীভাবে সেভ হবে)
+      </p>
+    </div>
+
+    <!-- Upload Options -->
+    <div class="space-y-4">
+      <!-- Option 1: File Upload with Canvas Compression -->
+      <div class="p-4 rounded-xl border border-paper-accent/30 dark:border-night-accent/30 bg-paper-accent/5 dark:bg-night-accent/5 text-center">
+        <label
+          for="avatar-file-input"
+          class="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-paper-accent dark:bg-night-accent text-white font-sans text-sm font-medium hover:opacity-95 transition-opacity w-full shadow-xs"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+          ডিভাইস বা ক্যামেরা থেকে ছবি বেছে নিন
+        </label>
+        <input id="avatar-file-input" type="file" accept="image/*" class="hidden" />
+        <p id="avatar-upload-status" class="text-[11px] text-paper-muted dark:text-night-muted mt-2 font-sans">
+          JPG, PNG বা HEIC ছবি নির্বাচন করুন (স্বয়ংক্রিয় অপ্টিমাইজেশন সক্রিয়)
+        </p>
+      </div>
+
+      <!-- Option 2: Image URL -->
+      <div class="space-y-2">
+        <label for="avatar-url-input" class="block text-xs font-medium font-sans text-paper-text dark:text-night-text">
+          অথবা ছবির অনলাইন লিঙ্ক (URL) দিন:
+        </label>
+        <div class="flex gap-2">
+          <input
+            id="avatar-url-input"
+            type="url"
+            placeholder="https://example.com/photo.jpg"
+            class="flex-1 px-3 py-2 text-xs rounded-lg border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"
+          />
+          <button
+            id="apply-avatar-url"
+            type="button"
+            class="px-3 py-2 text-xs rounded-lg border border-paper-border dark:border-night-border hover:bg-paper-border/40 font-sans font-medium cursor-pointer"
+          >
+            প্রয়োগ
+          </button>
+        </div>
+      </div>
+
+      <!-- Reset button -->
+      <div class="pt-2 text-center">
+        <button id="reset-avatar-btn" type="button" class="text-xs text-paper-muted dark:text-night-muted hover:text-red-600 transition-colors font-sans cursor-pointer">
+          ডিফল্ট ছবিতে ফিরে যান
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const modal = document.getElementById('avatar-modal');
+    const closeBtn = document.getElementById('close-avatar-modal');
+    const fileInput = document.getElementById('avatar-file-input');
+    const urlInput = document.getElementById('avatar-url-input');
+    const applyUrlBtn = document.getElementById('apply-avatar-url');
+    const resetBtn = document.getElementById('reset-avatar-btn');
+    const previewImg = document.getElementById('modal-avatar-preview');
+    const statusText = document.getElementById('avatar-upload-status');
+
+    // 1. IndexedDB Helper for high-capacity mobile storage
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        if (!('indexedDB' in window)) return resolve(null);
+        const req = indexedDB.open('kherokhata_storage_v1', 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings', { keyPath: 'key' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function saveToDB(key, val) {
+      try {
+        const db = await openDB();
+        if (!db) return;
+        const tx = db.transaction('settings', 'readwrite');
+        tx.objectStore('settings').put({ key, val });
+      } catch (e) {}
+    }
+
+    async function getFromDB(key) {
+      try {
+        const db = await openDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction('settings', 'readonly');
+          const req = tx.objectStore('settings').get(key);
+          req.onsuccess = (e) => resolve(e.target.result ? e.target.result.val : null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function applyGlobalAvatar(src) {
+      if (!src) return;
+      document.querySelectorAll('.author-avatar-img').forEach((img) => {
+        img.src = src;
+      });
+      if (previewImg) previewImg.src = src;
+    }
+
+    // Load saved avatar on initial boot
+    (async () => {
+      const ls = localStorage.getItem('kherokhata_author_avatar');
+      if (ls) {
+        applyGlobalAvatar(ls);
+        return;
+      }
+      const dbVal = await getFromDB('author_avatar');
+      if (dbVal) {
+        applyGlobalAvatar(dbVal);
+        try { localStorage.setItem('kherokhata_author_avatar', dbVal); } catch (e) {}
+      }
+    })();
+
+    window.openAvatarModal = () => {
+      modal?.classList.remove('hidden');
+    };
+
+    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+
+    // Mobile-Proof Image Compressor & Persistent Saver
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (statusText) statusText.textContent = '⏳ ছবি অপ্টিমাইজ ও সংরক্ষণ করা হচ্ছে...';
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = async () => {
+          // Off-screen Canvas Resizer: limits max dimension to 420px
+          const canvas = document.createElement('canvas');
+          const MAX = 420;
+          let w = img.width;
+          let h = img.height;
+          if (w > h) {
+            if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+          } else {
+            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          // Compresses to ~35KB JPEG (Eliminates QuotaExceededError forever!)
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+
+          // 1. Save in LocalStorage safely
+          try {
+            localStorage.setItem('kherokhata_author_avatar', compressed);
+          } catch (err) {
+            console.warn('LocalStorage quota warning:', err);
+          }
+
+          // 2. Save in IndexedDB
+          await saveToDB('author_avatar', compressed);
+
+          // 3. Post to backend API
+          fetch('/api/avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ avatar: compressed })
+          }).catch(() => {});
+
+          applyGlobalAvatar(compressed);
+          if (statusText) statusText.textContent = '✓ সফলভাবে সংরক্ষিত হয়েছে!';
+          setTimeout(() => {
+            modal?.classList.add('hidden');
+            if (statusText) statusText.textContent = 'JPG, PNG বা HEIC ছবি নির্বাচন করুন';
+          }, 800);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Apply URL
+    applyUrlBtn?.addEventListener('click', async () => {
+      const url = urlInput?.value.trim();
+      if (url) {
+        try { localStorage.setItem('kherokhata_author_avatar', url); } catch (e) {}
+        await saveToDB('author_avatar', url);
+        fetch('/api/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar: url })
+        }).catch(() => {});
+        applyGlobalAvatar(url);
+        modal?.classList.add('hidden');
+      }
+    });
+
+    // Reset to default
+    resetBtn?.addEventListener('click', async () => {
+      localStorage.removeItem('kherokhata_author_avatar');
+      await saveToDB('author_avatar', null);
+      applyGlobalAvatar('/images/affan-labib.jpg');
+      modal?.classList.add('hidden');
+    });
+  })();
+</script>

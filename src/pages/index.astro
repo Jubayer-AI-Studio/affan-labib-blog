@@ -28,7 +28,7 @@ function toBn(n: number) {
   description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
 >
   <!-- Featured Spotlight Post -->
-  <section class="mb-14 relative group">
+  <section id="spotlight-section" data-slug={spotlightPost.slug} class="mb-14 relative group">
     <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
     <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
       <div class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-amber-500/60 dark:via-amber-400/60 to-transparent"></div>
@@ -141,6 +141,29 @@ function toBn(n: number) {
 
 <script is:inline>
   (() => {
+    function getDeletedSlugs() {
+      try {
+        return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    const deleted = getDeletedSlugs();
+    if (deleted.length > 0) {
+      const spotlightSec = document.getElementById('spotlight-section');
+      if (spotlightSec && deleted.includes(spotlightSec.getAttribute('data-slug'))) {
+        spotlightSec.remove();
+      }
+
+      document.querySelectorAll('.post-item').forEach((item) => {
+        const slug = item.getAttribute('data-slug');
+        if (slug && deleted.includes(slug)) {
+          item.remove();
+        }
+      });
+    }
+
     const tabs = document.querySelectorAll('.category-tab');
     const postItems = document.querySelectorAll('.post-item');
     const emptyNotice = document.getElementById('empty-filter-notice');

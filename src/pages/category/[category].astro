@@ -76,3 +76,19 @@ function toBn(n: number) {
     )}
   </div>
 </Layout>
+
+<script is:inline>
+  (() => {
+    try {
+      const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+      if (deleted.length > 0) {
+        document.querySelectorAll('.post-item').forEach((item) => {
+          const slug = item.getAttribute('data-slug');
+          if (slug && deleted.includes(slug)) {
+            item.remove();
+          }
+        });
+      }
+    } catch (e) {}
+  })();
+</script>

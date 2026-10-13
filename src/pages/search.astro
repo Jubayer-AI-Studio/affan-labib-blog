@@ -72,6 +72,11 @@ const searchablePosts = posts.map((p) => {
 
 <script is:inline define:vars={{ searchablePosts }}>
   (() => {
+    const deletedSlugs = (() => {
+      try { return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]'); } catch(e) { return []; }
+    })();
+    const activePosts = searchablePosts.filter((p) => !deletedSlugs.includes(p.slug));
+
     const input = document.getElementById('search-input');
     const container = document.getElementById('search-results');
     const statusEl = document.getElementById('search-status');
@@ -159,15 +164,15 @@ const searchablePosts = posts.map((p) => {
       });
     }
 
-    renderResults(searchablePosts, '');
+    renderResults(activePosts, '');
 
     input?.addEventListener('input', (e) => {
       const q = e.target.value.trim().toLowerCase();
       if (!q) {
-        renderResults(searchablePosts, '');
+        renderResults(activePosts, '');
         return;
       }
-      const filtered = searchablePosts.filter((p) => {
+      const filtered = activePosts.filter((p) => {
         return (
           p.title.toLowerCase().includes(q) ||
           p.description.toLowerCase().includes(q) ||

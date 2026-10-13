@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import InstallModal from '../components/InstallModal.astro';
+import AvatarModal from '../components/AvatarModal.astro';
 
 export interface Props {
   title?: string;
@@ -184,6 +185,9 @@ const schemaData = article
 
     <!-- Global PWA Install Modal -->
     <InstallModal />
+
+    <!-- Global Avatar Change Modal -->
+    <AvatarModal />
 
     <!-- Author Profile Sync Everywhere -->
     <script is:inline>

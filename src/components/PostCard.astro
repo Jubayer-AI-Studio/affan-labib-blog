@@ -32,6 +32,7 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
 <article
   class="post-item group relative flex flex-col justify-between rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs hover:shadow-2xl hover:shadow-paper-accent/10 dark:hover:shadow-night-accent/15 md:hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 overflow-hidden cursor-pointer"
   data-category={post.category}
+  data-slug={post.slug}
   onclick={`if (!event.target.closest('a')) window.location.href='/${post.slug}';`}
 >
   <!-- Ambient Liquid Glow on Hover -->
