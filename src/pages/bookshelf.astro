@@ -1,122 +1,329 @@
 ---
 // src/pages/bookshelf.astro
 import Layout from '../layouts/Layout.astro';
-import defaultData from '../data/bookshelf.json';
+import initialBookshelf from '../data/bookshelf.json';
 ---
 
 <Layout
-  title="বুকশেলফ ও পাঠাগার | আফফান লাবীব"
-  description="আফফান লাবীবের ব্যক্তিগত পাঠাগার, সম্প্রতি পঠিত বই এবং অপেক্ষমাণ কিতাবমালা।"
+  title="ব্যক্তিগত পাঠাগার ও বুকশেলফ | আফফান লাবীব"
+  description="আফফান লাবীবের পড়া শেষ বইয়ের সংগ্রহ ও পরবর্তীতে পড়ার উইশলিস্ট তালিকা।"
 >
-  <div class="space-y-12">
-    <!-- Bookshelf Header -->
-    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-6">
-      <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2">
-        <a href="/" class="hover:underline">প্রধান পাতা</a>
-        <span>/</span>
-        <span>পাঠাগার</span>
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight mb-2">
-        বইয়ের পাতা ও ভাবনার তোশক
-      </h1>
-      <p class="text-base text-paper-muted dark:text-night-muted font-serif">
-        আমার ব্যক্তিগত বুকশেলফ—যেখানে জমা হয় পড়া বইয়ের নির্যাস এবং অদূর ভবিষ্যতে পাঠের অপেক্ষায় থাকা কিতাবমালা।
-      </p>
-    </header>
+<div class="space-y-12"> <!-- Bookshelf Hero Header --> <header class="text-center space-y-4 max-w-2xl mx-auto pt-4"> <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-medium bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent border border-paper-accent/20"> <span>📚</span> <span data-i18n="bookshelf_badge">ব্যক্তিগত পাঠাগার ও বুকশেলফ</span> </div> <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
+বইয়ের পাতা ও ভাবনার তোশক
+</h1> <p class="text-sm sm:text-base text-paper-muted dark:text-night-muted font-sans leading-relaxed">
+বইয়ের সান্নিধ্যে মন শান্ত হয়, চিন্তা পায় নতুন গভীরতা। এখানে সংকলিত হয়েছে আমার পড়া শেষ হওয়া বইয়ের স্মৃতি এবং পরবর্তীতে পড়ার অপেক্ষায় থাকা বইয়ের তালিকা।
+</p> <!-- Two Rooms Navigation Switcher --> <div class="flex items-center justify-center gap-3 pt-4"> <button id="btn-room-read" type="button" class="room-tab-btn px-5 py-2.5 rounded-xl font-sans text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 shadow-xs bg-paper-accent text-white"> <span>📖</span> <span>১. পড়া শেষ বইসমূহ</span> <span id="read-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-white/20 text-white font-mono"> 3 </span> </button> <button id="btn-room-wish" type="button" class="room-tab-btn px-5 py-2.5 rounded-xl font-sans text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text"> <span>🎯</span> <span>২. পড়ার তালিকায় (উইশলিস্ট)</span> <span id="wish-count-badge" class="px-2 py-0.5 rounded-full text-xs bg-paper-border dark:bg-night-border font-mono"> 4 </span> </button> </div> </header> <!-- ROOM 1: পড়া শেষ বইসমূহ (Finished Books Grid) --> <section id="room-read" class="space-y-6"> <div class="flex items-center justify-between pb-3 border-b border-paper-border/60 dark:border-night-border/60"> <div> <h2 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2"> <span>✨</span> <span>পঠিত বই ও পাঠপ্রতিক্রিয়া</span> </h2> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+যে কিতাবগুলোর সান্নিধ্যে চিন্তার দিগন্ত আলোকিত হয়েছে
+</p> </div> </div> <!-- Books Cards Grid --> <div id="read-books-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"> <article class="group relative rounded-3xl p-6 sm:p-7 border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between space-y-4"> <div class="space-y-3"> <div class="flex items-start justify-between gap-3"> <span class="px-2.5 py-1 rounded-full text-[11px] font-sans font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"> ফিলিস্তিন ও সমকাল </span> <span class="text-xs font-mono text-paper-muted dark:text-night-muted flex items-center gap-1"> <span>📅</span> <span>২০২৬</span> </span> </div> <div> <h3 class="text-lg sm:text-xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors leading-snug"> গাযার দিনলিপি </h3> <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-1">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">ফিলিস্তিন অ্যাক্টিভিস্ট (অনুবাদ ও সংকলন)</span> </p> </div> <blockquote class="text-xs sm:text-sm font-serif italic text-paper-text/90 dark:text-night-text/90 leading-relaxed border-l-2 border-paper-accent/40 dark:border-night-accent/40 pl-3.5 py-1 bg-paper-bg/40 dark:bg-night-bg/40 rounded-r-lg">
+"শব্দের নিখুঁত গাঁথুনি এবং তথ্যের সরল রেখা ধরে হেঁটে যাওয়া দূর গাযার ধ্বংসস্তূপের ভেতর দিয়ে। অবর্ণনীয় বেদনা ও প্রতিরোধের এক প্রামাণ্য দলিল।"
+</blockquote> </div> <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50 flex items-center justify-between text-xs font-sans"> <div class="flex items-center gap-1 text-amber-500" title="রেটিং: 5/৫"> <span>★</span> <span class="font-mono font-bold text-paper-text dark:text-night-text">5</span> <span class="text-[10px] text-paper-muted">/ ৫</span> </div> <span class="text-[11px] text-paper-muted dark:text-night-muted">
+আফফান লাবীবের নোট
+</span> </div> </article><article class="group relative rounded-3xl p-6 sm:p-7 border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between space-y-4"> <div class="space-y-3"> <div class="flex items-start justify-between gap-3"> <span class="px-2.5 py-1 rounded-full text-[11px] font-sans font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"> দর্শন ও কালামশাস্ত্র </span> <span class="text-xs font-mono text-paper-muted dark:text-night-muted flex items-center gap-1"> <span>📅</span> <span>২০২৬</span> </span> </div> <div> <h3 class="text-lg sm:text-xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors leading-snug"> তাহাফুতুল মালাহিদা (ইসলাম ও বিজ্ঞানবাদ) </h3> <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-1">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">অনুবাদ ও সংকলন</span> </p> </div> <blockquote class="text-xs sm:text-sm font-serif italic text-paper-text/90 dark:text-night-text/90 leading-relaxed border-l-2 border-paper-accent/40 dark:border-night-accent/40 pl-3.5 py-1 bg-paper-bg/40 dark:bg-night-bg/40 rounded-r-lg">
+"বিজ্ঞানবাদ ও বিবর্তনবাদের দার্শনিক বিভ্রান্তি খণ্ডনে অসাধারণ এক কিতাব। ধারাবাহিক নোট ও খোলাসা প্রস্তুত করে পড়ার মতো বই।"
+</blockquote> </div> <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50 flex items-center justify-between text-xs font-sans"> <div class="flex items-center gap-1 text-amber-500" title="রেটিং: 5/৫"> <span>★</span> <span class="font-mono font-bold text-paper-text dark:text-night-text">5</span> <span class="text-[10px] text-paper-muted">/ ৫</span> </div> <span class="text-[11px] text-paper-muted dark:text-night-muted">
+আফফান লাবীবের নোট
+</span> </div> </article><article class="group relative rounded-3xl p-6 sm:p-7 border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between space-y-4"> <div class="space-y-3"> <div class="flex items-start justify-between gap-3"> <span class="px-2.5 py-1 rounded-full text-[11px] font-sans font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"> ভূ-রাজনীতি ও ইতিহাস </span> <span class="text-xs font-mono text-paper-muted dark:text-night-muted flex items-center gap-1"> <span>📅</span> <span>২০২৫</span> </span> </div> <div> <h3 class="text-lg sm:text-xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors leading-snug"> অপারেশন আল-আকসা ফ্লাড </h3> <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-1">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">মোজাম্মেল হোসেন ত্বহা</span> </p> </div> <blockquote class="text-xs sm:text-sm font-serif italic text-paper-text/90 dark:text-night-text/90 leading-relaxed border-l-2 border-paper-accent/40 dark:border-night-accent/40 pl-3.5 py-1 bg-paper-bg/40 dark:bg-night-bg/40 rounded-r-lg">
+"৭ই অক্টোবরের ঐতিহাসিক সামরিক ও ভূ-রাজনৈতিক পরিবর্তনের চমৎকার বস্তুনিষ্ঠ বিশ্লেষণ। অত্যন্ত তথ্যবহুল রচনা।"
+</blockquote> </div> <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50 flex items-center justify-between text-xs font-sans"> <div class="flex items-center gap-1 text-amber-500" title="রেটিং: 4.9/৫"> <span>★</span> <span class="font-mono font-bold text-paper-text dark:text-night-text">4.9</span> <span class="text-[10px] text-paper-muted">/ ৫</span> </div> <span class="text-[11px] text-paper-muted dark:text-night-muted">
+আফফান লাবীবের নোট
+</span> </div> </article> </div> </section> <!-- ROOM 2: পড়ার তালিকায় (উইশলিস্ট টাস্ক চেকলিস্ট) --> <section id="room-wish" class="hidden space-y-6"> <div class="flex items-center justify-between pb-3 border-b border-paper-border/60 dark:border-night-border/60"> <div> <h2 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2"> <span>🎯</span> <span>অপেক্ষমাণ কিতাবমালা (Reading Tasks & Wishlist)</span> </h2> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+সামনের দিনগুলোতে যে বইগুলো পড়ার ইচ্ছা ও এরাদা রয়েছে
+</p> </div> </div> <!-- Wishlist Task Checklist --> <div id="wish-books-container" class="space-y-3.5"> <div class="p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-2xs hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> <div class="flex items-start gap-3.5"> <span class="w-6 h-6 rounded-full bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-xs font-mono font-bold mt-0.5 shrink-0"> 1 </span> <div class="space-y-1"> <div class="flex items-center gap-2 flex-wrap"> <h3 class="text-base sm:text-lg font-bold font-serif text-paper-text dark:text-night-text"> আল-মুওয়াফাকাত (الموافقات) </h3> <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25"> উচ্চ অগ্রাধিকার
+</span> </div> <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">ইমাম আবু ইসহাক আশ-শাতিবি রহ.</span> </p> <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
+"মাকাসিদুশ শরীয়াহ ও উসুলে ফিকহের গভীর দর্শন ও রহস্য অনুধাবনের জন্য অবশ্যপাঠ্য মূল আকর গ্রন্থ।"
+</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div><div class="p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-2xs hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> <div class="flex items-start gap-3.5"> <span class="w-6 h-6 rounded-full bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-xs font-mono font-bold mt-0.5 shrink-0"> 2 </span> <div class="space-y-1"> <div class="flex items-center gap-2 flex-wrap"> <h3 class="text-base sm:text-lg font-bold font-serif text-paper-text dark:text-night-text"> মুকাদ্দিমা (مقدمة ابن خلدون) </h3> <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full border bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25"> উচ্চ অগ্রাধিকার
+</span> </div> <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">আল্লামা ইবনে খালদুন রহ.</span> </p> <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
+"মানব ইতিহাস ও সভ্যতার সমাজতাত্ত্বিক উত্থান-পতনের অমর দর্শন বোঝার লক্ষ্যে গভীর তাদাব্বুর সহকারে পাঠের এরাদা।"
+</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div><div class="p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-2xs hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> <div class="flex items-start gap-3.5"> <span class="w-6 h-6 rounded-full bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-xs font-mono font-bold mt-0.5 shrink-0"> 3 </span> <div class="space-y-1"> <div class="flex items-center gap-2 flex-wrap"> <h3 class="text-base sm:text-lg font-bold font-serif text-paper-text dark:text-night-text"> আল-বিদায়া ওয়ান নিহায়া (নির্বাচিত সীরাত অংশ) </h3> <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"> মাঝারি অগ্রাধিকার
+</span> </div> <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">ইমাম ইবনে কাসির রহ.</span> </p> <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
+"নবুওয়াতের সোনালী অধ্যায় ও খোলাফায়ে রাশেদীনের ইতিহাসের প্রামাণ্য বিশ্লেষণ।"
+</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div><div class="p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-2xs hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> <div class="flex items-start gap-3.5"> <span class="w-6 h-6 rounded-full bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-xs font-mono font-bold mt-0.5 shrink-0"> 4 </span> <div class="space-y-1"> <div class="flex items-center gap-2 flex-wrap"> <h3 class="text-base sm:text-lg font-bold font-serif text-paper-text dark:text-night-text"> কিতাবুল হিকাম (الحكم العطائية) </h3> <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25"> সাধারণ অগ্রাধিকার
+</span> </div> <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+লেখক: <span class="font-medium text-paper-text dark:text-night-text">ইবনে আতাউল্লাহ আল-ইসকান্দারি রহ.</span> </p> <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
+"তাযকিয়াতুন নাফস ও আধ্যাত্মিক প্রজ্ঞার সংক্ষিপ্ত কিন্তু সুগভীর রত্নভাণ্ডার।"
+</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div> </div> </section> <!-- Admin Link Quick Note --> <div class="text-center pt-8 border-t border-paper-border/60 dark:border-night-border/60"> <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+আপনি কি নতুন বই যুক্ত করতে চান?
+<button type="button" onclick="window.openAdminStudio && window.openAdminStudio()" class="text-paper-accent dark:text-night-accent font-semibold hover:underline cursor-pointer ml-1">
+লেখক স্টুডিওতে যান 🔐
+</button> </p> </div> </div>
 
-    <!-- SECTION 1: Read Books -->
-    <section class="space-y-6">
-      <div class="flex items-center justify-between pb-2 border-b border-paper-border/50 dark:border-night-border/50">
-        <h2 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
-          <span>✨</span>
-          <span>পঠিত বই ও পাঠপ্রতিক্রিয়া</span>
-        </h2>
-        <span id="read-books-count" class="text-xs font-sans text-paper-muted dark:text-night-muted">
-          {defaultData.readBooks.length} টি কিতাব
-        </span>
-      </div>
+  <script id="initial-bookshelf-data" type="application/json" set:html={JSON.stringify(initialBookshelf)} />
 
-      <div id="read-books-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {defaultData.readBooks.map((book: any) => (
-          <div class="rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs space-y-4">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <span class="text-[11px] font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider block mb-1">
-                  {book.tag || 'কিতাব'}
-                </span>
-                <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
-                  {book.title}
-                </h3>
-                <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
-                  {book.author} · {book.readYear}
-                </p>
+  <script is:inline>
+(() => {
+      const btnRead = document.getElementById('btn-room-read');
+      const btnWish = document.getElementById('btn-room-wish');
+      const roomRead = document.getElementById('room-read');
+      const roomWish = document.getElementById('room-wish');
+      const readContainer = document.getElementById('read-books-container');
+      const wishContainer = document.getElementById('wish-books-container');
+      const readCountBadge = document.getElementById('read-count-badge');
+      const wishCountBadge = document.getElementById('wish-count-badge');
+
+      function switchRoom(active) {
+        if (active === 'wish') {
+          roomRead?.classList.add('hidden');
+          roomWish?.classList.remove('hidden');
+
+          btnWish?.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'text-paper-muted');
+          btnWish?.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+
+          btnRead?.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
+          btnRead?.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'text-paper-muted');
+        } else {
+          roomWish?.classList.add('hidden');
+          roomRead?.classList.remove('hidden');
+
+          btnRead?.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'text-paper-muted');
+          btnRead?.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+
+          btnWish?.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
+          btnWish?.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'text-paper-muted');
+        }
+      }
+
+      btnRead?.addEventListener('click', () => switchRoom('read'));
+      btnWish?.addEventListener('click', () => switchRoom('wish'));
+
+      function getBookshelfData() {
+        const stored = localStorage.getItem('kherokhata_bookshelf_custom');
+        if (stored) {
+          try {
+            return JSON.parse(stored);
+          } catch (e) {}
+        }
+        const initialEl = document.getElementById('initial-bookshelf-data');
+        if (initialEl) {
+          try {
+            return JSON.parse(initialEl.textContent);
+          } catch (e) {}
+        }
+        return { readBooks: [], wishlistBooks: [] };
+      }
+
+      function saveBookshelfData(data) {
+        localStorage.setItem('kherokhata_bookshelf_custom', JSON.stringify(data));
+        window.dispatchEvent(new CustomEvent('kherokhata-bookshelf-sync'));
+        syncAndRender();
+      }
+
+      function isAuthorLoggedIn() {
+        return localStorage.getItem('kherokhata_admin_logged_in') === 'true';
+      }
+
+      window.quickDeleteBook = (type, id) => {
+        if (!confirm('আপনি কি নিশ্চিত যে এই বইটি বুকশেলফ থেকে মুছে ফেলতে চান?')) return;
+        const data = getBookshelfData();
+        if (type === 'read') {
+          data.readBooks = data.readBooks.filter((b, i) => (b.id ? b.id !== id : i.toString() !== id));
+        } else if (type === 'wish') {
+          data.wishlistBooks = data.wishlistBooks.filter((w, i) => (w.id ? w.id !== id : i.toString() !== id));
+        }
+        saveBookshelfData(data);
+      };
+
+      window.quickCompleteWish = (id) => {
+        const data = getBookshelfData();
+        const targetIndex = data.wishlistBooks.findIndex((w, i) => (w.id ? w.id === id : i.toString() === id));
+        if (targetIndex !== -1) {
+          const completed = data.wishlistBooks.splice(targetIndex, 1)[0];
+          data.readBooks.unshift({
+            id: 'read-' + Date.now(),
+            title: completed.title,
+            author: completed.author,
+            readYear: new Date().getFullYear().toString(),
+            review: completed.note || 'সম্প্রতি পড়া সমাপ্ত হয়েছে।',
+            rating: 5,
+            tag: 'নব্য সমাপ্ত কিতাব',
+            coverBg: 'from-amber-950/40 via-neutral-900 to-orange-950/30'
+          });
+          saveBookshelfData(data);
+          alert(`'${completed.title}' বইটি পড়া শেষ তালিকায় যুক্ত করা হয়েছে! ✓`);
+        }
+      };
+
+      function renderReadBooks(books) {
+        if (!readContainer) return;
+        if (!books || books.length === 0) {
+          readContainer.innerHTML = `
+            <div class="col-span-full py-12 text-center rounded-3xl border border-dashed border-paper-border/80 dark:border-night-border/80 p-8 space-y-3 bg-paper-surface/50 dark:bg-night-surface/50">
+              <span class="text-4xl block">📖</span>
+              <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">পঠিত কিতাবের তালিকা ফাঁকা</h3>
+              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">লেখক স্টুডিও থেকে নতুন পড়া বই যুক্ত করুন।</p>
+            </div>
+          `;
+          return;
+        }
+
+        const authorMode = isAuthorLoggedIn();
+
+        readContainer.innerHTML = books.map((book, idx) => {
+          const bookId = book.id || 'read-' + idx;
+          return `
+            <article class="group relative rounded-3xl p-6 sm:p-7 border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                  <span class="px-2.5 py-1 rounded-full text-[11px] font-sans font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                    ${escapeHtml(book.tag || 'পঠিত কিতাব')}
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono text-paper-muted dark:text-night-muted flex items-center gap-1">
+                      <span>📅</span> <span>${escapeHtml(book.readYear || '২০২৬')}</span>
+                    </span>
+                    ${authorMode ? `
+                      <button
+                        type="button"
+                        onclick="window.quickDeleteBook && window.quickDeleteBook('read', '${bookId}')"
+                        class="text-red-500 hover:text-red-700 text-xs px-2 py-0.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 cursor-pointer ml-1 transition-colors"
+                        title="এই বইটি তালিকা থেকে মুছে ফেলুন"
+                      >
+                        🗑️ মুছুন
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="text-lg sm:text-xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors leading-snug">
+                    ${escapeHtml(book.title)}
+                  </h3>
+                  <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-1">
+                    লেখক: <span class="font-medium text-paper-text dark:text-night-text">${escapeHtml(book.author)}</span>
+                  </p>
+                </div>
+
+                ${book.review ? `
+                  <blockquote class="text-xs sm:text-sm font-serif italic text-paper-text/90 dark:text-night-text/90 leading-relaxed border-l-2 border-paper-accent/40 dark:border-night-accent/40 pl-3.5 py-1 bg-paper-bg/40 dark:bg-night-bg/40 rounded-r-lg">
+                    "${escapeHtml(book.review)}"
+                  </blockquote>
+                ` : ''}
               </div>
 
-              <!-- Star Rating -->
-              <div class="flex text-amber-500 text-sm select-none" title={`${book.rating} তারকা`}>
-                {Array.from({ length: book.rating || 5 }).map(() => '★').join('')}
+              <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50 flex items-center justify-between text-xs font-sans">
+                <div class="flex items-center gap-1 text-amber-500" title="রেটিং: ${book.rating}/৫">
+                  <span>★</span>
+                  <span class="font-mono font-bold text-paper-text dark:text-night-text">${book.rating}</span>
+                  <span class="text-[10px] text-paper-muted">/ ৫</span>
+                </div>
+                <span class="text-[11px] text-paper-muted dark:text-night-muted">
+                  আফফান লাবীবের নোট
+                </span>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      function renderWishBooks(wishes) {
+        if (!wishContainer) return;
+        if (!wishes || wishes.length === 0) {
+          wishContainer.innerHTML = `
+            <div class="py-12 text-center rounded-3xl border border-dashed border-paper-border/80 dark:border-night-border/80 p-8 space-y-3 bg-paper-surface/50 dark:bg-night-surface/50">
+              <span class="text-4xl block">🎯</span>
+              <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">উইশলিস্টে কোনো বই নেই</h3>
+              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">লেখক স্টুডিও থেকে পড়ার তালিকায় নতুন বই যুক্ত করুন।</p>
+            </div>
+          `;
+          return;
+        }
+
+        const authorMode = isAuthorLoggedIn();
+
+        wishContainer.innerHTML = wishes.map((item, idx) => {
+          const wishId = item.id || 'wish-' + idx;
+          const priorityClass =
+            item.priority === 'উচ্চ'
+              ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25'
+              : item.priority === 'মাঝারি'
+              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+              : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25';
+
+          return `
+            <div class="p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl shadow-2xs hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-3.5">
+                <span class="w-6 h-6 rounded-full bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-xs font-mono font-bold mt-0.5 shrink-0">
+                  ${idx + 1}
+                </span>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-base sm:text-lg font-bold font-serif text-paper-text dark:text-night-text">
+                      ${escapeHtml(item.title)}
+                    </h3>
+                    <span class="text-[10px] font-sans font-semibold px-2 py-0.5 rounded-full border ${priorityClass}">
+                      ${escapeHtml(item.priority || 'উচ্চ')} অগ্রাধিকার
+                    </span>
+                  </div>
+                  <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
+                    লেখক: <span class="font-medium text-paper-text dark:text-night-text">${escapeHtml(item.author)}</span>
+                  </p>
+                  ${item.note ? `
+                    <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
+                      "${escapeHtml(item.note)}"
+                    </p>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="shrink-0 sm:self-center flex items-center gap-2">
+                ${authorMode ? `
+                  <button
+                    type="button"
+                    onclick="window.quickCompleteWish && window.quickCompleteWish('${wishId}')"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-sans font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 cursor-pointer transition-colors"
+                    title="পড়া শেষ হিসেবে পড়া বইয়ের ঘরে স্থানান্তর করুন"
+                  >
+                    <span>✓</span> <span>পড়া শেষ</span>
+                  </button>
+                  <button
+                    type="button"
+                    onclick="window.quickDeleteBook && window.quickDeleteBook('wish', '${wishId}')"
+                    class="text-red-500 hover:text-red-700 text-xs px-2.5 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 cursor-pointer transition-colors"
+                    title="উইশলিস্ট থেকে মুছে ফেলুন"
+                  >
+                    🗑️
+                  </button>
+                ` : `
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted">
+                    <span>⏳</span> <span>পড়ার অপেক্ষায়</span>
+                  </span>
+                `}
               </div>
             </div>
+          `;
+        }).join('');
+      }
 
-            <p class="text-sm font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed italic border-l-2 border-paper-accent/40 pl-3">
-              "{book.review}"
-            </p>
-          </div>
-        ))}
-      </div>
-    </section>
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
 
-    <!-- SECTION 2: Wishlist Books -->
-    <section class="space-y-6 pt-6">
-      <div class="flex items-center justify-between pb-2 border-b border-paper-border/50 dark:border-night-border/50">
-        <h2 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
-          <span>🎯</span>
-          <span>অপেক্ষমাণ কিতাবমালা (Reading Tasks & Wishlist)</span>
-        </h2>
-        <span id="wishlist-books-count" class="text-xs font-sans text-paper-muted dark:text-night-muted">
-          {defaultData.wishlistBooks.length} টি কিতাব
-        </span>
-      </div>
+      function syncAndRender() {
+        const data = getBookshelfData();
+        if (readCountBadge) readCountBadge.innerText = data.readBooks ? data.readBooks.length : 0;
+        if (wishCountBadge) wishCountBadge.innerText = data.wishlistBooks ? data.wishlistBooks.length : 0;
 
-      <div id="wishlist-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {defaultData.wishlistBooks.map((wish: any) => (
-          <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/60 dark:bg-night-surface/60 p-5 flex items-start gap-3">
-            <span class="text-base mt-0.5">📖</span>
-            <div class="space-y-1 flex-1">
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">
-                  {wish.title}
-                </h3>
-                <span class="text-[10px] font-sans px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-300 font-medium">
-                  {wish.priority || 'উচ্চ'}
-                </span>
-              </div>
-              <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
-                {wish.author}
-              </p>
-              {wish.note && (
-                <p class="text-xs font-serif text-paper-text/80 dark:text-night-text/80 pt-1">
-                  নোট: {wish.note}
-                </p>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  </div>
+        // Render cards dynamically if localStorage has data or if author is logged in
+        if (localStorage.getItem('kherokhata_bookshelf_custom') || isAuthorLoggedIn()) {
+          renderReadBooks(data.readBooks);
+          renderWishBooks(data.wishlistBooks);
+        }
+      }
+
+      syncAndRender();
+      window.addEventListener('kherokhata-bookshelf-sync', syncAndRender);
+      window.addEventListener('storage', syncAndRender);
+      window.addEventListener('load', syncAndRender);
+    })();
+  </script>
 </Layout>
-
-<!-- Client-side sync if author updated bookshelf in writer studio -->
-<script is:inline define:vars={{ defaultData }}>
-  (() => {
-    const custom = localStorage.getItem('kherokhata_bookshelf_custom');
-    if (!custom) return;
-
-    try {
-      const data = JSON.parse(custom);
-      // If user customized bookshelf on this device, it seamlessly displays
-      console.log('[Bookshelf] Loaded device custom bookshelf');
-    } catch (e) {}
-  })();
-</script>

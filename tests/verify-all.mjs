@@ -83,17 +83,29 @@ for (const file of requiredFiles) {
   assert(fs.existsSync(fullP), `Required artifact built: ${file}`);
 }
 
-// 3. Admin Studio Direct Access & Zero PIN Screen Test
-console.log('\n🔐 3. AUTHOR STUDIO ACCESS & ZERO-LOCKOUT VERIFICATION:');
+// 3. Admin Studio Secret Security Guard & 6 Authentic Tabs Test
+console.log('\n🔐 3. AUTHOR STUDIO PIN SECURITY & 6 AUTHENTIC TABS VERIFICATION:');
 const adminHtml = fs.readFileSync(path.join(distPath, 'admin/index.html'), 'utf-8');
-assert(!adminHtml.includes('id="pin-screen"'), 'Admin studio has NO PIN screen or password barrier');
-assert(!adminHtml.includes('id="pin-input"'), 'Admin studio has NO pin-input field');
-assert(adminHtml.includes('id="studio-screen"'), 'Admin studio has studio-screen element');
-assert(!adminHtml.includes('id="studio-screen" class="hidden'), 'studio-screen is NOT hidden (Direct 100% access)');
-assert(adminHtml.includes('delete-post-btn'), 'Admin studio contains delete-post-btn buttons');
-assert(adminHtml.includes('publish-post-btn'), 'Admin studio contains publish-post-btn');
-assert(adminHtml.includes('download-markdown-btn'), 'Admin studio contains download-markdown-btn');
-assert(adminHtml.includes('copy-markdown-btn'), 'Admin studio contains copy-markdown-btn');
+assert(adminHtml.includes('id="pin-screen"'), 'Admin studio has secret PIN screen security gate');
+assert(adminHtml.includes('id="pin-input"'), 'Admin studio has pin-input field');
+assert(adminHtml.includes('id="studio-screen"'), 'Admin studio has studio-screen container');
+assert(adminHtml.includes('delete-post-btn'), 'Explorer tab contains delete-post-btn buttons');
+assert(adminHtml.includes('load-in-writer-btn'), 'Explorer tab contains load-in-writer-btn buttons');
+assert(adminHtml.includes('id="toolbar-add-footnote-btn"'), 'Writer tab contains footnote insertion toolbar button');
+assert(adminHtml.includes('id="writer-footnotes-list"'), 'Writer tab contains dynamic footnotes management list');
+assert(adminHtml.includes('id="save-publish-btn"'), 'Writer tab contains save & publish button');
+assert(adminHtml.includes('id="tab-menu"'), 'Category & folder manager tab (tab-menu) is present');
+assert(adminHtml.includes('id="tab-bookshelf"'), 'Bookshelf management tab (tab-bookshelf) is present');
+assert(adminHtml.includes('id="tab-profile"'), 'Author profile editor tab (tab-profile) is present');
+assert(adminHtml.includes('id="tab-settings"'), 'Security PIN settings tab (tab-settings) is present');
+
+// 3b. Bookshelf Two Rooms Verification
+console.log('\n📚 3b. BOOKSHELF TWO ROOMS VERIFICATION:');
+const bookshelfHtml = fs.readFileSync(path.join(distPath, 'bookshelf/index.html'), 'utf-8');
+assert(bookshelfHtml.includes('id="btn-room-read"'), 'Bookshelf contains Room 1 Read Books button');
+assert(bookshelfHtml.includes('id="btn-room-wish"'), 'Bookshelf contains Room 2 Wishlist button');
+assert(bookshelfHtml.includes('id="room-read"'), 'Bookshelf contains Room 1 read container');
+assert(bookshelfHtml.includes('id="room-wish"'), 'Bookshelf contains Room 2 wishlist container');
 
 // 4. Gemini Live Digital Chronometer & Header Verification
 console.log('\n⏰ 4. GEMINI LIVE CHRONOMETER & HEADER WIDGET VERIFICATION:');

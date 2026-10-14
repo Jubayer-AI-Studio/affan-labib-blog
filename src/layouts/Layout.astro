@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import InstallModal from '../components/InstallModal.astro';
 import AvatarModal from '../components/AvatarModal.astro';
+import AdminBarModal from '../components/AdminBarModal.astro';
 
 export interface Props {
   title?: string;
@@ -188,6 +189,9 @@ const schemaData = article
 
     <!-- Global Avatar Change Modal -->
     <AvatarModal />
+
+    <!-- Secret Author Mode Bar & PIN Login Modal -->
+    <AdminBarModal />
 
     <!-- Author Profile Sync Everywhere -->
     <script is:inline>

@@ -1,0 +1,98 @@
+---
+// src/components/AdminBarModal.astro
+---
+
+<aside id="floating-admin-bar" class="hidden fixed top-0 inset-x-0 z-50 bg-gradient-to-r from-stone-900 via-neutral-900 to-stone-900 text-stone-100 text-xs py-2 px-4 shadow-xl border-b border-amber-500/30 font-sans" aria-label="লেখক স্টুডিও নিয়ন্ত্রণ বার"> <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3"> <div class="flex items-center gap-2"> <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span class="font-semibold text-amber-400">লেখক মোড সক্রিয়:</span> <span class="text-stone-300 hidden sm:inline">আফফান লাবীব</span> </div> <div class="flex items-center gap-2 flex-wrap"> <a href="/admin" class="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium transition-colors shadow-2xs flex items-center gap-1"> <span>✍️</span> <span>রাইটার্স স্টুডিও খুলুন</span> </a> <button type="button" onclick="window.openAvatarModal && window.openAvatarModal()" class="px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors border border-stone-700">
+📷 ছবি বদলান
+</button> <button id="quick-admin-logout" type="button" class="px-2.5 py-1 rounded-lg bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/50 transition-colors cursor-pointer">
+লগআউট
+</button> </div> </div> </aside> <!-- 2. Universal Admin PIN Login Modal (Opens when user clicks "লেখক স্টুডিও") --> <div id="admin-login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden" role="dialog" aria-modal="true"> <div class="bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center space-y-5"> <button id="close-admin-login-modal" type="button" class="absolute top-4 right-4 p-1.5 text-paper-muted dark:text-night-muted hover:text-paper-accent rounded-full transition-colors cursor-pointer" aria-label="বন্ধ করুন">
+✕
+</button> <div class="w-14 h-14 mx-auto rounded-2xl bg-paper-accent/10 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-2xl shadow-xs">
+🔐
+</div> <div class="space-y-1.5"> <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+লেখক স্টুডিও প্রবেশদ্বার
+</h3> <p class="text-xs text-paper-muted dark:text-night-muted font-sans leading-relaxed">
+এটি শুধু আফফান লাবীবের জন্য। আপনার গোপন ৪-সংখ্যার পিন কোড লিখুন।
+</p> </div> <div class="space-y-3 font-sans"> <input id="modal-pin-input" type="password" maxlength="6" placeholder="••••" class="w-full text-center text-2xl tracking-[0.4em] font-mono py-3 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"> <p id="modal-pin-error" class="hidden text-xs text-red-600 font-medium">
+❌ পিন কোড ভুল! সঠিক পিন লিখুন।
+</p> <button id="modal-pin-submit" type="button" class="w-full py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer">
+স্টুডিও আনলক করুন →
+</button> <p class="text-[11px] text-paper-muted dark:text-night-muted opacity-75">
+(ডিফল্ট পিন: 1234)
+</p> </div> </div> </div> <script is:inline>
+  (() => {
+    const adminBar = document.getElementById('floating-admin-bar');
+    const loginModal = document.getElementById('admin-login-modal');
+    const closeBtn = document.getElementById('close-admin-login-modal');
+    const pinInput = document.getElementById('modal-pin-input');
+    const submitBtn = document.getElementById('modal-pin-submit');
+    const errorMsg = document.getElementById('modal-pin-error');
+    const logoutBtn = document.getElementById('quick-admin-logout');
+
+    function isAuthorLoggedIn() {
+      return sessionStorage.getItem('kherokhata_admin_auth') === 'true';
+    }
+
+    function syncAdminBar() {
+      if (isAuthorLoggedIn()) {
+        adminBar?.classList.remove('hidden');
+        document.body.classList.add('pt-10');
+      } else {
+        adminBar?.classList.add('hidden');
+        document.body.classList.remove('pt-10');
+      }
+    }
+
+    syncAdminBar();
+
+    // Global trigger function
+    window.openAdminStudio = () => {
+      if (isAuthorLoggedIn()) {
+        window.location.href = '/admin';
+      } else {
+        loginModal?.classList.remove('hidden');
+        pinInput?.focus();
+      }
+    };
+
+    closeBtn?.addEventListener('click', () => {
+      loginModal?.classList.add('hidden');
+      if (errorMsg) errorMsg.classList.add('hidden');
+    });
+
+    loginModal?.addEventListener('click', (e) => {
+      if (e.target === loginModal) {
+        loginModal.classList.add('hidden');
+      }
+    });
+
+    function verifyPin() {
+      const stored = localStorage.getItem('kherokhata_admin_pin') || '1234';
+      const val = pinInput?.value.trim();
+
+      if (val === stored) {
+        sessionStorage.setItem('kherokhata_admin_auth', 'true');
+        loginModal?.classList.add('hidden');
+        syncAdminBar();
+        // Redirect directly to studio
+        window.location.href = '/admin';
+      } else {
+        errorMsg?.classList.remove('hidden');
+        pinInput?.classList.add('border-red-500');
+        setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
+      }
+    }
+
+    submitBtn?.addEventListener('click', verifyPin);
+    pinInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyPin();
+    });
+
+    logoutBtn?.addEventListener('click', () => {
+      sessionStorage.removeItem('kherokhata_admin_auth');
+      syncAdminBar();
+      alert('লেখক অ্যাকাউন্ট থেকে সফলভাবে লগআউট হয়েছেন।');
+    });
+  })();
+</script>
