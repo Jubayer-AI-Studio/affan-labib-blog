@@ -150,7 +150,9 @@ import defaultBookshelf from '../data/bookshelf.json';
       }
 
       function checkAuth() {
-        const isAuth = sessionStorage.getItem('kherokhata_admin_auth') === 'true';
+        const isAuth =
+          sessionStorage.getItem('kherokhata_admin_auth') === 'true' ||
+          localStorage.getItem('kherokhata_admin_auth') === 'true';
         if (isAuth) {
           pinScreen?.classList.add('hidden');
           studioScreen?.classList.remove('hidden');
@@ -164,6 +166,7 @@ import defaultBookshelf from '../data/bookshelf.json';
         const val = pinInput?.value.trim();
         if (val === getStoredPin()) {
           sessionStorage.setItem('kherokhata_admin_auth', 'true');
+          localStorage.setItem('kherokhata_admin_auth', 'true');
           pinError?.classList.add('hidden');
           checkAuth();
         } else {
@@ -182,6 +185,7 @@ import defaultBookshelf from '../data/bookshelf.json';
 
       logoutBtn?.addEventListener('click', () => {
         sessionStorage.removeItem('kherokhata_admin_auth');
+        localStorage.removeItem('kherokhata_admin_auth');
         checkAuth();
       });
 

@@ -31,7 +31,10 @@
     const logoutBtn = document.getElementById('quick-admin-logout');
 
     function isAuthorLoggedIn() {
-      return sessionStorage.getItem('kherokhata_admin_auth') === 'true';
+      return (
+        sessionStorage.getItem('kherokhata_admin_auth') === 'true' ||
+        localStorage.getItem('kherokhata_admin_auth') === 'true'
+      );
     }
 
     function syncAdminBar() {
@@ -73,6 +76,7 @@
 
       if (val === stored) {
         sessionStorage.setItem('kherokhata_admin_auth', 'true');
+        localStorage.setItem('kherokhata_admin_auth', 'true');
         loginModal?.classList.add('hidden');
         syncAdminBar();
         // Redirect directly to studio
@@ -91,6 +95,7 @@
 
     logoutBtn?.addEventListener('click', () => {
       sessionStorage.removeItem('kherokhata_admin_auth');
+      localStorage.removeItem('kherokhata_admin_auth');
       syncAdminBar();
       alert('লেখক অ্যাকাউন্ট থেকে সফলভাবে লগআউট হয়েছেন।');
     });

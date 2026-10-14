@@ -101,11 +101,11 @@
         <span class="hidden lg:inline">ছবি বদলান</span>
       </button>
 
-      <!-- Author Studio Secret Lock Button -->
-      <button type="button" onclick="window.openAdminStudio && window.openAdminStudio()" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/40 border border-paper-border/60 dark:border-night-border/60 transition-colors cursor-pointer" title="লেখক স্টুডিও গোপন প্রবেশদ্বার">
+      <!-- Author Studio Secret Lock Link -->
+      <a href="/admin" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/40 border border-paper-border/60 dark:border-night-border/60 transition-colors cursor-pointer" title="লেখক স্টুডিও (গোপন পিন সংরক্ষিত)">
         <span>🔒</span>
         <span class="hidden lg:inline">লেখক স্টুডিও</span>
-      </button>
+      </a>
 
       <!-- Theme Mode Toggle -->
       <button type="button" aria-label="Toggle Reading Theme Mode" class="theme-toggle-btn group relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95" title="রিডিং মোড পরিবর্তন করুন (দিন · সেপিয়া বই · রাত)">
@@ -129,9 +129,9 @@
       <button type="button" onclick="window.openAvatarModal && window.openAvatarModal()" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" title="ছবি বদলান">
         📷
       </button>
-      <button type="button" onclick="window.openAdminStudio && window.openAdminStudio()" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent cursor-pointer" title="লেখক স্টুডিও গোপন প্রবেশদ্বার" aria-label="Author Studio">
+      <a href="/admin" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent cursor-pointer" title="লেখক স্টুডিও (গোপন পিন সংরক্ষিত)" aria-label="Author Studio">
         🔒
-      </button>
+      </a>
       <a href="/search" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" aria-label="Search">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -176,6 +176,10 @@
     </a>
     <a href="/about" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
       <span data-i18n="nav_about">আমার সম্পর্কে</span>
+    </a>
+    <a href="/admin" class="block px-3 py-2 rounded-md text-base font-serif text-paper-accent dark:text-night-accent hover:bg-paper-border/30 dark:hover:bg-night-border/30 flex items-center gap-2">
+      <span>🔒</span>
+      <span>লেখক স্টুডিও (গোপন প্রবেশদ্বার)</span>
     </a>
     <button type="button" onclick="window.openInstallModal && window.openInstallModal(); document.getElementById('mobile-menu')?.classList.add('hidden');" class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-md text-base font-serif text-paper-accent dark:text-night-accent hover:bg-paper-border/30 dark:hover:bg-night-border/30 border border-paper-accent/30 dark:border-night-accent/30 mt-2 bg-paper-accent/5 dark:bg-night-accent/5 cursor-pointer">
       <span class="flex items-center gap-2">

@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v7 (Unified Calm Reading Engine)
-const CACHE_NAME = 'kherokhata-cache-v7';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v10 (Network-First HTML Engine)
+const CACHE_NAME = 'kherokhata-cache-v10';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -36,6 +36,7 @@ const PRECACHE_URLS = [
 
 // Install: Pre-cache core shell safely without aborting on single failure
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
       for (const url of PRECACHE_URLS) {
@@ -45,7 +46,7 @@ self.addEventListener('install', (event) => {
           console.warn('[PWA SW] Precache item skipped:', url, err);
         }
       }
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
@@ -56,6 +57,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[PWA SW] Purging old cache:', key);
             return caches.delete(key);
           }
         })
@@ -72,50 +74,24 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (request.method !== 'GET') return;
 
-  // Never cache admin studio
-  if (url.pathname.startsWith('/admin')) return;
+  // Never cache admin studio or API routes
+  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')) return;
 
-  // 1. Navigation requests (HTML pages): Exact Cache-First with Stale-While-Revalidate
+  // 1. Navigation requests (HTML pages): ALWAYS NETWORK-FIRST so user sees latest updates!
   if (request.mode === 'navigate') {
     event.respondWith(
-      (async () => {
-        let cachedResponse = await caches.match(request, { ignoreSearch: true });
-
-        const isRootNav = url.pathname === '/' || url.pathname === '';
-        if (!cachedResponse && isRootNav) {
-          cachedResponse = await caches.match('/', { ignoreSearch: true });
-        }
-
-        const networkFetch = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
-            return networkResponse;
-          })
-          .catch(async () => {
-            if (cachedResponse) return cachedResponse;
-            const offline = await caches.match('/offline', { ignoreSearch: true });
-            return (
-              offline ||
-              new Response(
-                '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
-                {
-                  status: 200,
-                  headers: { 'Content-Type': 'text/html; charset=utf-8' }
-                }
-              )
-            );
-          });
-
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        try {
-          return await networkFetch;
-        } catch (e) {
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          // If offline, fall back to cache
+          const cachedResponse = await caches.match(request, { ignoreSearch: true }) || await caches.match('/', { ignoreSearch: true });
+          if (cachedResponse) return cachedResponse;
           const offline = await caches.match('/offline', { ignoreSearch: true });
           return (
             offline ||
@@ -127,8 +103,7 @@ self.addEventListener('fetch', (event) => {
               }
             )
           );
-        }
-      })()
+        })
     );
     return;
   }

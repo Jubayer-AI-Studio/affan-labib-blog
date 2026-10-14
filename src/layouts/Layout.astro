@@ -273,18 +273,28 @@ const schemaData = article
       })();
     </script>
 
-    <!-- Service Worker Registration -->
+    <!-- Auto-Updating Service Worker Registration (Busts Stale Caches) -->
     <script is:inline>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(
-            (reg) => {
-              console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
-            },
-            (err) => {
-              console.warn('[PWA] ServiceWorker failed:', err);
-            }
-          );
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
+            // Immediately check for SW updates
+            reg.update();
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New version installed!
+                    console.log('[PWA] New version ready.');
+                  }
+                };
+              }
+            };
+          }).catch((err) => {
+            console.warn('[PWA] ServiceWorker failed:', err);
+          });
         });
       }
     </script>
