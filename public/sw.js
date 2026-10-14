@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v12 (Instant-Launch PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v12';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v13 (Instant-Launch PWA Engine)
+const CACHE_NAME = 'kherokhata-cache-v13';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -93,13 +93,13 @@ self.addEventListener('fetch', (event) => {
           const cached = (await caches.match(request, { ignoreSearch: true })) || (await caches.match('/', { ignoreSearch: true }));
 
           if (cached) {
-            // Race: If network doesn't respond within 550ms, serve cached shell instantly!
-            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 550));
+            // Race: If network doesn't respond within 120ms, serve cached shell instantly!
+            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 120));
             const winner = await Promise.race([networkPromise, timeoutPromise]);
             if (winner !== 'TIMEOUT') {
               return winner;
             }
-            // Timeout reached: serve fast cached shell so user immediately sees the app with 0 white screen delay!
+            // 120ms reached: serve fast cached shell so user immediately sees the app with 0 white screen delay!
             // Network fetch continues in background to refresh cache.
             return cached;
           }

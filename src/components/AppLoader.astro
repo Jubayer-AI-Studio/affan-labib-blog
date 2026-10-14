@@ -132,37 +132,49 @@
 <script is:inline>
   (() => {
     const loader = document.getElementById('app-loader-screen');
+    if (!loader) return;
+
+    // 1. Session Intelligence: Zero Delay on Internal Page Navigation
+    // If the reader is already browsing pages within this session, remove loader in 0ms!
+    try {
+      const isSessionActive = sessionStorage.getItem('kherokhata_session_active');
+      const navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      const isReload = navEntry && navEntry.type === 'reload';
+
+      if (isSessionActive && !isReload) {
+        loader.remove();
+        return;
+      }
+      sessionStorage.setItem('kherokhata_session_active', '1');
+    } catch (e) {}
+
     const bar = document.getElementById('loader-progress-bar');
     const robot = document.getElementById('loader-robot');
     const badge = document.getElementById('loader-percent-badge');
     const status = document.getElementById('loader-status-text');
     const emote = document.getElementById('loader-robot-emote');
 
-    if (!loader) return;
-
     const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     function toBn(num) {
       return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
     }
 
-    let currentPercent = 4;
-    let targetPercent = 100;
+    let currentPercent = 12;
     let animationInterval = null;
     let isFinished = false;
 
-    // Funny phrases that change as the robot pushes forward
+    // Humorous stages that change as the robot sprints forward
     const stages = [
-      { max: 25, text: 'রোবট খেরোখাতা নিয়ে আসছে... 🤖💨', emote: 'ধাক্কা দিচ্ছি! 💨' },
-      { max: 55, text: 'পাতাগুলো ঝেড়ে-মুছে সাজানো হচ্ছে... 📚⚡', emote: 'জোর লাগাও! ⚡' },
-      { max: 85, text: 'কালির দোয়াত ও হরফ চকচক করছে... ✨✍️', emote: 'প্রায় শেষ! ✨' },
-      { max: 99, text: 'আঙিনার দরজা খুলে দেওয়া হচ্ছে... 🚪🌿', emote: 'লাস্ট পুশ! 🏃' },
-      { max: 100, text: '১০০% তৈরি! স্বাগতম... 🚀🎉', emote: 'হুররে! 🎉' }
+      { max: 30, text: 'রোবট খেরোখাতা নিয়ে আসছে... 🤖💨', emote: 'ধাক্কা দিচ্ছি! 💨' },
+      { max: 65, text: 'পাতাগুলো সাজানো হচ্ছে... 📚⚡', emote: 'জোর লাগাও! ⚡' },
+      { max: 90, text: 'কালির দোয়াত প্রস্তুত... ✨✍️', emote: 'প্রায় শেষ! ✨' },
+      { max: 100, text: '১০০% তৈরি! স্বাগতম... 🚀🎉', emote: 'স্বাগতম! 🎉' }
     ];
 
     function updateUi(val) {
-      const clamped = Math.min(100, Math.max(4, Math.round(val)));
+      const clamped = Math.min(100, Math.max(12, Math.round(val)));
       if (bar) bar.style.width = `${clamped}%`;
-      if (robot) robot.style.left = `${Math.min(94, Math.max(4, clamped))}%`;
+      if (robot) robot.style.left = `${Math.min(94, Math.max(12, clamped))}%`;
       if (badge) badge.innerText = `${toBn(clamped)}%`;
 
       const stage = stages.find((s) => clamped <= s.max) || stages[stages.length - 1];
@@ -199,41 +211,37 @@
         loader.classList.add('opacity-0', 'pointer-events-none', 'scale-102');
         setTimeout(() => {
           loader.remove();
-        }, 400);
-      }, 250);
+        }, 180);
+      }, 80);
     }
 
-    // Dynamic Fast Smooth Progress Engine
-    let step = 0;
+    // High-Speed 60fps Turbo Sprint Engine
     animationInterval = setInterval(() => {
-      step++;
-      // Natural accelerating curve towards 92%
-      if (currentPercent < 90) {
-        const jump = Math.max(1.5, (90 - currentPercent) * 0.12 + Math.random() * 3);
+      if (currentPercent < 92) {
+        const jump = Math.max(4, (94 - currentPercent) * 0.2 + Math.random() * 5);
         currentPercent += jump;
       }
       updateUi(currentPercent);
-    }, 40);
+    }, 20);
 
-    // When the real DOM and resources are loaded:
     function triggerFastCompletion() {
-      // Rapidly sprint from current to 100%
       clearInterval(animationInterval);
       const finishInterval = setInterval(() => {
-        currentPercent += 8;
+        currentPercent += 15;
         updateUi(currentPercent);
         if (currentPercent >= 100) {
           clearInterval(finishInterval);
         }
-      }, 25);
+      }, 16);
     }
 
-    if (document.readyState === 'complete') {
-      setTimeout(triggerFastCompletion, 150);
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(triggerFastCompletion, 120);
     } else {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(triggerFastCompletion, 80));
       window.addEventListener('load', triggerFastCompletion);
-      // Hard timeout failsafe so loader NEVER hangs on slow networks
-      setTimeout(triggerFastCompletion, 1600);
+      // Hard timeout failsafe: max 380ms total wait time
+      setTimeout(triggerFastCompletion, 380);
     }
   })();
 </script>
