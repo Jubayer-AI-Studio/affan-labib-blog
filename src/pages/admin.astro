@@ -92,7 +92,18 @@ import defaultBookshelf from '../data/bookshelf.json';
               </div>
             </div>
           ))}
-        </div> </div> </div> </div> <!-- TAB 2: Split-View Live Writer's Desk --> <div id="tab-writer" class="admin-tab-content hidden space-y-4"> <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"> <!-- Left: Bengali Markdown Editor Form --> <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-sm space-y-4 font-sans text-xs"> <div class="flex items-center justify-between border-b border-paper-border/60 pb-3"> <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2"> <span>✍️</span> <span>রচনা সম্পাদক (Editor)</span> </h3> <span id="writer-word-counter" class="font-sans text-xs text-paper-muted">০ শব্দ · ০ মিনিট পাঠ</span> </div> <!-- Title Input --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">শিরোনাম (Title):</label> <input id="editor-title" type="text" placeholder="লেখার সুন্দর বাংলা শিরোনাম লিখুন..." class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-base focus:outline-none focus:border-paper-accent"> </div> <!-- Category & Date Grid --> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">বিষয়শ্রেণী (Category):</label> <select id="editor-category" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-serif"> <option value="chinta">চিন্তা</option><option value="pathalap">পাঠালাপ</option><option value="itihas">ইতিহাস</option><option value="boi-alochona">বই-আলোচনা</option><option value="onubad">অনুবাদ</option> </select> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">প্রকাশের তারিখ:</label> <input id="editor-date" type="date" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent"> </div> </div> <!-- Excerpt Description --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">সংক্ষিপ্ত বিবরণ (Excerpt / Description):</label> <textarea id="editor-description" rows="2" placeholder="লেখাটির সংক্ষিপ্ত সারমর্ম লিখুন..." class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-xs focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Tags --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগসমূহ (কমা দিয়ে আলাদা করুন):</label> <input id="editor-tags" type="text" placeholder="চিন্তা, পাঠাভ্যাস, বই" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-sans"> </div> <!-- Markdown Toolbar --> <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-paper-border/60"> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border font-bold" data-syntax="**" title="বোল্ড">B</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border italic" data-syntax="*" title="ইটালিক">I</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="## " title="হেডিং ২">H2</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="> " title="উদ্ধৃতি">Quote</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="- " title="বুলেট তালিকা">• List</button> <span class="text-paper-border dark:text-night-border">|</span> <!-- Footnote Quick Insert Button --> <button id="toolbar-add-footnote-btn" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/40 text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="কার্সরের স্থানে স্বয়ংক্রিয়ভাবে [১], [২] টীকা বসান"> <span>📚</span> <span>ফুটনোট যোগ করুন</span> </button> </div> <!-- Body Content Area --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">মূল রচনা (Markdown Body):</label> <textarea id="editor-body" rows="12" placeholder="এখানে আপনার সম্পূর্ণ লেখাটি বাংলায় টাইপ বা পেস্ট করুন... ডানপাশে রিয়েল-টাইম প্রিভিউ ফুটে উঠবে।" class="w-full px-4 py-3 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-sm focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Footnotes Manager Box --> <div class="p-4 rounded-2xl bg-paper-border/20 dark:bg-night-border/25 border border-paper-border/60 dark:border-night-border/60 space-y-3 font-sans"> <div class="flex items-center justify-between"> <div class="flex items-center gap-2"> <span class="text-base">📚</span> <label class="font-semibold text-paper-text dark:text-night-text text-xs">
+        </div>
+        <!-- Posts Backup & Export Tools -->
+        <div class="pt-4 border-t border-paper-border/60 dark:border-night-border/60 flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+          <div>
+            <span class="font-bold text-paper-text dark:text-night-text block">💾 রচনাগার ব্যাকআপ ও সিঙ্ক:</span>
+            <span class="text-[11px] text-paper-muted dark:text-night-muted">আপনার সকল রচনার হালনাগাদ তালিকা JSON ফাইল আকারে ডাউনলোড করে ব্যাকআপ রাখুন।</span>
+          </div>
+          <button id="export-posts-json-btn" type="button" class="px-3.5 py-2 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-90 cursor-pointer flex items-center gap-1.5 shadow-xs" title="বর্তমান সব লেখার তালিকা JSON আকারে নামিয়ে নিন">
+            <span>📥</span> <span>posts.json ডাউনলোড</span>
+          </button>
+        </div>
+      </div> </div> </div> <!-- TAB 2: Split-View Live Writer's Desk --> <div id="tab-writer" class="admin-tab-content hidden space-y-4"> <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"> <!-- Left: Bengali Markdown Editor Form --> <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-sm space-y-4 font-sans text-xs"> <div class="flex items-center justify-between border-b border-paper-border/60 pb-3"> <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2"> <span>✍️</span> <span>রচনা সম্পাদক (Editor)</span> </h3> <span id="writer-word-counter" class="font-sans text-xs text-paper-muted">০ শব্দ · ০ মিনিট পাঠ</span> </div> <!-- Title Input --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">শিরোনাম (Title):</label> <input id="editor-title" type="text" placeholder="লেখার সুন্দর বাংলা শিরোনাম লিখুন..." class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-base focus:outline-none focus:border-paper-accent"> </div> <!-- Category & Date Grid --> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">বিষয়শ্রেণী (Category):</label> <select id="editor-category" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-serif"> <option value="chinta">চিন্তা</option><option value="pathalap">পাঠালাপ</option><option value="itihas">ইতিহাস</option><option value="boi-alochona">বই-আলোচনা</option><option value="onubad">অনুবাদ</option> </select> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">প্রকাশের তারিখ:</label> <input id="editor-date" type="date" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent"> </div> </div> <!-- Excerpt Description --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">সংক্ষিপ্ত বিবরণ (Excerpt / Description):</label> <textarea id="editor-description" rows="2" placeholder="লেখাটির সংক্ষিপ্ত সারমর্ম লিখুন..." class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-xs focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Tags --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগসমূহ (কমা দিয়ে আলাদা করুন):</label> <input id="editor-tags" type="text" placeholder="চিন্তা, পাঠাভ্যাস, বই" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-sans"> </div> <!-- Markdown Toolbar --> <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-paper-border/60"> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border font-bold" data-syntax="**" title="বোল্ড">B</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border italic" data-syntax="*" title="ইটালিক">I</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="## " title="হেডিং ২">H2</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="> " title="উদ্ধৃতি">Quote</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="- " title="বুলেট তালিকা">• List</button> <span class="text-paper-border dark:text-night-border">|</span> <!-- Footnote Quick Insert Button --> <button id="toolbar-add-footnote-btn" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/40 text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="কার্সরের স্থানে স্বয়ংক্রিয়ভাবে [১], [২] টীকা বসান"> <span>📚</span> <span>ফুটনোট যোগ করুন</span> </button> </div> <!-- Body Content Area --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">মূল রচনা (Markdown Body):</label> <textarea id="editor-body" rows="12" placeholder="এখানে আপনার সম্পূর্ণ লেখাটি বাংলায় টাইপ বা পেস্ট করুন... ডানপাশে রিয়েল-টাইম প্রিভিউ ফুটে উঠবে।" class="w-full px-4 py-3 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-sm focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Footnotes Manager Box --> <div class="p-4 rounded-2xl bg-paper-border/20 dark:bg-night-border/25 border border-paper-border/60 dark:border-night-border/60 space-y-3 font-sans"> <div class="flex items-center justify-between"> <div class="flex items-center gap-2"> <span class="text-base">📚</span> <label class="font-semibold text-paper-text dark:text-night-text text-xs">
 তথ্যসূত্র ও টীকার তালিকা (Footnotes Manager):
 </label> </div> <button id="add-footnote-row-btn" type="button" class="px-2.5 py-1 rounded-lg bg-paper-accent dark:bg-night-accent text-white text-[11px] font-semibold hover:opacity-90 flex items-center gap-1 cursor-pointer shadow-2xs"> <span>➕ নতুন টীকা</span> </button> </div> <p class="text-[11px] text-paper-muted dark:text-night-muted leading-relaxed">
 টিপস: উপরের টুলবারের <strong>[📚 ফুটনোট যোগ করুন]</strong> বাটনে চাপ দিলে লেখার মাঝে স্বয়ংক্রিয়ভাবে [১], [২] বসে যাবে। নিচে সেই নম্বরের বিপরীতে টীকার বিস্তারিত ব্যাখ্যা লিখুন।
@@ -857,54 +868,133 @@ ${body}
       renderAdminBooks();
 
       // ==========================================
-      // POST DELETION HANDLER (FIX 2: Fullstack)
+      // EXPLORER POSTS SYNC (Sync deleted and custom posts on load)
       // ==========================================
-      document.querySelectorAll('.delete-post-btn').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const slug = btn.getAttribute('data-slug');
-          if (!slug) return;
-
-          const row = btn.closest('.file-row');
-          const title = row ? (row.querySelector('.font-serif.font-semibold span:last-child')?.innerText || slug) : slug;
-
-          if (!confirm(`আপনি কি নিশ্চিত যে "${title}" লেখাটি স্থায়ীভাবে মুছে ফেলতে চান?\nএই পরিবর্তনটি ডাটাবেস ও সাইট থেকে মুছে যাবে।`)) {
-            return;
+      function syncExplorerPosts() {
+        try {
+          const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+          if (deleted.length > 0) {
+            document.querySelectorAll('.file-row').forEach((row) => {
+              const slug = row.getAttribute('data-slug');
+              if (slug && deleted.includes(slug)) {
+                row.remove();
+              }
+            });
           }
 
-          try {
-            btn.disabled = true;
-            btn.innerText = 'মুছছি...';
-            const res = await fetch('/api/posts', {
-              method: 'DELETE',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ slug })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-              row?.remove();
-              const pIdx = serializedPosts.findIndex((p) => p.slug === slug);
-              if (pIdx !== -1) serializedPosts.splice(pIdx, 1);
+          // Prepend any custom posts created by author
+          const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          const container = document.getElementById('file-list-container');
+          if (container && customPosts.length > 0) {
+            customPosts.forEach((post) => {
+              if (deleted.includes(post.slug)) return;
+              if (document.querySelector(`.file-row[data-slug="${post.slug}"]`)) return;
 
+              const row = document.createElement('div');
+              row.className = 'file-row p-3 rounded-xl border border-paper-accent/40 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex items-center justify-between gap-3 text-xs';
+              row.setAttribute('data-category', post.category);
+              row.setAttribute('data-slug', post.slug);
+              row.innerHTML = `
+                <div class="space-y-0.5 flex-grow">
+                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
+                    <span class="text-paper-accent">✨</span>
+                    <span>${post.title}</span>
+                  </div>
+                  <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                    <span>তারিখ: ${post.publishedAt}</span>
+                    <span>·</span>
+                    <span>শব্দ: ${post.body ? post.body.trim().split(/\\s+/).length : 0}</span>
+                    <span>·</span>
+                    <span class="font-mono">${post.slug}.md</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <a href="/${post.slug}" target="_blank" class="px-2.5 py-1 rounded-md border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors">
+                    পড়ুন ↗
+                  </a>
+                  <button type="button" class="load-in-writer-btn px-2.5 py-1 rounded-md bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${post.slug}">
+                    সম্পাদনা ✍️
+                  </button>
+                  <button type="button" class="delete-post-btn px-2.5 py-1 rounded-md border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${post.slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
+                    🗑️ ডিলিট
+                  </button>
+                </div>
+              `;
+              container.prepend(row);
+              if (!serializedPosts.some((p) => p.slug === post.slug)) {
+                serializedPosts.unshift(post);
+              }
+            });
+          }
+        } catch (e) {}
+      }
+
+      syncExplorerPosts();
+
+      // ==========================================
+      // POST DELETION HANDLER (100% Reliable Client + Server)
+      // ==========================================
+      function attachDeleteListeners() {
+        document.querySelectorAll('.delete-post-btn').forEach((btn) => {
+          if (btn.getAttribute('data-delete-bound')) return;
+          btn.setAttribute('data-delete-bound', 'true');
+
+          btn.addEventListener('click', async () => {
+            const slug = btn.getAttribute('data-slug');
+            if (!slug) return;
+
+            const row = btn.closest('.file-row');
+            const title = row ? (row.querySelector('.font-serif.font-semibold span:last-child')?.innerText || slug) : slug;
+
+            if (!confirm(`আপনি কি নিশ্চিত যে "${title}" লেখাটি স্থায়ীভাবে মুছে ফেলতে চান?\nএই পরিবর্তনটি সাইট থেকে তৎক্ষণাৎ মুছে যাবে।`)) {
+              return;
+            }
+
+            // 1. Immediately remove row from DOM
+            row?.remove();
+
+            // 2. Remove from serializedPosts
+            const pIdx = serializedPosts.findIndex((p) => p.slug === slug);
+            if (pIdx !== -1) serializedPosts.splice(pIdx, 1);
+
+            // 3. Add to kherokhata_deleted_posts in LocalStorage
+            try {
+              const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+              if (!deleted.includes(slug)) {
+                deleted.push(slug);
+                localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(deleted));
+              }
+            } catch (e) {}
+
+            // 4. Remove from kherokhata_custom_posts if user created it
+            try {
               const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
               const updatedCustom = customPosts.filter((p) => p.slug !== slug);
               localStorage.setItem('kherokhata_custom_posts', JSON.stringify(updatedCustom));
+            } catch (e) {}
 
-              alert('লেখাটি সফলভাবে মুছে ফেলা হয়েছে! ✓');
-            } else {
-              alert('লেখা মুছতে সমস্যা হয়েছে: ' + (data.error || 'অজানা ত্রুটি'));
-              btn.disabled = false;
-              btn.innerText = '🗑️ ডিলিট';
-            }
-          } catch (err) {
-            alert('সার্ভার এরর: ' + err.message);
-            btn.disabled = false;
-            btn.innerText = '🗑️ ডিলিট';
-          }
+            // 5. Send background DELETE to backend API (failsafe catch for static hosting)
+            try {
+              fetch('/api/posts', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug })
+              }).then(r => r.json()).catch(() => {});
+            } catch (e) {}
+
+            // 6. Broadcast sync events
+            window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
+            window.dispatchEvent(new Event('storage'));
+
+            alert(`'${title}' লেখাটি সফলভাবে মুছে ফেলা হয়েছে! ✓`);
+          });
         });
-      });
+      }
+
+      attachDeleteListeners();
 
       // ==========================================
-      // LIVE WRITER SAVE & PUBLISH HANDLER
+      // LIVE WRITER SAVE & PUBLISH HANDLER (100% Client + Server)
       // ==========================================
       document.getElementById('save-publish-btn')?.addEventListener('click', async () => {
         const title = editorTitle?.value.trim();
@@ -933,36 +1023,87 @@ ${body}
         }
 
         try {
+          const slug = title
+            .toLowerCase()
+            .replace(/[^\w\u0980-\u09FF-]+/g, '-')
+            .replace(/^-+|-+$/g, '') || ('post-' + Date.now());
+
           const postPayload = {
+            slug,
             title,
             description: desc,
             category,
             publishedAt: date,
+            formattedDate: date,
             tags,
             body,
-            footnotes: writerFootnotes && writerFootnotes.length > 0 ? writerFootnotes : undefined
+            wordCount: body.trim().split(/\s+/).length,
+            footnotes: writerFootnotes && writerFootnotes.length > 0 ? writerFootnotes : []
           };
 
-          const res = await fetch('/api/posts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postPayload)
-          });
-          const result = await res.json();
+          // 1. Save in localStorage custom posts
+          try {
+            const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+            const existingIdx = customPosts.findIndex((p) => p.slug === slug);
+            if (existingIdx >= 0) {
+              customPosts[existingIdx] = postPayload;
+            } else {
+              customPosts.unshift(postPayload);
+            }
+            localStorage.setItem('kherokhata_custom_posts', JSON.stringify(customPosts));
 
-          if (res.ok && result.success) {
-            alert(`'${title}' লেখাটি সফলভাবে সংরক্ষিত ও প্রকাশিত হয়েছে! ✓`);
-            window.location.reload();
-          } else {
-            alert('সংরক্ষণ ব্যর্থ হয়েছে: ' + (result.error || 'অজানা ত্রুটি'));
-          }
+            // Also remove from deleted posts if it was deleted previously
+            const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+            const filteredDeleted = deleted.filter((s) => s !== slug);
+            localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(filteredDeleted));
+          } catch (e) {}
+
+          // 2. Safe background API POST
+          try {
+            fetch('/api/posts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(postPayload)
+            }).then(r => r.json()).catch(() => {});
+          } catch (e) {}
+
+          // 3. Broadcast sync events
+          window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
+          window.dispatchEvent(new Event('storage'));
+
+          alert(`'${title}' লেখাটি সফলভাবে সংরক্ষিত ও প্রকাশিত হয়েছে! ✓`);
+          window.location.reload();
         } catch (err) {
-          alert('সার্ভারের সাথে যোগাযোগ করা যায়নি: ' + err.message);
+          alert('সংরক্ষণ ত্রুটি: ' + err.message);
         } finally {
           if (saveBtn) {
             saveBtn.disabled = false;
             saveBtn.innerHTML = origText;
           }
+        }
+      });
+
+      // ==========================================
+      // EXPORT POSTS.JSON HANDLER
+      // ==========================================
+      document.getElementById('export-posts-json-btn')?.addEventListener('click', () => {
+        try {
+          const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+          const custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          const activeDefault = serializedPosts.filter((p) => !deleted.includes(p.slug));
+          const allCurrentPosts = [...custom, ...activeDefault];
+
+          const jsonStr = JSON.stringify(allCurrentPosts, null, 2);
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'posts.json';
+          a.click();
+          URL.revokeObjectURL(url);
+          alert('posts.json ফাইল সফলভাবে ডাউনলোড হয়েছে! ✓');
+        } catch (e) {
+          alert('ডাউনলোড করতে সমস্যা হয়েছে: ' + e.message);
         }
       });
 

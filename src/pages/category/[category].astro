@@ -79,16 +79,22 @@ function toBn(n: number) {
 
 <script is:inline>
   (() => {
-    try {
-      const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-      if (deleted.length > 0) {
-        document.querySelectorAll('.post-item').forEach((item) => {
-          const slug = item.getAttribute('data-slug');
-          if (slug && deleted.includes(slug)) {
-            item.remove();
-          }
-        });
-      }
-    } catch (e) {}
+    function purgeDeleted() {
+      try {
+        const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+        if (deleted.length > 0) {
+          document.querySelectorAll('.post-item').forEach((item) => {
+            const slug = item.getAttribute('data-slug');
+            if (slug && deleted.includes(slug)) {
+              item.remove();
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    purgeDeleted();
+    window.addEventListener('kherokhata-posts-sync', purgeDeleted);
+    window.addEventListener('storage', purgeDeleted);
   })();
 </script>

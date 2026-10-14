@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v10 (Network-First HTML Engine)
-const CACHE_NAME = 'kherokhata-cache-v10';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v11 (Network-First HTML Engine)
+const CACHE_NAME = 'kherokhata-cache-v11';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -20,7 +20,7 @@ const PRECACHE_URLS = [
   '/category/itihas',
   '/category/boi-alochona',
   '/category/onubad',
-  // All 11 Articles
+  // All 10 Authentic Articles
   '/bedonadayok-dushongbad-ayesha',
   '/boi-er-bibhay-alokito-monishi',
   '/dinlipi-shukrobar-amimul-ihsan',
@@ -30,8 +30,7 @@ const PRECACHE_URLS = [
   '/notun-mehman',
   '/saobaner-dosh-bochhor',
   '/tahafutul-malahida',
-  '/takhassuser-jibon-shuru',
-  '/ibn-al-jawzi-sayd-al-khatir-onubad'
+  '/takhassuser-jibon-shuru'
 ];
 
 // Install: Pre-cache core shell safely without aborting on single failure

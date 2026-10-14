@@ -399,6 +399,10 @@ function toBn(n: number) {
       }
     }
 
+    // Run filter immediately to hide any deleted posts on page boot
+    filterPosts('all');
+    window.addEventListener('kherokhata-posts-sync', () => filterPosts('all'));
+
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
         const filter = tab.getAttribute('data-filter');
@@ -423,12 +427,16 @@ function toBn(n: number) {
 
     // 2. Hide any deleted spotlight post
     const spotlightSection = document.getElementById('spotlight-section');
-    if (spotlightSection) {
-      const slug = spotlightSection.getAttribute('data-slug');
-      if (slug && getDeletedSlugs().includes(slug)) {
-        spotlightSection.classList.add('hidden');
+    function syncSpotlight() {
+      if (spotlightSection) {
+        const slug = spotlightSection.getAttribute('data-slug');
+        if (slug && getDeletedSlugs().includes(slug)) {
+          spotlightSection.classList.add('hidden');
+        }
       }
     }
+    syncSpotlight();
+    window.addEventListener('kherokhata-posts-sync', syncSpotlight);
 
     // 3. Bookshelf Live Counters Sync
     function syncHomeBookshelf() {
