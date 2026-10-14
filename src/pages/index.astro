@@ -29,65 +29,7 @@ function toBn(n: number) {
   title="আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা"
   description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
 >
-  <!-- 1. Featured Spotlight Post -->
-  <section id="spotlight-section" data-slug={spotlightPost.slug} class="mb-14 relative group">
-    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-    <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
-      <div class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-amber-500/60 dark:via-amber-400/60 to-transparent"></div>
-
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 dark:border-amber-400/30 shadow-2xs">
-          <span class="animate-spin-slow">✨</span>
-          <span>প্রধান নির্বাচিত রচনা</span>
-        </div>
-        <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-          <a href="/category/boi-alochona" class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm">
-            বই-আলোচনা
-          </a>
-          <span>·</span>
-          <time>{spotlightPost.formattedDate}</time>
-          <span>·</span>
-          <span>২ মিনিটে পাঠ্য</span>
-        </div>
-      </div>
-
-      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-tight mb-4">
-        <a href={`/${spotlightPost.slug}`} class="block hover:underline">
-          {spotlightPost.title}
-        </a>
-      </h2>
-
-      <p class="text-base sm:text-lg text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3 mb-7">
-        {spotlightPost.description}
-      </p>
-
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-paper-border/70 dark:border-night-border/70">
-        <div class="flex items-center gap-3">
-          <img src={author.avatar} alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
-          <div>
-            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block author-name-text">
-              {author.name}
-            </span>
-            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted author-edu-text">
-              {author.education}
-            </span>
-          </div>
-        </div>
-
-        <a
-          href={`/${spotlightPost.slug}`}
-          class="inline-flex items-center gap-2 px-6 py-3 min-h-[48px] rounded-2xl bg-gradient-to-r from-paper-accent to-orange-700 dark:from-night-accent dark:to-orange-600 text-white font-sans text-sm font-semibold hover:shadow-lg hover:shadow-paper-accent/25 hover:scale-102 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm"
-        >
-          <span>সম্পূর্ণ রচনাটি পড়ুন</span>
-          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Author Bio & Introduction Card (Directly on Front Page) -->
+  <!-- 1. Author Bio & Introduction Card (Directly on Front Page - Author First) -->
   <section id="author-intro-card" class="mb-14 relative group">
     <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-paper-accent/15 via-amber-500/15 to-purple-500/15 blur-xl opacity-50 group-hover:opacity-85 transition-opacity duration-500 pointer-events-none"></div>
     <div class="relative overflow-hidden rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-6 sm:p-9 shadow-sm hover:shadow-md transition-all">
@@ -168,6 +110,64 @@ function toBn(n: number) {
             </a>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Featured Spotlight Post -->
+  <section id="spotlight-section" data-slug={spotlightPost.slug} class="mb-14 relative group">
+    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+    <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
+      <div class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-amber-500/60 dark:via-amber-400/60 to-transparent"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 dark:border-amber-400/30 shadow-2xs">
+          <span class="animate-spin-slow">✨</span>
+          <span>প্রধান নির্বাচিত রচনা</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
+          <a href="/#categories" class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm">
+            বই-আলোচনা
+          </a>
+          <span>·</span>
+          <time>{spotlightPost.formattedDate}</time>
+          <span>·</span>
+          <span>২ মিনিটে পাঠ্য</span>
+        </div>
+      </div>
+
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-tight mb-4">
+        <a href={`/${spotlightPost.slug}`} class="block hover:underline">
+          {spotlightPost.title}
+        </a>
+      </h2>
+
+      <p class="text-base sm:text-lg text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3 mb-7">
+        {spotlightPost.description}
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-paper-border/70 dark:border-night-border/70">
+        <div class="flex items-center gap-3">
+          <img src={author.avatar} alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
+          <div>
+            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block author-name-text">
+              {author.name}
+            </span>
+            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted author-edu-text">
+              {author.education}
+            </span>
+          </div>
+        </div>
+
+        <a
+          href={`/${spotlightPost.slug}`}
+          class="inline-flex items-center gap-2 px-6 py-3 min-h-[48px] rounded-2xl bg-gradient-to-r from-paper-accent to-orange-700 dark:from-night-accent dark:to-orange-600 text-white font-sans text-sm font-semibold hover:shadow-lg hover:shadow-paper-accent/25 hover:scale-102 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm"
+        >
+          <span>সম্পূর্ণ রচনাটি পড়ুন</span>
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
       </div>
     </div>
   </section>
@@ -301,7 +301,7 @@ function toBn(n: number) {
   </section>
 
   <!-- 4. Category Filter & All Posts Grid -->
-  <section class="mt-14 mb-16">
+  <section id="categories" class="mt-14 mb-16 scroll-mt-24">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
       <div>
         <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-1">
@@ -318,7 +318,7 @@ function toBn(n: number) {
       </div>
     </div>
 
-    <!-- Filter Tabs -->
+    <!-- Filter Tabs (Pills) -->
     <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar text-xs font-sans">
       <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs" data-filter="all">
         <span>সব রচনা</span> <span class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
@@ -335,9 +335,11 @@ function toBn(n: number) {
       <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="boi-alochona">
         <span>বই-আলোচনা</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countBoi - (spotlightPost.category === 'boi-alochona' ? 1 : 0))})</span>
       </button>
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="onubad">
-        <span>অনুবাদ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countOnubad)})</span>
-      </button>
+      {countOnubad > 0 && (
+        <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="onubad">
+          <span>অনুবাদ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countOnubad)})</span>
+        </button>
+      )}
     </div>
 
     <!-- 2-Column Responsive Post Grid -->
@@ -399,31 +401,63 @@ function toBn(n: number) {
       }
     }
 
+    function activateTab(filter, shouldScroll = false) {
+      const targetTab = document.querySelector(`.category-tab[data-filter="${filter}"]`) || document.querySelector('.category-tab[data-filter="all"]');
+      if (!targetTab) return;
+
+      tabs.forEach((t) => {
+        t.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
+        t.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+      });
+
+      targetTab.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+      targetTab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+
+      const grid = document.getElementById('posts-grid');
+      if (grid) grid.classList.add('opacity-40');
+
+      setTimeout(() => {
+        filterPosts(targetTab.getAttribute('data-filter') || 'all');
+        if (grid) grid.classList.remove('opacity-40');
+      }, 70);
+
+      if (shouldScroll) {
+        const sec = document.getElementById('categories');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     // Run filter immediately to hide any deleted posts on page boot
     filterPosts('all');
     window.addEventListener('kherokhata-posts-sync', () => filterPosts('all'));
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
-        const filter = tab.getAttribute('data-filter');
-
-        tabs.forEach((t) => {
-          t.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
-          t.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
-        });
-
-        tab.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
-        tab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
-
-        const grid = document.getElementById('posts-grid');
-        if (grid) grid.classList.add('opacity-40');
-
-        setTimeout(() => {
-          filterPosts(filter);
-          if (grid) grid.classList.remove('opacity-40');
-        }, 100);
+        const filter = tab.getAttribute('data-filter') || 'all';
+        activateTab(filter, false);
+        try {
+          if (filter !== 'all') {
+            history.replaceState(null, '', `#${filter}`);
+          } else {
+            history.replaceState(null, '', window.location.pathname);
+          }
+        } catch (e) {}
       });
     });
+
+    // Check URL hash for direct category deep-linking
+    function checkUrlFilter() {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad'].includes(hash)) {
+        activateTab(hash, true);
+      } else if (hash === 'categories') {
+        const sec = document.getElementById('categories');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    checkUrlFilter();
+    window.addEventListener('hashchange', checkUrlFilter);
 
     // 2. Hide any deleted spotlight post
     const spotlightSection = document.getElementById('spotlight-section');

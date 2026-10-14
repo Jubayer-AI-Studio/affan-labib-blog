@@ -135,10 +135,12 @@ assert(indexHtml.includes('id="author-intro-card"'), 'Homepage contains Author I
 assert(indexHtml.includes('author-name-text'), 'Homepage author card contains author-name-text');
 assert(indexHtml.includes('author-shortbio-text'), 'Homepage author card contains author-shortbio-text');
 assert(indexHtml.includes('href="/about"'), 'Homepage author card contains link to full about page');
+assert(indexHtml.indexOf('id="author-intro-card"') < indexHtml.indexOf('id="spotlight-section"'), 'Author Bio card is positioned at the TOP before spotlight article');
 assert(indexHtml.includes('id="home-bookshelf-section"'), 'Homepage contains Bookshelf Showcase Card (home-bookshelf-section)');
 assert(indexHtml.includes('id="home-read-count"'), 'Homepage contains live Read Books counter (home-read-count)');
 assert(indexHtml.includes('id="home-wish-count"'), 'Homepage contains live Wishlist counter (home-wish-count)');
 assert(indexHtml.includes('href="/bookshelf"'), 'Homepage contains direct entrance link to full bookshelf');
+assert(indexHtml.includes('id="categories"'), 'Homepage contains id="categories" section for smooth in-page category navigation');
 
 // 7. Post Card Deletion Attributes Verification
 console.log('\n🗑️ 7. POST DELETION CLIENT-SIDE SYNC VERIFICATION:');
