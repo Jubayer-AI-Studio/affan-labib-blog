@@ -179,8 +179,6 @@
       const img = new Image();
 
       img.onload = async () => {
-        URL.revokeObjectURL(objectUrl);
-
         // Off-screen Canvas Resizer: limits max dimension to 360px
         const canvas = document.createElement('canvas');
         const MAX = 360;
@@ -195,9 +193,10 @@
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(objectUrl);
 
         // Ultra-light ~20KB JPEG (Permanently avoids QuotaExceededError!)
-        const compressed = canvas.toDataURL('image/jpeg', 0.80);
+        const compressed = canvas.toDataURL('image/jpeg', 0.82);
 
         // 1. Save in LocalStorage primary key
         try {
@@ -216,7 +215,7 @@
         // 3. Save in IndexedDB (Survives mobile browser cache clearing)
         await saveToDB('author_avatar', compressed);
 
-        // 4. Post to backend API
+        // 4. Post to backend API safely
         fetch('/api/avatar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -227,15 +226,19 @@
         window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
         window.dispatchEvent(new CustomEvent('kherokhata-avatar-sync', { detail: compressed }));
 
+        // Reset file input value so user can re-select the same or new file anytime
+        fileInput.value = '';
+
         if (statusText) statusText.textContent = '✓ সফলভাবে সংরক্ষিত হয়েছে!';
         setTimeout(() => {
           modal?.classList.add('hidden');
           if (statusText) statusText.textContent = 'JPG, PNG বা HEIC ছবি নির্বাচন করুন';
-        }, 600);
+        }, 500);
       };
 
       img.onerror = () => {
         URL.revokeObjectURL(objectUrl);
+        fileInput.value = '';
         if (statusText) statusText.textContent = '❌ ছবিটি পড়া যায়নি। অন্য ছবি চেষ্টা করুন।';
       };
 
