@@ -4,6 +4,8 @@ import Layout from '../layouts/Layout.astro';
 import PostCard from '../components/PostCard.astro';
 import QuoteSection from '../components/QuoteSection.astro';
 import posts from '../data/posts.json';
+import author from '../data/author.json';
+import bookshelf from '../data/bookshelf.json';
 
 // Feature post
 const spotlightPost = posts.find((p) => p.slug === 'gazar-dinlipi') || posts[0];
@@ -27,7 +29,7 @@ function toBn(n: number) {
   title="আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা"
   description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
 >
-  <!-- Featured Spotlight Post -->
+  <!-- 1. Featured Spotlight Post -->
   <section id="spotlight-section" data-slug={spotlightPost.slug} class="mb-14 relative group">
     <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
     <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
@@ -61,13 +63,13 @@ function toBn(n: number) {
 
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-paper-border/70 dark:border-night-border/70">
         <div class="flex items-center gap-3">
-          <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
+          <img src={author.avatar} alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
           <div>
-            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block">
-              আফফান লাবীব
+            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block author-name-text">
+              {author.name}
             </span>
-            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted">
-              তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ
+            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted author-edu-text">
+              {author.education}
             </span>
           </div>
         </div>
@@ -85,7 +87,220 @@ function toBn(n: number) {
     </div>
   </section>
 
-  <!-- Category Filter & All Posts Grid -->
+  <!-- 2. Author Bio & Introduction Card (Directly on Front Page) -->
+  <section id="author-intro-card" class="mb-14 relative group">
+    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-paper-accent/15 via-amber-500/15 to-purple-500/15 blur-xl opacity-50 group-hover:opacity-85 transition-opacity duration-500 pointer-events-none"></div>
+    <div class="relative overflow-hidden rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-6 sm:p-9 shadow-sm hover:shadow-md transition-all">
+      <div class="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
+        <!-- Author Photo Container with Change Badge -->
+        <div class="relative shrink-0 group/avatar">
+          <img
+            src={author.avatar}
+            alt={author.name}
+            class="author-avatar-img w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover ring-4 ring-paper-accent/25 dark:ring-night-accent/30 shadow-md group-hover/avatar:scale-102 transition-transform duration-300"
+          />
+          <button
+            type="button"
+            onclick="window.openAvatarModal && window.openAvatarModal()"
+            class="absolute -bottom-2 -right-2 px-2.5 py-1 rounded-full bg-paper-accent text-white text-[11px] font-sans font-medium shadow-md hover:opacity-95 transition-all flex items-center gap-1 cursor-pointer"
+            title="ছবি পরিবর্তন করুন"
+          >
+            <span>📷</span>
+            <span>ছবি বদলান</span>
+          </button>
+        </div>
+
+        <!-- Bio Content Details -->
+        <div class="space-y-3.5 text-center md:text-left flex-grow">
+          <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent border border-paper-accent/20">
+              <span>✍️</span>
+              <span>লেখক ও চিন্তক পরিচিতি</span>
+            </span>
+            <span class="text-xs font-sans text-paper-muted dark:text-night-muted">
+              খেরোখাতা · ব্যক্তিগত আঙিনা
+            </span>
+          </div>
+
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text author-name-text">
+              {author.name}
+            </h2>
+            <p class="text-xs sm:text-sm font-sans font-semibold text-paper-accent dark:text-night-accent mt-0.5">
+              <span class="author-edu-text">{author.education}</span> · <span class="text-paper-muted dark:text-night-muted font-normal author-tagline-text">{author.tagline}</span>
+            </p>
+          </div>
+
+          <p class="text-sm sm:text-base font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed author-shortbio-text max-w-2xl">
+            {author.bioShort}
+          </p>
+
+          <p class="text-xs sm:text-sm font-serif italic text-paper-muted dark:text-night-muted leading-relaxed line-clamp-2 max-w-2xl author-manifesto-text">
+            "{author.bioFull}"
+          </p>
+
+          <!-- Action Buttons Row -->
+          <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+            <a
+              href="/about"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-paper-accent text-white font-sans text-xs sm:text-sm font-semibold hover:shadow-md hover:scale-102 active:scale-95 transition-all cursor-pointer"
+            >
+              <span>লেখক সম্পর্কে জানুন ও জীবনবৃত্তান্ত</span>
+              <span>↗</span>
+            </a>
+            <a
+              href={author.social.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:border-blue-500 hover:text-blue-600 text-xs font-sans transition-colors"
+            >
+              <span>Facebook</span>
+              <span>↗</span>
+            </a>
+            <a
+              href={author.social.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:border-emerald-500 hover:text-emerald-600 text-xs font-sans transition-colors"
+            >
+              <span>WhatsApp</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Front-Page Bookshelf Showcase & Live Counters Card -->
+  <section id="home-bookshelf-section" class="mb-14 relative group">
+    <div class="p-6 sm:p-8 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs space-y-6">
+      <!-- Section Header with Counters -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-paper-border/60 dark:border-night-border/60">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 mb-1.5">
+            <span>📚</span>
+            <span>ব্যক্তিগত পাঠাগার ও বুকশেলফ</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
+            বইয়ের পাতা ও ভাবনার তোশক
+          </h2>
+          <p class="text-xs sm:text-sm text-paper-muted dark:text-night-muted font-sans mt-0.5">
+            পড়া শেষ হওয়া বইয়ের তালিকা এবং পরবর্তীতে পড়ার অপেক্ষায় থাকা উইশলিস্ট
+          </p>
+        </div>
+
+        <!-- Live Interactive Counters -->
+        <div class="flex items-center gap-3">
+          <div class="px-4 py-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-center min-w-[110px]">
+            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">📖 পড়া শেষ বই</span>
+            <span id="home-read-count" class="text-xl sm:text-2xl font-bold font-mono text-amber-700 dark:text-amber-400">
+              {toBn(bookshelf.readBooks.length)}টি
+            </span>
+          </div>
+
+          <div class="px-4 py-2.5 rounded-2xl bg-paper-accent/10 dark:bg-night-accent/15 border border-paper-accent/25 text-center min-w-[110px]">
+            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">🎯 পড়ার উইশলিস্ট</span>
+            <span id="home-wish-count" class="text-xl sm:text-2xl font-bold font-mono text-paper-accent dark:text-night-accent">
+              {toBn(bookshelf.wishlistBooks.length)}টি
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Columns: Read vs Wishlist -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Col 1: Finished Books Preview -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
+            <span class="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+              <span>📖</span>
+              <span>সম্প্রতি পড়া শেষ হওয়া বই:</span>
+            </span>
+            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
+              সব দেখুন ({toBn(bookshelf.readBooks.length)}) →
+            </a>
+          </div>
+
+          <div id="home-read-books-list" class="space-y-2.5">
+            {bookshelf.readBooks.slice(0, 2).map((book) => (
+              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-amber-500/40 transition-colors">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
+                      {book.title}
+                    </h4>
+                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
+                      — {book.author} ({book.readYear})
+                    </p>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold shrink-0">
+                    ★ {book.rating}
+                  </span>
+                </div>
+                {book.review && (
+                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-amber-500/40">
+                    "{book.review}"
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Col 2: Wishlist Preview -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
+            <span class="flex items-center gap-1.5 text-paper-accent dark:text-night-accent">
+              <span>🎯</span>
+              <span>পড়ার অপেক্ষায় থাকা কিতাবমালা:</span>
+            </span>
+            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
+              সব দেখুন ({toBn(bookshelf.wishlistBooks.length)}) →
+            </a>
+          </div>
+
+          <div id="home-wish-books-list" class="space-y-2.5">
+            {bookshelf.wishlistBooks.slice(0, 2).map((wish) => (
+              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-paper-accent/40 transition-colors">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
+                      {wish.title}
+                    </h4>
+                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
+                      — {wish.author}
+                    </p>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-md bg-paper-accent/15 text-paper-accent dark:text-night-accent font-sans text-[10px] font-semibold shrink-0">
+                    {wish.priority} অগ্রাধিকার
+                  </span>
+                </div>
+                {wish.note && (
+                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-paper-accent/40">
+                    "{wish.note}"
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button to Full Bookshelf -->
+      <div class="pt-2 text-center">
+        <a
+          href="/bookshelf"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border hover:border-paper-accent text-paper-text dark:text-night-text font-sans text-xs sm:text-sm font-semibold hover:shadow-md transition-all cursor-pointer"
+        >
+          <span>📚 সম্পূর্ণ পাঠাগার ও দুই-রুম বুকশেলফে প্রবেশ করুন</span>
+          <span>↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Category Filter & All Posts Grid -->
   <section class="mt-14 mb-16">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
       <div>
@@ -135,35 +350,13 @@ function toBn(n: number) {
     </div>
   </section>
 
-  <!-- Interactive Literary Quote Carousel -->
+  <!-- 5. Interactive Literary Quote Carousel -->
   <QuoteSection />
 </Layout>
 
 <script is:inline>
   (() => {
-    function getDeletedSlugs() {
-      try {
-        return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-      } catch (e) {
-        return [];
-      }
-    }
-
-    const deleted = getDeletedSlugs();
-    if (deleted.length > 0) {
-      const spotlightSec = document.getElementById('spotlight-section');
-      if (spotlightSec && deleted.includes(spotlightSec.getAttribute('data-slug'))) {
-        spotlightSec.remove();
-      }
-
-      document.querySelectorAll('.post-item').forEach((item) => {
-        const slug = item.getAttribute('data-slug');
-        if (slug && deleted.includes(slug)) {
-          item.remove();
-        }
-      });
-    }
-
+    // 1. Post filtering
     const tabs = document.querySelectorAll('.category-tab');
     const postItems = document.querySelectorAll('.post-item');
     const emptyNotice = document.getElementById('empty-filter-notice');
@@ -172,6 +365,38 @@ function toBn(n: number) {
     const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     function toBnNum(num) {
       return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+    }
+
+    function getDeletedSlugs() {
+      try {
+        return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function filterPosts(filter) {
+      const deleted = getDeletedSlugs();
+      let visible = 0;
+      postItems.forEach((item) => {
+        const itemCat = item.getAttribute('data-category');
+        const itemSlug = item.getAttribute('data-slug');
+        if (itemSlug && deleted.includes(itemSlug)) {
+          item.classList.add('hidden');
+          return;
+        }
+        if (filter === 'all' || itemCat === filter) {
+          item.classList.remove('hidden');
+          visible++;
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      if (visibleCount) visibleCount.innerText = toBnNum(visible);
+      if (emptyNotice) {
+        emptyNotice.classList.toggle('hidden', visible > 0);
+      }
     }
 
     tabs.forEach((tab) => {
@@ -190,24 +415,36 @@ function toBn(n: number) {
         if (grid) grid.classList.add('opacity-40');
 
         setTimeout(() => {
-          let visible = 0;
-          postItems.forEach((item) => {
-            const itemCat = item.getAttribute('data-category');
-            if (filter === 'all' || itemCat === filter) {
-              item.classList.remove('hidden');
-              visible++;
-            } else {
-              item.classList.add('hidden');
-            }
-          });
-
-          if (visibleCount) visibleCount.innerText = toBnNum(visible);
-          if (emptyNotice) {
-            emptyNotice.classList.toggle('hidden', visible > 0);
-          }
+          filterPosts(filter);
           if (grid) grid.classList.remove('opacity-40');
         }, 100);
       });
     });
+
+    // 2. Hide any deleted spotlight post
+    const spotlightSection = document.getElementById('spotlight-section');
+    if (spotlightSection) {
+      const slug = spotlightSection.getAttribute('data-slug');
+      if (slug && getDeletedSlugs().includes(slug)) {
+        spotlightSection.classList.add('hidden');
+      }
+    }
+
+    // 3. Bookshelf Live Counters Sync
+    function syncHomeBookshelf() {
+      const stored = localStorage.getItem('kherokhata_bookshelf_custom');
+      if (!stored) return;
+      try {
+        const data = JSON.parse(stored);
+        const readEl = document.getElementById('home-read-count');
+        const wishEl = document.getElementById('home-wish-count');
+        if (readEl && data.readBooks) readEl.innerText = `${toBnNum(data.readBooks.length)}টি`;
+        if (wishEl && data.wishlistBooks) wishEl.innerText = `${toBnNum(data.wishlistBooks.length)}টি`;
+      } catch (e) {}
+    }
+
+    syncHomeBookshelf();
+    window.addEventListener('kherokhata-bookshelf-sync', syncHomeBookshelf);
+    window.addEventListener('storage', syncHomeBookshelf);
   })();
 </script>

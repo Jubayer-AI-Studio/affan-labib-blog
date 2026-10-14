@@ -536,8 +536,9 @@ ${body}
         if (manifestoInput) manifestoInput.value = current.aboutManifesto || current.manifesto || '';
         if (fbInput) fbInput.value = current.social?.facebook || '';
         if (waInput) waInput.value = current.social?.whatsapp || '';
-        if (avatarInput) avatarInput.value = current.avatar || '';
-        if (avatarPreview && current.avatar) avatarPreview.src = current.avatar;
+        const savedAv = localStorage.getItem('kherokhata_author_avatar');
+        if (avatarInput) avatarInput.value = savedAv || current.avatar || '';
+        if (avatarPreview) avatarPreview.src = savedAv || current.avatar || '/images/affan-labib.jpg';
       }
 
       avatarInput?.addEventListener('input', () => {
@@ -547,6 +548,11 @@ ${body}
       });
 
       saveProfileBtn?.addEventListener('click', () => {
+        const chosenAvatar = avatarInput?.value.trim() || localStorage.getItem('kherokhata_author_avatar') || author.avatar;
+        if (chosenAvatar) {
+          try { localStorage.setItem('kherokhata_author_avatar', chosenAvatar); } catch(e) {}
+        }
+
         const profileData = {
           name: nameInput?.value.trim() || author.name,
           education: eduInput?.value.trim() || author.education,
@@ -558,7 +564,7 @@ ${body}
           aboutManifestoTitle: manifestoTitleInput?.value.trim() || author.aboutManifestoTitle,
           manifesto: manifestoInput?.value.trim() || author.aboutManifesto,
           aboutManifesto: manifestoInput?.value.trim() || author.aboutManifesto,
-          avatar: avatarInput?.value.trim() || author.avatar,
+          avatar: chosenAvatar,
           facebook: fbInput?.value.trim() || author.social?.facebook,
           whatsapp: waInput?.value.trim() || author.social?.whatsapp,
         };

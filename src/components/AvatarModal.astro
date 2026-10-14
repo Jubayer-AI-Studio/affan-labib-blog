@@ -175,55 +175,71 @@
 
       if (statusText) statusText.textContent = '⏳ ছবি অপ্টিমাইজ ও সংরক্ষণ করা হচ্ছে...';
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = async () => {
-          // Off-screen Canvas Resizer: limits max dimension to 420px
-          const canvas = document.createElement('canvas');
-          const MAX = 420;
-          let w = img.width;
-          let h = img.height;
-          if (w > h) {
-            if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
-          } else {
-            if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
 
-          // Compresses to ~35KB JPEG (Eliminates QuotaExceededError forever!)
-          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+      img.onload = async () => {
+        URL.revokeObjectURL(objectUrl);
 
-          // 1. Save in LocalStorage safely
-          try {
-            localStorage.setItem('kherokhata_author_avatar', compressed);
-          } catch (err) {
-            console.warn('LocalStorage quota warning:', err);
-          }
+        // Off-screen Canvas Resizer: limits max dimension to 360px
+        const canvas = document.createElement('canvas');
+        const MAX = 360;
+        let w = img.width;
+        let h = img.height;
+        if (w > h) {
+          if (w > MAX) { h = Math.round((h * MAX) / w); w = MAX; }
+        } else {
+          if (h > MAX) { w = Math.round((w * MAX) / h); h = MAX; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
 
-          // 2. Save in IndexedDB
-          await saveToDB('author_avatar', compressed);
+        // Ultra-light ~20KB JPEG (Permanently avoids QuotaExceededError!)
+        const compressed = canvas.toDataURL('image/jpeg', 0.80);
 
-          // 3. Post to backend API
-          fetch('/api/avatar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ avatar: compressed })
-          }).catch(() => {});
+        // 1. Save in LocalStorage primary key
+        try {
+          localStorage.setItem('kherokhata_author_avatar', compressed);
+        } catch (err) {
+          console.warn('LocalStorage quota warning:', err);
+        }
 
-          applyGlobalAvatar(compressed);
-          if (statusText) statusText.textContent = '✓ সফলভাবে সংরক্ষিত হয়েছে!';
-          setTimeout(() => {
-            modal?.classList.add('hidden');
-            if (statusText) statusText.textContent = 'JPG, PNG বা HEIC ছবি নির্বাচন করুন';
-          }, 800);
-        };
-        img.src = event.target.result;
+        // 2. Also update kherokhata_author_custom so Admin profile won't overwrite it
+        try {
+          const profile = JSON.parse(localStorage.getItem('kherokhata_author_custom') || '{}');
+          profile.avatar = compressed;
+          localStorage.setItem('kherokhata_author_custom', JSON.stringify(profile));
+        } catch (e) {}
+
+        // 3. Save in IndexedDB (Survives mobile browser cache clearing)
+        await saveToDB('author_avatar', compressed);
+
+        // 4. Post to backend API
+        fetch('/api/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar: compressed })
+        }).catch(() => {});
+
+        applyGlobalAvatar(compressed);
+        window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
+        window.dispatchEvent(new CustomEvent('kherokhata-avatar-sync', { detail: compressed }));
+
+        if (statusText) statusText.textContent = '✓ সফলভাবে সংরক্ষিত হয়েছে!';
+        setTimeout(() => {
+          modal?.classList.add('hidden');
+          if (statusText) statusText.textContent = 'JPG, PNG বা HEIC ছবি নির্বাচন করুন';
+        }, 600);
       };
-      reader.readAsDataURL(file);
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        if (statusText) statusText.textContent = '❌ ছবিটি পড়া যায়নি। অন্য ছবি চেষ্টা করুন।';
+      };
+
+      img.src = objectUrl;
     });
 
     // Apply URL
@@ -231,6 +247,11 @@
       const url = urlInput?.value.trim();
       if (url) {
         try { localStorage.setItem('kherokhata_author_avatar', url); } catch (e) {}
+        try {
+          const profile = JSON.parse(localStorage.getItem('kherokhata_author_custom') || '{}');
+          profile.avatar = url;
+          localStorage.setItem('kherokhata_author_custom', JSON.stringify(profile));
+        } catch (e) {}
         await saveToDB('author_avatar', url);
         fetch('/api/avatar', {
           method: 'POST',
@@ -238,6 +259,7 @@
           body: JSON.stringify({ avatar: url })
         }).catch(() => {});
         applyGlobalAvatar(url);
+        window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
         modal?.classList.add('hidden');
       }
     });
@@ -245,8 +267,14 @@
     // Reset to default
     resetBtn?.addEventListener('click', async () => {
       localStorage.removeItem('kherokhata_author_avatar');
+      try {
+        const profile = JSON.parse(localStorage.getItem('kherokhata_author_custom') || '{}');
+        profile.avatar = '/images/affan-labib.jpg';
+        localStorage.setItem('kherokhata_author_custom', JSON.stringify(profile));
+      } catch (e) {}
       await saveToDB('author_avatar', null);
       applyGlobalAvatar('/images/affan-labib.jpg');
+      window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
       modal?.classList.add('hidden');
     });
   })();

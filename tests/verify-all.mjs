@@ -129,8 +129,19 @@ assert(indexHtml.includes('kherokhata_author_avatar'), 'LocalStorage author avat
 assert(indexHtml.includes('toDataURL'), 'Canvas auto-compression engine is present');
 assert(indexHtml.includes('author-avatar-img'), 'Global author avatar classes present across page');
 
-// 6. Post Card Deletion Attributes Verification
-console.log('\n🗑️ 6. POST DELETION CLIENT-SIDE SYNC VERIFICATION:');
+// 6. Frontpage Author Bio & Bookshelf Showcase Verification
+console.log('\n👤 6. FRONTPAGE AUTHOR BIO & BOOKSHELF SHOWCASE VERIFICATION:');
+assert(indexHtml.includes('id="author-intro-card"'), 'Homepage contains Author Intro & Bio Card (author-intro-card)');
+assert(indexHtml.includes('author-name-text'), 'Homepage author card contains author-name-text');
+assert(indexHtml.includes('author-shortbio-text'), 'Homepage author card contains author-shortbio-text');
+assert(indexHtml.includes('href="/about"'), 'Homepage author card contains link to full about page');
+assert(indexHtml.includes('id="home-bookshelf-section"'), 'Homepage contains Bookshelf Showcase Card (home-bookshelf-section)');
+assert(indexHtml.includes('id="home-read-count"'), 'Homepage contains live Read Books counter (home-read-count)');
+assert(indexHtml.includes('id="home-wish-count"'), 'Homepage contains live Wishlist counter (home-wish-count)');
+assert(indexHtml.includes('href="/bookshelf"'), 'Homepage contains direct entrance link to full bookshelf');
+
+// 7. Post Card Deletion Attributes Verification
+console.log('\n🗑️ 7. POST DELETION CLIENT-SIDE SYNC VERIFICATION:');
 assert(indexHtml.includes('data-slug='), 'Post items have data-slug attribute for client-side deletion sync');
 assert(indexHtml.includes('kherokhata_deleted_posts'), 'Index page checks deleted posts registry');
 
