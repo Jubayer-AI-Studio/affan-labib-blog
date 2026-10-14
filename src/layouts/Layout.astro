@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import InstallModal from '../components/InstallModal.astro';
 import AvatarModal from '../components/AvatarModal.astro';
 import AdminBarModal from '../components/AdminBarModal.astro';
+import AppLoader from '../components/AppLoader.astro';
 
 export interface Props {
   title?: string;
@@ -200,6 +201,9 @@ const schemaData = article
     id="top"
     class="bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text min-h-screen flex flex-col font-sans selection:bg-orange-200 dark:selection:bg-orange-950 relative"
   >
+    <!-- Entertaining App Launch Screen with Live 1-100% Progress & Pushing Robot -->
+    <AppLoader />
+
     <!-- Ambient Literary Glow Orbs -->
     <div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden select-none" aria-hidden="true">
       <div class="absolute -top-24 -left-24 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent dark:from-amber-400/5 dark:via-orange-500/5 blur-3xl opacity-60"></div>

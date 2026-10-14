@@ -145,6 +145,14 @@ console.log('\n🗑️ 7. POST DELETION CLIENT-SIDE SYNC VERIFICATION:');
 assert(indexHtml.includes('data-slug='), 'Post items have data-slug attribute for client-side deletion sync');
 assert(indexHtml.includes('kherokhata_deleted_posts'), 'Index page checks deleted posts registry');
 
+// 8. Ultra-Light App Loader & Pushing Robot Mascot Verification
+console.log('\n🤖 8. ULTRA-LIGHT APP LOADER & PUSHING ROBOT MASCOT VERIFICATION:');
+assert(indexHtml.includes('id="app-loader-screen"'), 'Layout contains full-screen AppLoader (app-loader-screen)');
+assert(indexHtml.includes('id="loader-robot"'), 'AppLoader contains animated pushing robot mascot (loader-robot)');
+assert(indexHtml.includes('id="loader-progress-bar"'), 'AppLoader contains dynamic progress bar (loader-progress-bar)');
+assert(indexHtml.includes('id="loader-percent-badge"'), 'AppLoader contains live 1-100% counter badge (loader-percent-badge)');
+assert(indexHtml.includes('id="loader-robot-emote"'), 'AppLoader contains robot speech emote bubble (loader-robot-emote)');
+
 console.log('\n====================================================');
-console.log(`📊 FINAL RESULT: ${passedTests} / ${totalTests} TESTS PASSED (100%)`);
+console.log(`📊 FINAL RESULT: ${passedTests} / ${totalTests} TESTS PASSED`);
 console.log('====================================================\n');

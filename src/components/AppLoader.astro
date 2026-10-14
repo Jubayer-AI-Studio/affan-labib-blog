@@ -1,0 +1,239 @@
+---
+// src/components/AppLoader.astro
+// Ultra-Lightweight, Entertaining App Launch Screen with Live 1-100% Counter & Pushing Robot Mascot
+---
+
+<div
+  id="app-loader-screen"
+  class="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text select-none transition-all duration-400 ease-out"
+  aria-label="অ্যাপ লোডিং স্ক্রিন"
+  role="status"
+>
+  <!-- Ambient Soft Glow -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gradient-to-tr from-amber-500/15 via-orange-500/10 to-transparent blur-3xl opacity-75"></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-sm flex flex-col items-center text-center space-y-6">
+    <!-- 1. App Icon with Breathing Ring & Glow -->
+    <div class="relative group">
+      <div class="absolute -inset-2 rounded-3xl bg-gradient-to-r from-amber-500/30 via-orange-500/25 to-amber-600/30 blur-md animate-pulse"></div>
+      <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl p-1 bg-paper-surface dark:bg-night-surface border-2 border-amber-500/40 dark:border-amber-400/30 shadow-xl flex items-center justify-center overflow-hidden">
+        <img
+          src="/icons/icon-192.png"
+          alt="খেরোখাতা অ্যাপ আইকন"
+          class="w-full h-full object-cover rounded-2xl transform transition-transform duration-500 group-hover:scale-105"
+          width="112"
+          height="112"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+      <!-- Cute Floating Badge -->
+      <span class="absolute -bottom-2 -right-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-500 text-white shadow-md animate-bounce">
+        v2.0
+      </span>
+    </div>
+
+    <!-- App Title & Tagline -->
+    <div class="space-y-1">
+      <h1 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight flex items-center justify-center gap-2">
+        <span>লাবীবের খেরোখাতা</span>
+        <span class="text-amber-600 dark:text-amber-400 text-lg animate-spin-slow">✨</span>
+      </h1>
+      <p class="text-xs sm:text-sm font-serif text-paper-muted dark:text-night-muted">
+        চিন্তা ও পাঠের নিভৃত আঙিনা
+      </p>
+    </div>
+
+    <!-- 2. The Playful Robot Mascot Pushing the Progress Bar -->
+    <div class="w-full max-w-xs pt-4 space-y-2">
+      <!-- Pushing Mascot Arena -->
+      <div class="relative h-14 w-full overflow-visible">
+        <!-- The Robot Element (moves from left to right as percentage climbs) -->
+        <div
+          id="loader-robot"
+          class="absolute bottom-0 -translate-x-1/2 transition-all duration-100 ease-out flex flex-col items-center"
+          style="left: 4%;"
+        >
+          <!-- Speech / Emote bubble -->
+          <div
+            id="loader-robot-emote"
+            class="px-2 py-0.5 rounded-lg bg-amber-500/20 dark:bg-amber-400/20 border border-amber-500/30 text-[10px] font-bold text-amber-900 dark:text-amber-200 shadow-2xs whitespace-nowrap mb-0.5 animate-pulse"
+          >
+            ধাক্কা দিচ্ছি! 💨
+          </div>
+
+          <!-- Cute Animated SVG Robot Character -->
+          <svg
+            class="w-10 h-10 text-amber-600 dark:text-amber-400 filter drop-shadow-md"
+            viewBox="0 0 48 48"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <!-- Antenna -->
+            <line x1="24" y1="4" x2="24" y2="10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            <circle cx="24" cy="3" r="2.5" fill="#F59E0B" class="animate-ping" style="animation-duration: 1.5s;" />
+            <circle cx="24" cy="3" r="2.5" fill="#D97706" />
+
+            <!-- Head -->
+            <rect x="12" y="10" width="24" height="16" rx="4" fill="currentColor" opacity="0.9" />
+            <!-- Eyes (blinking neon) -->
+            <rect x="16" y="14" width="4" height="4" rx="1" fill="#FEF3C7" class="animate-pulse" />
+            <rect x="28" y="14" width="4" height="4" rx="1" fill="#FEF3C7" class="animate-pulse" />
+            <!-- Friendly Smile -->
+            <path d="M19 21 Q24 24 29 21" stroke="#FEF3C7" stroke-width="1.8" stroke-linecap="round" fill="none" />
+
+            <!-- Body -->
+            <rect x="14" y="27" width="20" height="15" rx="3" fill="currentColor" />
+            <!-- Chest Screen (Energy Meter) -->
+            <rect x="18" y="30" width="12" height="6" rx="1.5" fill="#1C1917" />
+            <line x1="20" y1="33" x2="28" y2="33" stroke="#10B981" stroke-width="2" stroke-linecap="round" class="animate-pulse" />
+
+            <!-- Pushing Arms (Angled forward pushing) -->
+            <path d="M14 30 L8 36 L12 40" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M34 30 L42 34 L38 40" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Feet / Tread Wheels -->
+            <ellipse cx="18" cy="43" rx="4" ry="2.5" fill="#78350F" />
+            <ellipse cx="30" cy="43" rx="4" ry="2.5" fill="#78350F" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- 3. Progress Bar Track with Live Moving Fill -->
+      <div class="h-3.5 w-full rounded-full bg-paper-border/80 dark:bg-night-border/80 p-0.5 border border-amber-500/30 dark:border-amber-400/20 shadow-inner overflow-hidden relative">
+        <div
+          id="loader-progress-bar"
+          class="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-sm shadow-amber-500/50 transition-all duration-100 ease-out"
+          style="width: 4%;"
+        ></div>
+      </div>
+
+      <!-- 4. Percentage Counter & Fun Status Text -->
+      <div class="flex items-center justify-between text-xs font-sans pt-1">
+        <!-- Live Funny Bengali Status -->
+        <span id="loader-status-text" class="font-medium text-paper-muted dark:text-night-muted transition-all duration-200 text-left line-clamp-1">
+          রোবট খেরোখাতা বহন করে আনছে... 🤖💨
+        </span>
+
+        <!-- Live 1% - 100% Counter Badge -->
+        <span
+          id="loader-percent-badge"
+          class="font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 shrink-0 text-xs"
+        >
+          ৪%
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const loader = document.getElementById('app-loader-screen');
+    const bar = document.getElementById('loader-progress-bar');
+    const robot = document.getElementById('loader-robot');
+    const badge = document.getElementById('loader-percent-badge');
+    const status = document.getElementById('loader-status-text');
+    const emote = document.getElementById('loader-robot-emote');
+
+    if (!loader) return;
+
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    function toBn(num) {
+      return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+    }
+
+    let currentPercent = 4;
+    let targetPercent = 100;
+    let animationInterval = null;
+    let isFinished = false;
+
+    // Funny phrases that change as the robot pushes forward
+    const stages = [
+      { max: 25, text: 'রোবট খেরোখাতা নিয়ে আসছে... 🤖💨', emote: 'ধাক্কা দিচ্ছি! 💨' },
+      { max: 55, text: 'পাতাগুলো ঝেড়ে-মুছে সাজানো হচ্ছে... 📚⚡', emote: 'জোর লাগাও! ⚡' },
+      { max: 85, text: 'কালির দোয়াত ও হরফ চকচক করছে... ✨✍️', emote: 'প্রায় শেষ! ✨' },
+      { max: 99, text: 'আঙিনার দরজা খুলে দেওয়া হচ্ছে... 🚪🌿', emote: 'লাস্ট পুশ! 🏃' },
+      { max: 100, text: '১০০% তৈরি! স্বাগতম... 🚀🎉', emote: 'হুররে! 🎉' }
+    ];
+
+    function updateUi(val) {
+      const clamped = Math.min(100, Math.max(4, Math.round(val)));
+      if (bar) bar.style.width = `${clamped}%`;
+      if (robot) robot.style.left = `${Math.min(94, Math.max(4, clamped))}%`;
+      if (badge) badge.innerText = `${toBn(clamped)}%`;
+
+      const stage = stages.find((s) => clamped <= s.max) || stages[stages.length - 1];
+      if (status && status.innerText !== stage.text) status.innerText = stage.text;
+      if (emote && emote.innerText !== stage.emote) emote.innerText = stage.emote;
+
+      if (clamped >= 100 && !isFinished) {
+        completeLoader();
+      }
+    }
+
+    function completeLoader() {
+      if (isFinished) return;
+      isFinished = true;
+      if (animationInterval) clearInterval(animationInterval);
+
+      if (bar) {
+        bar.style.width = '100%';
+        bar.classList.add('from-emerald-500', 'to-teal-500');
+      }
+      if (badge) {
+        badge.innerText = '১০০%';
+        badge.classList.remove('text-amber-800', 'dark:text-amber-300');
+        badge.classList.add('text-emerald-700', 'dark:text-emerald-300', 'bg-emerald-500/20');
+      }
+      if (robot) {
+        robot.style.left = '95%';
+        robot.classList.add('scale-110', '-translate-y-2');
+      }
+      if (status) status.innerText = '১০০% প্রস্তুত! স্বাগতম... 🚀';
+      if (emote) emote.innerText = 'স্বাগতম! 🎉';
+
+      setTimeout(() => {
+        loader.classList.add('opacity-0', 'pointer-events-none', 'scale-102');
+        setTimeout(() => {
+          loader.remove();
+        }, 400);
+      }, 250);
+    }
+
+    // Dynamic Fast Smooth Progress Engine
+    let step = 0;
+    animationInterval = setInterval(() => {
+      step++;
+      // Natural accelerating curve towards 92%
+      if (currentPercent < 90) {
+        const jump = Math.max(1.5, (90 - currentPercent) * 0.12 + Math.random() * 3);
+        currentPercent += jump;
+      }
+      updateUi(currentPercent);
+    }, 40);
+
+    // When the real DOM and resources are loaded:
+    function triggerFastCompletion() {
+      // Rapidly sprint from current to 100%
+      clearInterval(animationInterval);
+      const finishInterval = setInterval(() => {
+        currentPercent += 8;
+        updateUi(currentPercent);
+        if (currentPercent >= 100) {
+          clearInterval(finishInterval);
+        }
+      }, 25);
+    }
+
+    if (document.readyState === 'complete') {
+      setTimeout(triggerFastCompletion, 150);
+    } else {
+      window.addEventListener('load', triggerFastCompletion);
+      // Hard timeout failsafe so loader NEVER hangs on slow networks
+      setTimeout(triggerFastCompletion, 1600);
+    }
+  })();
+</script>
