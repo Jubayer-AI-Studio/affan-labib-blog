@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v14 (Zero-Contention PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v14';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v15 (Zero-Contention PWA Engine)
+const CACHE_NAME = 'kherokhata-cache-v15';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -8,6 +8,9 @@ const PRECACHE_URLS = [
   '/manifest.webmanifest',
   '/favicon.svg',
   '/icons/icon-192.png',
+  '/images/meshk-logo-day.png',
+  '/images/meshk-logo-sepia.png',
+  '/images/meshk-logo-dark.png',
   '/images/affan-labib.jpg'
 ];
 

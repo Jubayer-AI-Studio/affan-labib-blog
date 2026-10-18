@@ -1,0 +1,67 @@
+---
+// src/components/ThemeAvatar.astro
+interface Props {
+  class?: string;
+  imgClass?: string;
+  alt?: string;
+}
+
+const {
+  class: containerClass = "w-28 h-28 sm:w-36 sm:h-36 rounded-2xl",
+  imgClass = "w-full h-full object-contain p-2",
+  alt = "মেশক প্রকাশন — আফফান লাবীব"
+} = Astro.props;
+---
+
+<div class={`theme-avatar-box relative shrink-0 overflow-hidden bg-paper-surface dark:bg-night-surface border border-paper-border/80 dark:border-night-border/80 transition-colors duration-300 ${containerClass}`}>
+  <!-- 1. Day Mode (Default) -->
+  <img
+    src="/images/meshk-logo-day.png"
+    alt={alt}
+    class={`theme-logo-day ${imgClass}`}
+    loading="eager"
+  />
+  <!-- 2. Sepia Mode -->
+  <img
+    src="/images/meshk-logo-sepia.png"
+    alt={alt}
+    class={`theme-logo-sepia ${imgClass}`}
+    loading="eager"
+  />
+  <!-- 3. Dark Mode -->
+  <img
+    src="/images/meshk-logo-dark.png"
+    alt={alt}
+    class={`theme-logo-dark ${imgClass}`}
+    loading="eager"
+  />
+</div>
+
+<style>
+  /* Default: Day Mode is visible */
+  .theme-avatar-box .theme-logo-day {
+    display: block;
+  }
+  .theme-avatar-box .theme-logo-sepia,
+  .theme-avatar-box .theme-logo-dark {
+    display: none;
+  }
+
+  /* Sepia Mode */
+  :global(.sepia) .theme-avatar-box .theme-logo-day,
+  :global(.sepia) .theme-avatar-box .theme-logo-dark {
+    display: none !important;
+  }
+  :global(.sepia) .theme-avatar-box .theme-logo-sepia {
+    display: block !important;
+  }
+
+  /* Dark Mode */
+  :global(.dark) .theme-avatar-box .theme-logo-day,
+  :global(.dark) .theme-avatar-box .theme-logo-sepia {
+    display: none !important;
+  }
+  :global(.dark) .theme-avatar-box .theme-logo-dark {
+    display: block !important;
+  }
+</style>

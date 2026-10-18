@@ -162,41 +162,6 @@ const schemaData = article
           document.documentElement.lang = savedLang;
         }
       } catch (e) {}
-
-      // Early Anti-Flicker Mobile Avatar Hydration
-      try {
-        const earlyAvatar = localStorage.getItem('kherokhata_author_avatar');
-        if (earlyAvatar) {
-          window.__savedAvatar = earlyAvatar;
-          const observer = new MutationObserver(() => {
-            document.querySelectorAll('.author-avatar-img').forEach((img) => {
-              if (img.src !== earlyAvatar) img.src = earlyAvatar;
-            });
-          });
-          observer.observe(document.documentElement, { childList: true, subtree: true });
-          window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => observer.disconnect(), 2000);
-          });
-        } else if ('indexedDB' in window) {
-          const req = indexedDB.open('kherokhata_storage_v1', 1);
-          req.onsuccess = (e) => {
-            const db = e.target.result;
-            if (db && db.objectStoreNames.contains('settings')) {
-              const tx = db.transaction('settings', 'readonly');
-              const getReq = tx.objectStore('settings').get('author_avatar');
-              getReq.onsuccess = (ev) => {
-                const val = ev.target.result ? ev.target.result.val : null;
-                if (val) {
-                  document.querySelectorAll('.author-avatar-img').forEach((img) => {
-                    img.src = val;
-                  });
-                  try { localStorage.setItem('kherokhata_author_avatar', val); } catch (err) {}
-                }
-              };
-            }
-          };
-        }
-      } catch (e) {}
     </script>
   </head>
   <body
@@ -237,43 +202,7 @@ const schemaData = article
     <!-- Bulletproof Author Profile & Avatar Sync Everywhere -->
     <script is:inline>
       (() => {
-        function applyAvatarToDom(src) {
-          if (!src) return;
-          document.querySelectorAll('.author-avatar-img').forEach((img) => {
-            if (img.src !== src) img.src = src;
-          });
-        }
-
         function syncAuthorProfile() {
-          let savedAvatar = null;
-          try {
-            savedAvatar = localStorage.getItem('kherokhata_author_avatar');
-          } catch (e) {}
-
-          if (savedAvatar) {
-            applyAvatarToDom(savedAvatar);
-          }
-
-          if ('indexedDB' in window) {
-            try {
-              const req = indexedDB.open('kherokhata_storage_v1', 1);
-              req.onsuccess = (e) => {
-                const db = e.target.result;
-                if (db && db.objectStoreNames.contains('settings')) {
-                  const tx = db.transaction('settings', 'readonly');
-                  const getReq = tx.objectStore('settings').get('author_avatar');
-                  getReq.onsuccess = (ev) => {
-                    const val = ev.target.result ? ev.target.result.val : null;
-                    if (val) {
-                      applyAvatarToDom(val);
-                      try { localStorage.setItem('kherokhata_author_avatar', val); } catch (err) {}
-                    }
-                  };
-                }
-              };
-            } catch (e) {}
-          }
-
           const customProfile = localStorage.getItem('kherokhata_author_custom');
           if (customProfile) {
             try {
@@ -282,10 +211,6 @@ const schemaData = article
               if (data.education) document.querySelectorAll('.author-edu-text').forEach((el) => { el.textContent = data.education; });
               if (data.tagline) document.querySelectorAll('.author-tagline-text').forEach((el) => { el.textContent = data.tagline; });
               if (data.bio) document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.textContent = data.bio; });
-              // ONLY apply data.avatar if NO savedAvatar exists AND it's not the default placeholder
-              if (data.avatar && !savedAvatar && data.avatar !== '/images/affan-labib.jpg') {
-                applyAvatarToDom(data.avatar);
-              }
             } catch (e) {}
           }
         }

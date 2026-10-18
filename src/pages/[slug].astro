@@ -1,6 +1,7 @@
 ---
 // src/pages/[slug].astro
 import Layout from '../layouts/Layout.astro';
+import ThemeAvatar from '../components/ThemeAvatar.astro';
 import { getAllPostsAsync } from '../lib/db';
 
 export const prerender = false;
@@ -92,7 +93,11 @@ const renderedContent = renderBody(post.body);
 
       <div class="flex flex-wrap items-center justify-between gap-4 pt-2 text-xs font-sans text-paper-muted dark:text-night-muted">
         <div class="flex items-center gap-3">
-          <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-9 h-9 rounded-full object-cover ring-2 ring-paper-accent/30" />
+          <ThemeAvatar
+            class="w-9 h-9 rounded-full ring-2 ring-paper-accent/30 shrink-0"
+            imgClass="w-full h-full object-contain p-0.5"
+            alt="মেশক প্রকাশন — আফফান লাবীব"
+          />
           <div>
             <span class="font-bold text-paper-text dark:text-night-text block author-name-text">আফফান লাবীব</span>
             <span class="text-[11px] author-edu-text">তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ</span>

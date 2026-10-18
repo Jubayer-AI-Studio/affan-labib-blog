@@ -128,7 +128,7 @@ check('AppLoader immediately bypasses /admin route (0ms delay)', appLoader.inclu
 check('AppLoader skips on active browsing session (no repeat delay)', appLoader.includes('kherokhata_session_active'));
 
 const sw = fs.readFileSync('public/sw.js', 'utf-8');
-check('Service Worker updated to v14', sw.includes('kherokhata-cache-v14'));
+check('Service Worker updated to v14 or higher', sw.includes('kherokhata-cache-v14') || sw.includes('kherokhata-cache-v15'));
 check('Precache list trimmed down from 34 to core shell', !sw.includes('/category/chinta') && !sw.includes('/gazar-dinlipi'));
 check('Service Worker never intercepts /admin or /api', sw.includes("url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')"));
 
