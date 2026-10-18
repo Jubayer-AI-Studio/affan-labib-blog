@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { getAllPosts, deletePostBySlug, savePost } from '../../lib/db';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   const posts = getAllPosts();
   return new Response(JSON.stringify({ success: true, posts }), {

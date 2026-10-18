@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { updateAuthorAvatar, getAuthor } from '../../lib/db';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   const author = getAuthor();
   return new Response(JSON.stringify({ success: true, avatar: author?.avatar || '/images/affan-labib.jpg' }), {
