@@ -1,8 +1,11 @@
 ---
 // src/pages/search.astro
 import Layout from '../layouts/Layout.astro';
-import posts from '../data/posts.json';
+import { getAllPostsAsync } from '../lib/db';
 
+export const prerender = false;
+
+const posts = await getAllPostsAsync();
 const searchablePosts = posts.map((p) => {
   const catNames: Record<string, string> = {
     chinta: 'চিন্তা',

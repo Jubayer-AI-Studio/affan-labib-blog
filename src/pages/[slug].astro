@@ -1,16 +1,17 @@
 ---
 // src/pages/[slug].astro
 import Layout from '../layouts/Layout.astro';
-import posts from '../data/posts.json';
+import { getAllPostsAsync } from '../lib/db';
 
-export async function getStaticPaths() {
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post }
-  }));
+export const prerender = false;
+
+const { slug } = Astro.params;
+const allPosts = await getAllPostsAsync();
+const post = allPosts.find((p) => p.slug === slug);
+
+if (!post) {
+  return Astro.redirect('/404');
 }
-
-const { post } = Astro.props;
 
 const categoryLabels: Record<string, string> = {
   chinta: 'চিন্তা',

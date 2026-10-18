@@ -1,9 +1,13 @@
 ---
 // src/pages/admin.astro
 import Layout from '../layouts/Layout.astro';
-import posts from '../data/posts.json';
+import { getAllPostsAsync } from '../lib/db';
 import author from '../data/author.json';
 import defaultBookshelf from '../data/bookshelf.json';
+
+export const prerender = false;
+
+const posts = await getAllPostsAsync();
 ---
 
 <Layout
@@ -973,14 +977,20 @@ ${body}
               localStorage.setItem('kherokhata_custom_posts', JSON.stringify(updatedCustom));
             } catch (e) {}
 
-            // 5. Send background DELETE to backend API (failsafe catch for static hosting)
+            // 5. Send real DELETE to backend API
             try {
-              fetch('/api/posts', {
+              const delRes = await fetch('/api/posts', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ slug })
-              }).then(r => r.json()).catch(() => {});
-            } catch (e) {}
+              });
+              const delJson = await delRes.json();
+              if (!delRes.ok || !delJson.success) {
+                console.warn('[Admin] Server delete returned:', delJson);
+              }
+            } catch (e) {
+              console.warn('[Admin] Network delete error:', e);
+            }
 
             // 6. Broadcast sync events
             window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
@@ -1058,14 +1068,20 @@ ${body}
             localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(filteredDeleted));
           } catch (e) {}
 
-          // 2. Safe background API POST
+          // 2. Real Cloud API POST
           try {
-            fetch('/api/posts', {
+            const apiRes = await fetch('/api/posts', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(postPayload)
-            }).then(r => r.json()).catch(() => {});
-          } catch (e) {}
+            });
+            const apiJson = await apiRes.json();
+            if (!apiRes.ok || !apiJson.success) {
+              console.warn('[Admin] Server save returned warning:', apiJson);
+            }
+          } catch (e) {
+            console.warn('[Admin] API POST warning:', e);
+          }
 
           // 3. Broadcast sync events
           window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));

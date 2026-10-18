@@ -1,13 +1,16 @@
 import type { APIRoute } from 'astro';
-import { getAllPosts, deletePostBySlug, savePost } from '../../lib/db';
+import { getAllPostsAsync, deletePostBySlug, savePost } from '../../lib/db';
 
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const posts = getAllPosts();
+  const posts = await getAllPostsAsync();
   return new Response(JSON.stringify({ success: true, posts }), {
     status: 200,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, max-age=0'
+    }
   });
 };
 
@@ -23,9 +26,9 @@ export const DELETE: APIRoute = async ({ request }) => {
       });
     }
 
-    const success = deletePostBySlug(slug);
+    const success = await deletePostBySlug(slug);
     if (success) {
-      const remainingPosts = getAllPosts();
+      const remainingPosts = await getAllPostsAsync();
       return new Response(JSON.stringify({ success: true, remainingCount: remainingPosts.length }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' }
@@ -54,8 +57,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const success = savePost(postData);
-    return new Response(JSON.stringify({ success }), {
+    const success = await savePost(postData);
+    return new Response(JSON.stringify({ success, post: postData }), {
       status: success ? 200 : 500,
       headers: { 'Content-Type': 'application/json' }
     });

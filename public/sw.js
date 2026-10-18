@@ -1,36 +1,14 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v13 (Instant-Launch PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v13';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v14 (Zero-Contention PWA Engine)
+const CACHE_NAME = 'kherokhata-cache-v14';
 const PRECACHE_URLS = [
   '/',
   '/offline',
   '/about',
   '/bookshelf',
-  '/search',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable.png',
-  '/icons/apple-touch-icon.png',
-  '/images/affan-labib.jpg',
-  '/images/og-default.jpg',
-  // 5 Categories
-  '/category/chinta',
-  '/category/pathalap',
-  '/category/itihas',
-  '/category/boi-alochona',
-  '/category/onubad',
-  // All 10 Authentic Articles
-  '/bedonadayok-dushongbad-ayesha',
-  '/boi-er-bibhay-alokito-monishi',
-  '/dinlipi-shukrobar-amimul-ihsan',
-  '/gazar-dinlipi',
-  '/haramainer-live',
-  '/kobi-sahityik-howa-lokkho-noy',
-  '/notun-mehman',
-  '/saobaner-dosh-bochhor',
-  '/tahafutul-malahida',
-  '/takhassuser-jibon-shuru'
+  '/images/affan-labib.jpg'
 ];
 
 // Install: Pre-cache core shell safely without aborting on single failure

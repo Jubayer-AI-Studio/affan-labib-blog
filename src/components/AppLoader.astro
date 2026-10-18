@@ -134,14 +134,14 @@
     const loader = document.getElementById('app-loader-screen');
     if (!loader) return;
 
-    // 1. Session Intelligence: Zero Delay on Internal Page Navigation
-    // If the reader is already browsing pages within this session, remove loader in 0ms!
+    // Instant Bypass on /admin to ensure 0ms buffer-free login & studio access
     try {
+      if (window.location.pathname.startsWith('/admin')) {
+        loader.remove();
+        return;
+      }
       const isSessionActive = sessionStorage.getItem('kherokhata_session_active');
-      const navEntry = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      const isReload = navEntry && navEntry.type === 'reload';
-
-      if (isSessionActive && !isReload) {
+      if (isSessionActive) {
         loader.remove();
         return;
       }
