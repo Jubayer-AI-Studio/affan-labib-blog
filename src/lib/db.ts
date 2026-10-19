@@ -47,14 +47,29 @@ export function getLocalPosts(): Post[] {
   return [];
 }
 
+async function withTimeout<T>(promise: Promise<T>, ms = 1500): Promise<T> {
+  let timer: any;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('DB query timeout')), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timer);
+      return res;
+    }),
+    timeoutPromise
+  ]);
+}
+
 export async function getAllPostsAsync(): Promise<Post[]> {
-  // 1. Try Supabase if configured
+  // 1. Try Supabase if configured (guarded by strict 1.5s timeout)
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('posts')
         .select('*')
         .order('published_at', { ascending: false });
+      const { data, error } = await withTimeout(query, 1500);
 
       if (!error && data && data.length > 0) {
         return data.map((row: any) => ({
@@ -71,7 +86,7 @@ export async function getAllPostsAsync(): Promise<Post[]> {
         }));
       }
     } catch (e: any) {
-      console.warn('[DB] Supabase query failed, falling back:', e.message);
+      console.warn('[DB] Supabase query failed or timed out, falling back to local:', e.message);
     }
   }
 
@@ -233,12 +248,13 @@ export function getLocalCategories(): Category[] {
 }
 
 export async function getCategoriesAsync(): Promise<Category[]> {
-  // 1. Try Supabase if configured
+  // 1. Try Supabase if configured (guarded by strict 1.5s timeout)
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('categories')
         .select('*');
+      const { data, error } = await withTimeout(query, 1500);
 
       if (!error && data && data.length > 0) {
         return data.map((row: any) => ({
