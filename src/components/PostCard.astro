@@ -43,7 +43,7 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
   <div class="relative space-y-4">
     <!-- Meta Bar with Category Pill -->
     <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted relative z-20">
-      <a href={`/#${post.category}`} class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+      <a href={`/#${post.category}`} data-category-filter={post.category} class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
         <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
         {categoryName}
       </a>
@@ -54,9 +54,9 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
       </div>
     </div>
 
-    <!-- Title with Full-Card Stretched Link -->
+    <!-- Title Link -->
     <h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-snug">
-      <a href={`/${post.slug}`} class="hover:underline focus:outline-none after:absolute after:inset-0 after:z-10">
+      <a href={`/${post.slug}`} class="hover:underline focus:outline-none z-20 relative block">
         {post.title}
       </a>
     </h3>
@@ -77,14 +77,16 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
       ))}
     </div>
 
-    <span
-      class="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-full bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent font-semibold text-xs font-sans border border-paper-accent/25 dark:border-night-accent/30 group-hover:bg-paper-accent group-hover:text-white dark:group-hover:bg-night-accent dark:group-hover:text-stone-900 transition-all duration-200 pointer-events-none shadow-2xs"
-      aria-hidden="true"
+    <!-- Native Read Button (Touch Friendly) -->
+    <a
+      href={`/${post.slug}`}
+      class="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-full bg-paper-accent text-white dark:bg-night-accent dark:text-stone-900 font-semibold text-xs font-sans hover:opacity-95 active:scale-95 shadow-xs transition-all duration-200 z-20 relative cursor-pointer"
+      aria-label={`${post.title} রচনাটি পড়ুন`}
     >
       <span class="font-sans font-medium">পড়ুন</span>
-      <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
       </svg>
-    </span>
+    </a>
   </div>
 </article>

@@ -479,8 +479,26 @@ function toBn(n: number) {
       } catch (e) {}
     }
 
-    syncHomeBookshelf();
-    window.addEventListener('kherokhata-bookshelf-sync', syncHomeBookshelf);
-    window.addEventListener('storage', syncHomeBookshelf);
+    // 4. Instant Card Tap Navigation Everywhere (Tap anywhere on card or button to read)
+    document.querySelectorAll('.post-item').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('a[data-category-filter]')) return;
+        const slug = card.getAttribute('data-slug');
+        if (slug) {
+          window.location.href = `/${slug}`;
+        }
+      });
+    });
+
+    const spotCard = document.getElementById('spotlight-section');
+    if (spotCard) {
+      spotCard.addEventListener('click', (e) => {
+        if (e.target.closest('a[href*="#categories"]')) return;
+        const slug = spotCard.getAttribute('data-slug');
+        if (slug) {
+          window.location.href = `/${slug}`;
+        }
+      });
+    }
   })();
 </script>

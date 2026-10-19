@@ -45,6 +45,14 @@ const {
     <meta name="twitter:description" content="আফফান লাবীবের নিভৃত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।" />
     <meta name="twitter:image" content="https://affan-labib-blog.vercel.app/images/og-default-v2.jpg" />
 
+    <!-- PWA Installable Configuration -->
+    <link rel="manifest" href="/admin-manifest.webmanifest" />
+    <meta name="theme-color" content="#9A3412" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="লেখক স্টুডিও" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -113,6 +121,35 @@ const {
           toast.classList.add('opacity-0', 'translate-y-2');
           setTimeout(() => toast.remove(), 300);
         }, 3200);
+      };
+    </script>
+
+    <!-- PWA Service Worker Registration & Installation Prompt -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+
+      // Handle PWA Install Prompt
+      let deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+      });
+
+      window.triggerPwaInstall = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও অ্যাপটি সফলভাবে মোবাইলে যুক্ত হয়েছে! 📲');
+          }
+          deferredPrompt = null;
+        } else {
+          alert('মোবাইলে ইনস্টল করতে:\n১. ব্রাউজারের ৩-ডট (মেনু) চাপুন।\n২. "Add to Home screen" বা "Install App" অপশনে ট্যাপ করুন।');
+        }
       };
     </script>
   </body>

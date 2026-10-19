@@ -135,7 +135,7 @@ check('Service Worker never intercepts /admin or /api', sw.includes("url.pathnam
 const adminPage = fs.readFileSync('src/pages/admin.astro', 'utf-8');
 check('Admin uses dedicated AdminLayout (decoupled from public layout)', adminPage.includes("import AdminLayout from '../layouts/AdminLayout.astro'"));
 check('Admin writer desk has zero window.location.reload() (jitter-free)', !adminPage.includes('window.location.reload()'));
-check('Admin writer desk has Bengali speech dictation button', adminPage.includes('voice-dictation-btn'));
+check('Admin writer desk has footnote insertion tool', adminPage.includes('toolbar-add-footnote-btn'));
 check('Admin has dynamic category manager and folder creation', adminPage.includes('/api/categories'));
 
 const categoriesApi = fs.readFileSync('src/pages/api/categories.ts', 'utf-8');

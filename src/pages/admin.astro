@@ -58,6 +58,16 @@ const [posts, categories] = await Promise.all([
       <p class="text-[11px] text-paper-muted dark:text-night-muted font-sans opacity-70">
         (ডিফল্ট পিন: 1234 — প্রবেশের পর পরিবর্তন করতে পারবেন)
       </p>
+
+      <!-- Direct PWA Install Button on Mobile -->
+      <button
+        type="button"
+        onclick="window.triggerPwaInstall && window.triggerPwaInstall()"
+        class="w-full py-2.5 px-4 rounded-xl border border-paper-border/80 dark:border-night-border/80 bg-paper-border/20 dark:bg-night-border/20 hover:bg-paper-border/40 text-paper-text dark:text-night-text font-sans text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+      >
+        <span>📲</span>
+        <span>মোবাইলে স্টুডিও অ্যাপ হিসেবে ইনস্টল করুন</span>
+      </button>
     </div>
   </div>
 
@@ -254,48 +264,54 @@ const [posts, categories] = await Promise.all([
           </div>
 
           <!-- File Rows Container -->
-          <div id="file-list-container" class="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+          <div id="file-list-container" class="space-y-3 max-h-[600px] overflow-y-auto pr-1">
             {posts.map((post) => (
               <div
-                class="file-row p-3.5 rounded-2xl border border-paper-border/60 dark:border-night-border/60 hover:border-paper-accent/50 dark:hover:border-night-accent/50 hover:bg-paper-border/20 dark:hover:bg-night-border/20 transition-all flex items-center justify-between gap-3 text-xs"
+                class="file-row p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/40 dark:bg-night-bg/40 hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                 data-category={post.category}
                 data-slug={post.slug}
               >
-                <div class="space-y-0.5 flex-grow">
-                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
-                    <span>📄</span>
-                    <span>{post.title}</span>
+                <div class="space-y-1 min-w-0 flex-1">
+                  <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
+                    <span class="shrink-0 text-base">📄</span>
+                    <span class="truncate block">{post.title}</span>
                   </div>
                   <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
+                      {post.category}
+                    </span>
+                    <span>·</span>
                     <span>তারিখ: {post.publishedAt}</span>
                     <span>·</span>
-                    <span>শব্দ: {post.body ? post.body.trim().split(/\s+/).length : 0}</span>
-                    <span>·</span>
-                    <span class="font-mono opacity-75">{post.slug}.md</span>
+                    <span>{post.body ? post.body.trim().split(/\s+/).length : 0} শব্দ</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+
+                <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+                  <button
+                    type="button"
+                    class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
+                    data-slug={post.slug}
+                  >
+                    <span>✍️</span>
+                    <span>সম্পাদনা</span>
+                  </button>
                   <a
                     href={`/${post.slug}`}
                     target="_blank"
-                    class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors"
+                    class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text text-xs font-sans transition-colors flex items-center justify-center gap-1"
                   >
-                    পড়ুন ↗
+                    <span>পড়ুন</span>
+                    <span>↗</span>
                   </a>
                   <button
                     type="button"
-                    class="load-in-writer-btn px-3 py-1.5 rounded-xl bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
-                    data-slug={post.slug}
-                  >
-                    সম্পাদনা ✍️
-                  </button>
-                  <button
-                    type="button"
-                    class="delete-post-btn px-3 py-1.5 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
+                    class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
                     data-slug={post.slug}
                     title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
                   >
-                    🗑️ ডিলিট
+                    <span>🗑️</span>
+                    <span>মুছুন</span>
                   </button>
                 </div>
               </div>
@@ -399,17 +415,6 @@ const [posts, categories] = await Promise.all([
             >
               <span>📚</span>
               <span>ফুটনোট</span>
-            </button>
-
-            <!-- Voice Dictation Button (বাংলা ভয়েস টাইপিং) -->
-            <button
-              id="voice-dictation-btn"
-              type="button"
-              class="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-800 dark:text-purple-300 font-bold border border-purple-500/30 text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
-              title="মুখে বলুন, বাংলায় লেখা হয়ে যাবে"
-            >
-              <span id="voice-icon">🎙️</span>
-              <span id="voice-label">মুখে বলুন</span>
             </button>
           </div>
 
@@ -1170,82 +1175,6 @@ const [posts, categories] = await Promise.all([
         });
       });
 
-      // 7. Bengali Voice Dictation Engine (Web Speech API)
-      const voiceBtn = document.getElementById('voice-dictation-btn');
-      const voiceIcon = document.getElementById('voice-icon');
-      const voiceLabel = document.getElementById('voice-label');
-      let isVoiceActive = false;
-      let recognition = null;
-
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRec();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'bn-BD'; // Bengali (Bangladesh)
-
-        recognition.onstart = () => {
-          isVoiceActive = true;
-          if (voiceBtn) {
-            voiceBtn.classList.remove('bg-purple-500/15', 'text-purple-800', 'dark:text-purple-300');
-            voiceBtn.classList.add('bg-rose-600', 'text-white', 'animate-pulse');
-          }
-          if (voiceLabel) voiceLabel.innerText = 'শুনছি... বলুন';
-          if (voiceIcon) voiceIcon.innerText = '🔴';
-          if (window.showAdminToast) window.showAdminToast('ভয়েস টাইপিং সক্রিয়: স্পষ্ট বাংলায় কথা বলুন...');
-        };
-
-        recognition.onresult = (event) => {
-          let transcript = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              transcript += event.results[i][0].transcript + ' ';
-            }
-          }
-          if (transcript && editorBody) {
-            const start = editorBody.selectionStart;
-            const end = editorBody.selectionEnd;
-            editorBody.setRangeText(transcript, start, end, 'end');
-            updateLivePreview();
-          }
-        };
-
-        recognition.onerror = (e) => {
-          console.warn('[Speech] Error:', e.error);
-          stopVoice();
-        };
-
-        recognition.onend = () => {
-          stopVoice();
-        };
-      }
-
-      function stopVoice() {
-        isVoiceActive = false;
-        if (voiceBtn) {
-          voiceBtn.classList.add('bg-purple-500/15', 'text-purple-800', 'dark:text-purple-300');
-          voiceBtn.classList.remove('bg-rose-600', 'text-white', 'animate-pulse');
-        }
-        if (voiceLabel) voiceLabel.innerText = 'মুখে বলুন';
-        if (voiceIcon) voiceIcon.innerText = '🎙️';
-      }
-
-      voiceBtn?.addEventListener('click', () => {
-        if (!recognition) {
-          alert('আপনার ব্রাউজারে বাংলা ভয়েস টাইপিং সমর্থন করে না। অনুগ্রহ করে Chrome বা Edge ব্যবহার করুন।');
-          return;
-        }
-        if (isVoiceActive) {
-          recognition.stop();
-        } else {
-          try {
-            recognition.start();
-          } catch (e) {
-            recognition.stop();
-          }
-        }
-      });
-
       // Clear / Reset Editor
       document.getElementById('reset-editor-btn')?.addEventListener('click', () => {
         if (!confirm('আপনি কি লেখার খসড়া পরিষ্কার করতে চান?')) return;
@@ -1406,32 +1335,37 @@ const [posts, categories] = await Promise.all([
             // Prepend new row to file-list-container
             if (fileListContainer) {
               const newRow = document.createElement('div');
-              newRow.className = 'file-row p-3.5 rounded-2xl border border-paper-accent/50 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex items-center justify-between gap-3 text-xs';
+              newRow.className = 'file-row p-4 rounded-2xl border border-paper-accent/50 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
               newRow.setAttribute('data-category', category);
               newRow.setAttribute('data-slug', slug);
               newRow.innerHTML = `
-                <div class="space-y-0.5 flex-grow">
-                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
-                    <span class="text-paper-accent">✨</span>
-                    <span>${title}</span>
+                <div class="space-y-1 min-w-0 flex-1">
+                  <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
+                    <span class="text-paper-accent shrink-0 text-base">✨</span>
+                    <span class="truncate block">${title}</span>
                   </div>
                   <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
+                      ${category}
+                    </span>
+                    <span>·</span>
                     <span>তারিখ: ${date}</span>
                     <span>·</span>
-                    <span>শব্দ: ${postPayload.wordCount}</span>
-                    <span>·</span>
-                    <span class="font-mono opacity-75">${slug}.md</span>
+                    <span>${postPayload.wordCount} শব্দ</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <a href="/${slug}" target="_blank" class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors">
-                    পড়ুন ↗
-                  </a>
-                  <button type="button" class="load-in-writer-btn px-3 py-1.5 rounded-xl bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${slug}">
-                    সম্পাদনা ✍️
+                <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+                  <button type="button" class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5" data-slug="${slug}">
+                    <span>✍️</span>
+                    <span>সম্পাদনা</span>
                   </button>
-                  <button type="button" class="delete-post-btn px-3 py-1.5 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
-                    🗑️ ডিলিট
+                  <a href="/${slug}" target="_blank" class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text text-xs font-sans transition-colors flex items-center justify-center gap-1">
+                    <span>পড়ুন</span>
+                    <span>↗</span>
+                  </a>
+                  <button type="button" class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1" data-slug="${slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
+                    <span>🗑️</span>
+                    <span>মুছুন</span>
                   </button>
                 </div>
               `;
