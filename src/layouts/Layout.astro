@@ -24,8 +24,8 @@ const {
 
 const siteUrl = 'https://affan-labib-blog.vercel.app';
 const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
-const absoluteImageURL = new URL(image, siteUrl).href;
-const ogImageWithVersion = `${absoluteImageURL}?v=2`;
+const cleanImage = image === '/images/og-default.jpg' ? '/images/og-default-v2.jpg' : image;
+const absoluteImageURL = new URL(cleanImage, siteUrl).href;
 
 // JSON-LD Schema
 const schemaData = article
@@ -76,6 +76,36 @@ const schemaData = article
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalURL} />
 
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="author" content="আফফান লাবীব" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Telegram -->
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
+    <meta property="og:locale" content="bn_BD" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteImageURL} />
+    <meta property="og:image:secure_url" content={absoluteImageURL} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    {article?.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
+    {article?.tags?.map((t) => <meta property="article:tag" content={t} />)}
+
+    <!-- Twitter / X Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteImageURL} />
+    <meta name="twitter:image:alt" content={title} />
+
     <!-- High-Performance Non-Blocking Fonts -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
@@ -98,36 +128,6 @@ const schemaData = article
         href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap"
       />
     </noscript>
-
-    <!-- SEO Meta Tags -->
-    <title>{title}</title>
-    <meta name="title" content={title} />
-    <meta name="description" content={description} />
-    <meta name="author" content="আফফান লাবীব" />
-
-    <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Telegram -->
-    <meta property="og:type" content={article ? 'article' : 'website'} />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
-    <meta property="og:locale" content="bn_BD" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImageWithVersion} />
-    <meta property="og:image:secure_url" content={ogImageWithVersion} />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={title} />
-    {article?.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
-    {article?.tags?.map((t) => <meta property="article:tag" content={t} />)}
-
-    <!-- Twitter / X Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content={canonicalURL} />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageWithVersion} />
-    <meta name="twitter:image:alt" content={title} />
 
     <!-- RSS Feed -->
     <link rel="alternate" type="application/rss+xml" title="আফফান লাবীব - RSS Feed" href="/rss.xml" />
