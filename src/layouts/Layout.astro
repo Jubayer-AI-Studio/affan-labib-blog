@@ -85,6 +85,8 @@ const schemaData = article
     <meta name="author" content="আফফান লাবীব" />
 
     <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Telegram -->
+    <link rel="image_src" href={absoluteImageURL} />
+    <meta name="thumbnail" content={absoluteImageURL} />
     <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
@@ -106,6 +108,7 @@ const schemaData = article
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={absoluteImageURL} />
+    <meta name="twitter:image:src" content={absoluteImageURL} />
     <meta name="twitter:image:alt" content={title} />
 
     <!-- High-Performance Non-Blocking Fonts -->
