@@ -636,5 +636,37 @@ function toBn(n: number) {
         }
       });
     }
+
+    // 5. Background Idle Cache Warmer for 100% Offline Article Reading
+    if ('caches' in window && 'serviceWorker' in navigator) {
+      const warmOfflineCache = async () => {
+        try {
+          if (!navigator.onLine) return;
+          const cache = await caches.open('kherokhata-cache-v18');
+          const slugs = Array.from(document.querySelectorAll('[data-slug]'))
+            .map((el) => el.getAttribute('data-slug'))
+            .filter(Boolean);
+          const uniqueSlugs = [...new Set(slugs)];
+
+          for (const s of uniqueSlugs) {
+            const articleUrl = '/' + s;
+            const hasMatch = await cache.match(articleUrl);
+            if (!hasMatch) {
+              fetch(articleUrl)
+                .then((r) => {
+                  if (r.status === 200) cache.put(articleUrl, r);
+                })
+                .catch(() => {});
+            }
+          }
+        } catch (e) {}
+      };
+
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => warmOfflineCache(), { timeout: 3000 });
+      } else {
+        setTimeout(warmOfflineCache, 1800);
+      }
+    }
   })();
 </script>

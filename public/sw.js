@@ -5,6 +5,8 @@ const PRECACHE_URLS = [
   '/offline',
   '/about',
   '/bookshelf',
+  '/search',
+  '/admin',
   '/manifest.webmanifest',
   '/admin-manifest.webmanifest',
   '/favicon.svg',
@@ -53,18 +55,54 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Skip API routes from caching
-  if (url.pathname.startsWith('/api')) return;
+  // API routes handling: Offline cache fallback for GET /api/posts, pass-through for mutations
+  if (url.pathname.startsWith('/api')) {
+    if (request.method === 'GET' && url.pathname.startsWith('/api/posts')) {
+      event.respondWith(
+        (async () => {
+          try {
+            const networkResponse = await fetch(request);
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return networkResponse;
+          } catch (err) {
+            const cached = await caches.match(request);
+            if (cached) return cached;
+            return new Response(JSON.stringify({ success: true, posts: [] }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        })()
+      );
+      return;
+    }
+    return;
+  }
 
-  // Dedicated Network-First for Admin Studio to satisfy Chrome WebAPK installability without browser badge
+  // Dedicated Network-First with Cache Fallback for Admin Studio (Full Offline Author Studio)
   if (url.pathname.startsWith('/admin')) {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/offline'))
+      (async () => {
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        } catch (err) {
+          const cachedAdmin = await caches.match(request, { ignoreSearch: true }) || await caches.match('/admin', { ignoreSearch: true });
+          if (cachedAdmin) return cachedAdmin;
+          return caches.match('/offline');
+        }
+      })()
     );
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Stale-While-Revalidate for Instant 0ms App Launch
+  // 1. Navigation requests (HTML pages): Stale-While-Revalidate for Instant 0ms App Launch & Offline Access
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
@@ -87,7 +125,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
 
-        // If not in cache yet (very first cold install), wait for network
+        // If not in cache yet (first visit to this specific URL), wait for network
         const networkResponse = await fetchPromise;
         if (networkResponse) return networkResponse;
 

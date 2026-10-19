@@ -275,6 +275,19 @@ const renderedContent = renderBody(displayPost.body);
       } catch (err) {}
     });
 
+    // Offline-Aware External Social Sharing Check
+    const shareFb = document.getElementById('share-fb-link');
+    const shareWa = document.getElementById('share-wa-link');
+
+    [shareFb, shareWa].forEach((btn) => {
+      btn?.addEventListener('click', (e) => {
+        if (!navigator.onLine) {
+          e.preventDefault();
+          alert('📶 সোশ্যাল মিডিয়ায় শেয়ার করার জন্য ইন্টারনেট সংযোগ প্রয়োজন।\n\nআপনি অফলাইনে লেখাটির লিঙ্ক সংরক্ষণ করতে চাইলে "লিঙ্ক কপি" বোতামটি ব্যবহার করতে পারেন।');
+        }
+      });
+    });
+
     // In-situ Footnote Popover
     const modal = document.getElementById('footnote-popover-modal');
     const card = document.getElementById('footnote-popover-card');
