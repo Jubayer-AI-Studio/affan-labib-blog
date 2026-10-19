@@ -1,25 +1,24 @@
 ---
 // src/pages/search.astro
 import Layout from '../layouts/Layout.astro';
-import { getAllPostsAsync } from '../lib/db';
+import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
 
 export const prerender = false;
 
-const posts = await getAllPostsAsync();
+const [posts, categories] = await Promise.all([
+  getAllPostsAsync(),
+  getCategoriesAsync()
+]);
+
+const catMap = new Map(categories.map((c) => [c.id, c.title]));
+
 const searchablePosts = posts.map((p) => {
-  const catNames: Record<string, string> = {
-    chinta: 'চিন্তা',
-    pathalap: 'পাঠালাপ',
-    itihas: 'ইতিহাস',
-    'boi-alochona': 'বই-আলোচনা',
-    onubad: 'অনুবাদ'
-  };
   return {
     title: p.title,
     slug: p.slug,
     description: p.description,
     category: p.category,
-    categoryLabel: catNames[p.category] || p.category,
+    categoryLabel: catMap.get(p.category) || p.category,
     tags: p.tags,
     publishedAt: p.publishedAt,
     formattedDate: p.formattedDate,

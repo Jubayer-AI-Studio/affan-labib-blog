@@ -1,157 +1,806 @@
 ---
 // src/pages/admin.astro
-import Layout from '../layouts/Layout.astro';
-import { getAllPostsAsync } from '../lib/db';
+// Standalone, Jitter-Free Author Studio for Affan Labib / Meshk Prokashon
+import AdminLayout from '../layouts/AdminLayout.astro';
+import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
 import author from '../data/author.json';
 import defaultBookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
-const posts = await getAllPostsAsync();
+const [posts, categories] = await Promise.all([
+  getAllPostsAsync(),
+  getCategoriesAsync()
+]);
 ---
 
-<Layout
+<AdminLayout
   title="লেখক স্টুডিও | আফফান লাবীব"
   description="আফফান লাবীবের নিভৃত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।"
 >
-<div id="pin-screen" class="max-w-md mx-auto my-12 p-8 rounded-3xl border border-paper-border dark:border-night-border bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-2xl text-center space-y-6"> <div class="w-16 h-16 mx-auto rounded-2xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-3xl shadow-sm">
-🔐
-</div> <div class="space-y-2"> <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
-লেখক ও অ্যাডমিন প্রবেশদ্বার
-</h1> <p class="text-xs text-paper-muted dark:text-night-muted font-sans leading-relaxed">
-এই অংশটি শুধুমাত্র আফফান লাবীবের ব্যক্তিগত ব্যবহারের জন্য। অনুগ্রহ করে ৪-সংখ্যার গোপন পিন কোড লিখুন।
-</p> </div> <div class="space-y-4"> <div class="relative"> <input id="pin-input" type="password" maxlength="6" placeholder="••••" autofocus class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3.5 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent dark:focus:border-night-accent"> </div> <p id="pin-error" class="hidden text-xs text-red-600 font-sans font-medium">
-❌ পিন কোডটি সঠিক নয়! পুনরায় চেষ্টা করুন।
-</p> <button id="pin-submit-btn" type="button" class="w-full py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer">
-স্টুডিও আনলক করুন →
-</button> <p class="text-[11px] text-paper-muted dark:text-night-muted font-sans opacity-70">
-(ডিফল্ট পিন: 1234 — প্রবেশের পর পরিবর্তন করতে পারবেন)
-</p> </div> </div>  <div id="studio-screen" class="hidden space-y-8"> <!-- Studio Header Bar --> <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs"> <div class="flex items-center gap-3"> <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-xl object-cover ring-2 ring-paper-accent/30"> <div> <div class="flex items-center gap-2"> <h2 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-আফফান লাবীব — রাইটার্স স্টুডিও
-</h2> <span class="px-2 py-0.5 rounded-full text-[10px] font-sans font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-● অ্যাডমিন সক্রিয়
-</span> </div> <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-ব্যক্তিগত রচনাগার, সি-ড্রাইভ ফোল্ডার এক্সপ্লোরার ও লাইভ এডিটর
-</p> </div> </div> <div class="flex items-center gap-2"> <a href="/" target="_blank" class="px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border hover:bg-paper-border/40 text-xs font-sans font-medium transition-colors">
-আসল সাইট দেখুন ↗
-</a> <button id="logout-btn" type="button" class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-sans font-medium hover:bg-red-100 transition-colors cursor-pointer">
-লগআউট
-</button> </div> </div> <!-- Navigation Tabs --> <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-paper-border/80 dark:border-night-border/80 text-xs font-sans"> <button id="tab-btn-explorer" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors bg-paper-accent text-white shadow-2xs" data-tab="tab-explorer">
-🗂️ ফোল্ডার এক্সপ্লোরার (C: Drive)
-</button> <button id="tab-btn-writer" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text" data-tab="tab-writer">
-✍️ লাইভ রাইটার্স ডেস্ক (Split-View)
-</button> <button id="tab-btn-profile" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text" data-tab="tab-profile">
-👤 লেখক প্রোফাইল ও বায়ো
-</button> <button id="tab-btn-bookshelf" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text" data-tab="tab-bookshelf">
-📚 পাঠাগার ও বুকশেলফ
-</button> <button id="tab-btn-menu" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text" data-tab="tab-menu">
-📁 বিষয়শ্রেণী ও ফোল্ডার ম্যানেজার
-</button> <button id="tab-btn-settings" type="button" class="admin-tab-btn px-4 py-2 rounded-xl font-medium transition-colors border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text" data-tab="tab-settings">
-⚙️ পিন কোড ও নিরাপত্তা
-</button> </div> <!-- TAB 1: C: Drive Folder Explorer --> <div id="tab-explorer" class="admin-tab-content space-y-6"> <div class="grid grid-cols-1 md:grid-cols-12 gap-6"> <!-- Left: Folder Tree --> <div class="md:col-span-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 p-4 space-y-3 font-mono text-xs"> <div class="pb-2 border-b border-paper-border/60 dark:border-night-border/60 font-sans font-bold text-xs text-paper-text dark:text-night-text flex items-center justify-between"> <span>💻 C:\লাবীবের_খেরোখাতা\</span> <span class="text-[10px] text-paper-muted">10টি ফাইল</span> </div> <div class="space-y-1"> <button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent font-semibold flex items-center justify-between transition-colors" data-cat="all"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">সকল রচনা</span> </span> <span class="text-[11px] opacity-80 font-sans">(10)</span> </button> <button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors" data-cat="chinta"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">চিন্তা</span> </span> <span class="text-[11px] text-paper-muted opacity-80 font-sans">(4)</span> </button><button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors" data-cat="pathalap"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">পাঠালাপ</span> </span> <span class="text-[11px] text-paper-muted opacity-80 font-sans">(2)</span> </button><button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors" data-cat="itihas"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">ইতিহাস</span> </span> <span class="text-[11px] text-paper-muted opacity-80 font-sans">(2)</span> </button><button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors" data-cat="boi-alochona"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">বই-আলোচনা</span> </span> <span class="text-[11px] text-paper-muted opacity-80 font-sans">(2)</span> </button><button type="button" class="folder-item w-full text-left px-3 py-2 rounded-lg hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors" data-cat="onubad"> <span class="flex items-center gap-2"> <span>📁</span> <span class="font-sans">অনুবাদ</span> </span> <span class="text-[11px] text-paper-muted opacity-80 font-sans">(0)</span> </button> </div> <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50"> <button id="quick-new-post-btn" type="button" class="w-full py-2 px-3 rounded-lg bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"> <span>➕</span> <span>নতুন লেখা লিখুন</span> </button> </div> </div> <!-- Right: File List View --> <div class="md:col-span-8 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 p-5 space-y-4"> <div class="flex items-center justify-between border-b border-paper-border/60 dark:border-night-border/60 pb-3"> <h3 id="current-folder-title" class="font-serif font-bold text-base text-paper-text dark:text-night-text">
-📁 সকল রচনা (ফাইল তালিকা)
-</h3> <span class="text-xs font-sans text-paper-muted">ক্লিক করে এডিট বা প্রিভিউ দেখুন</span> </div> <div id="file-list-container" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-          {posts.map((post) => (
-            <div
-              class="file-row p-3 rounded-xl border border-paper-border/60 dark:border-night-border/60 hover:border-paper-accent/50 dark:hover:border-night-accent/50 hover:bg-paper-border/20 dark:hover:bg-night-border/20 transition-all flex items-center justify-between gap-3 text-xs"
-              data-category={post.category}
-              data-slug={post.slug}
-            >
-              <div class="space-y-0.5 flex-grow">
-                <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
-                  <span>📄</span>
-                  <span>{post.title}</span>
-                </div>
-                <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
-                  <span>তারিখ: {post.publishedAt}</span>
-                  <span>·</span>
-                  <span>শব্দ: {post.body ? post.body.trim().split(/\s+/).length : 0}</span>
-                  <span>·</span>
-                  <span class="font-mono">{post.slug}.md</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <a
-                  href={`/${post.slug}`}
-                  target="_blank"
-                  class="px-2.5 py-1 rounded-md border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors"
-                >
-                  পড়ুন ↗
-                </a>
-                <button
-                  type="button"
-                  class="load-in-writer-btn px-2.5 py-1 rounded-md bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
-                  data-slug={post.slug}
-                >
-                  সম্পাদনা ✍️
-                </button>
-                <button
-                  type="button"
-                  class="delete-post-btn px-2.5 py-1 rounded-md border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
-                  data-slug={post.slug}
-                  title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
-                >
-                  🗑️ ডিলিট
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <!-- Posts Backup & Export Tools -->
-        <div class="pt-4 border-t border-paper-border/60 dark:border-night-border/60 flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
-          <div>
-            <span class="font-bold text-paper-text dark:text-night-text block">💾 রচনাগার ব্যাকআপ ও সিঙ্ক:</span>
-            <span class="text-[11px] text-paper-muted dark:text-night-muted">আপনার সকল রচনার হালনাগাদ তালিকা JSON ফাইল আকারে ডাউনলোড করে ব্যাকআপ রাখুন।</span>
+  <!-- 1. Universal PIN Lock Screen -->
+  <div
+    id="pin-screen"
+    class="max-w-md mx-auto my-12 p-8 rounded-3xl border border-paper-border dark:border-night-border bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-2xl text-center space-y-6"
+  >
+    <div class="w-16 h-16 mx-auto rounded-2xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-3xl shadow-sm">
+      🔐
+    </div>
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
+        লেখক স্টুডিও প্রবেশদ্বার
+      </h1>
+      <p class="text-xs text-paper-muted dark:text-night-muted font-sans leading-relaxed">
+        এটি আফফান লাবীবের ব্যক্তিগত লেখার খাতা। অনুগ্রহ করে আপনার ৪-সংখ্যার গোপন পিন কোড লিখুন।
+      </p>
+    </div>
+    <div class="space-y-4">
+      <div class="relative">
+        <input
+          id="pin-input"
+          type="password"
+          maxlength="6"
+          placeholder="••••"
+          autofocus
+          class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3.5 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent dark:focus:border-night-accent"
+        />
+      </div>
+      <p id="pin-error" class="hidden text-xs text-red-600 font-sans font-medium">
+        ❌ পিন কোডটি সঠিক নয়! পুনরায় চেষ্টা করুন।
+      </p>
+      <button
+        id="pin-submit-btn"
+        type="button"
+        class="w-full py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer"
+      >
+        স্টুডিও আনলক করুন →
+      </button>
+      <p class="text-[11px] text-paper-muted dark:text-night-muted font-sans opacity-70">
+        (ডিফল্ট পিন: 1234 — প্রবেশের পর পরিবর্তন করতে পারবেন)
+      </p>
+    </div>
+  </div>
+
+  <!-- 2. Main Author Studio Workspace -->
+  <div id="studio-screen" class="hidden space-y-6">
+    <!-- Top Luxe Header Bar -->
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs">
+      <div class="flex items-center gap-3.5">
+        <img
+          src="/images/affan-labib.jpg"
+          alt="আফফান লাবীব"
+          class="author-avatar-img w-11 h-11 rounded-2xl object-cover ring-2 ring-paper-accent/30 shadow-xs"
+        />
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-lg font-bold font-serif text-paper-text dark:text-night-text author-name-text">
+              {author.name} — লেখক স্টুডিও
+            </h2>
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              স্টুডিও সক্রিয়
+            </span>
+            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted hidden md:inline">
+              ☁️ ক্লাউড ও ডেটাবেস সিঙ্ক সক্রিয়
+            </span>
           </div>
-          <button id="export-posts-json-btn" type="button" class="px-3.5 py-2 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-90 cursor-pointer flex items-center gap-1.5 shadow-xs" title="বর্তমান সব লেখার তালিকা JSON আকারে নামিয়ে নিন">
-            <span>📥</span> <span>posts.json ডাউনলোড</span>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+            নিভৃত সাহিত্য রচনাগার, ফোল্ডার এক্সপ্লোরার ও লাইভ রাইটার্স ডেস্ক
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 self-end sm:self-center">
+        <!-- Theme Toggle -->
+        <button
+          id="admin-theme-toggle-btn"
+          type="button"
+          class="p-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-xs font-sans transition-colors cursor-pointer"
+          title="রিডিং মোড (দিন / সেপিয়া / রাত)"
+        >
+          <span id="admin-theme-icon">☀️</span>
+        </button>
+
+        <a
+          href="/"
+          target="_blank"
+          class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/40 text-xs font-sans font-medium transition-colors flex items-center gap-1.5"
+        >
+          <span>আসল ব্লগে যান</span>
+          <span>↗</span>
+        </a>
+
+        <button
+          id="logout-btn"
+          type="button"
+          class="px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-sans font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer"
+        >
+          লগআউট
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-paper-border/80 dark:border-night-border/80 text-xs font-sans no-scrollbar">
+      <button
+        id="tab-btn-explorer"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all bg-paper-accent text-white shadow-xs cursor-pointer whitespace-nowrap"
+        data-tab="tab-explorer"
+      >
+        🗂️ ফোল্ডার এক্সপ্লোরার (C: Drive)
+      </button>
+      <button
+        id="tab-btn-writer"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-writer"
+      >
+        ✍️ লাইভ রাইটার্স ডেস্ক (Split-View)
+      </button>
+      <button
+        id="tab-btn-menu"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-menu"
+      >
+        📁 বিষয়শ্রেণী ও ফোল্ডার ম্যানেজার
+      </button>
+      <button
+        id="tab-btn-bookshelf"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-bookshelf"
+      >
+        📚 পাঠাগার ও বুকশেলফ
+      </button>
+      <button
+        id="tab-btn-profile"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-profile"
+      >
+        👤 লেখক প্রোফাইল ও বায়ো
+      </button>
+      <button
+        id="tab-btn-settings"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-settings"
+      >
+        ⚙️ পিন কোড ও নিরাপত্তা
+      </button>
+    </nav>
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: C: Drive Folder Explorer -->
+    <!-- ======================================================== -->
+    <section id="tab-explorer" class="admin-tab-content space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <!-- Left: Folder Tree -->
+        <div class="md:col-span-4 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 p-5 space-y-4 font-mono text-xs shadow-xs">
+          <div class="pb-3 border-b border-paper-border/60 dark:border-night-border/60 font-sans font-bold text-xs text-paper-text dark:text-night-text flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>💻</span>
+              <span>C:\লাবীবের_খেরোখাতা\</span>
+            </span>
+            <span id="folder-total-files-badge" class="text-[11px] text-paper-muted font-mono">{posts.length}টি ফাইল</span>
+          </div>
+
+          <!-- Dynamic Folder Tree List -->
+          <div id="folder-tree-list" class="space-y-1 font-sans">
+            <button
+              type="button"
+              class="folder-item w-full text-left px-3.5 py-2.5 rounded-xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent font-semibold flex items-center justify-between transition-colors cursor-pointer"
+              data-cat="all"
+            >
+              <span class="flex items-center gap-2">
+                <span>📁</span>
+                <span>সকল রচনা</span>
+              </span>
+              <span class="text-[11px] opacity-80 folder-count-badge" data-count-cat="all">({posts.length})</span>
+            </button>
+
+            {categories.map((cat) => {
+              const count = posts.filter((p) => p.category === cat.id).length;
+              return (
+                <button
+                  type="button"
+                  class="folder-item w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-paper-border/40 dark:hover:bg-night-border/40 text-paper-text dark:text-night-text flex items-center justify-between transition-colors cursor-pointer"
+                  data-cat={cat.id}
+                >
+                  <span class="flex items-center gap-2">
+                    <span>{cat.icon || '📁'}</span>
+                    <span>{cat.title}</span>
+                  </span>
+                  <span class="text-[11px] text-paper-muted opacity-80 folder-count-badge" data-count-cat={cat.id}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div class="pt-3 border-t border-paper-border/50 dark:border-night-border/50 space-y-2">
+            <button
+              id="quick-new-post-btn"
+              type="button"
+              class="w-full py-2.5 px-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <span>➕</span>
+              <span>নতুন লেখা লিখুন</span>
+            </button>
+            <button
+              id="quick-new-folder-btn"
+              type="button"
+              class="w-full py-2 px-3 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text font-sans text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>📁</span>
+              <span>নতুন ফোল্ডার খুলুন</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: File List View -->
+        <div class="md:col-span-8 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 p-6 space-y-4 shadow-xs">
+          <div class="flex items-center justify-between border-b border-paper-border/60 dark:border-night-border/60 pb-3 flex-wrap gap-2">
+            <div>
+              <h3 id="current-folder-title" class="font-serif font-bold text-base text-paper-text dark:text-night-text">
+                📁 সকল রচনা (ফাইল তালিকা)
+              </h3>
+              <span class="text-xs font-sans text-paper-muted">যেকোনো লেখা পড়তে বা পরিবর্তন করতে ক্লিক করুন</span>
+            </div>
+            <div class="text-xs font-sans text-paper-muted">
+              মোট <span id="current-folder-count" class="font-bold text-paper-accent dark:text-night-accent">{posts.length}</span> টি রচনা
+            </div>
+          </div>
+
+          <!-- File Rows Container -->
+          <div id="file-list-container" class="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+            {posts.map((post) => (
+              <div
+                class="file-row p-3.5 rounded-2xl border border-paper-border/60 dark:border-night-border/60 hover:border-paper-accent/50 dark:hover:border-night-accent/50 hover:bg-paper-border/20 dark:hover:bg-night-border/20 transition-all flex items-center justify-between gap-3 text-xs"
+                data-category={post.category}
+                data-slug={post.slug}
+              >
+                <div class="space-y-0.5 flex-grow">
+                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
+                    <span>📄</span>
+                    <span>{post.title}</span>
+                  </div>
+                  <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                    <span>তারিখ: {post.publishedAt}</span>
+                    <span>·</span>
+                    <span>শব্দ: {post.body ? post.body.trim().split(/\s+/).length : 0}</span>
+                    <span>·</span>
+                    <span class="font-mono opacity-75">{post.slug}.md</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <a
+                    href={`/${post.slug}`}
+                    target="_blank"
+                    class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors"
+                  >
+                    পড়ুন ↗
+                  </a>
+                  <button
+                    type="button"
+                    class="load-in-writer-btn px-3 py-1.5 rounded-xl bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
+                    data-slug={post.slug}
+                  >
+                    সম্পাদনা ✍️
+                  </button>
+                  <button
+                    type="button"
+                    class="delete-post-btn px-3 py-1.5 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer"
+                    data-slug={post.slug}
+                    title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
+                  >
+                    🗑️ ডিলিট
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div id="empty-folder-notice" class="hidden py-12 text-center text-paper-muted dark:text-night-muted font-serif">
+            এই ফোল্ডারে কোনো রচনা পাওয়া যায়নি।
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: Live Writer's Desk (Split-View) -->
+    <!-- ======================================================== -->
+    <section id="tab-writer" class="admin-tab-content hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <!-- Left: Form -->
+        <div class="rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-xs space-y-4 font-sans text-xs">
+          <div class="flex items-center justify-between border-b border-paper-border/60 pb-3">
+            <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2">
+              <span>✍️</span>
+              <span>রচনা সম্পাদক (Editor)</span>
+            </h3>
+            <span id="writer-word-counter" class="font-sans text-xs text-paper-muted">০ শব্দ · ০ মিনিট পাঠ</span>
+          </div>
+
+          <!-- Title Input -->
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">শিরোনাম (Title):</label>
+            <input
+              id="editor-title"
+              type="text"
+              placeholder="লেখার সুন্দর বাংলা শিরোনাম লিখুন..."
+              class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-base focus:outline-none focus:border-paper-accent"
+            />
+          </div>
+
+          <!-- Category & Date Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">ফোল্ডার / বিভাগ (Category):</label>
+              <select
+                id="editor-category"
+                class="w-full px-3 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-serif"
+              >
+                {categories.map((cat) => (
+                  <option value={cat.id}>{cat.title}</option>
+                ))}
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">প্রকাশের তারিখ:</label>
+              <input
+                id="editor-date"
+                type="date"
+                class="w-full px-3 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent"
+              />
+            </div>
+          </div>
+
+          <!-- Excerpt Description -->
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">সংক্ষিপ্ত বিবরণ (Excerpt):</label>
+            <textarea
+              id="editor-description"
+              rows="2"
+              placeholder="লেখাটির সংক্ষিপ্ত সারমর্ম লিখুন..."
+              class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-xs focus:outline-none focus:border-paper-accent leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- Tags -->
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগসমূহ (কমা দিয়ে আলাদা করুন):</label>
+            <input
+              id="editor-tags"
+              type="text"
+              placeholder="চিন্তা, পাঠাভ্যাস, ইতিহাস"
+              class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-sans"
+            />
+          </div>
+
+          <!-- Markdown Toolbar with Voice Dictation Button -->
+          <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-paper-border/60">
+            <button type="button" class="md-tool-btn px-2.5 py-1 rounded-lg bg-paper-border/50 hover:bg-paper-border font-bold cursor-pointer" data-syntax="**" title="বোল্ড">B</button>
+            <button type="button" class="md-tool-btn px-2.5 py-1 rounded-lg bg-paper-border/50 hover:bg-paper-border italic cursor-pointer" data-syntax="*" title="ইটালিক">I</button>
+            <button type="button" class="md-tool-btn px-2.5 py-1 rounded-lg bg-paper-border/50 hover:bg-paper-border cursor-pointer" data-syntax="## " title="হেডিং ২">H2</button>
+            <button type="button" class="md-tool-btn px-2.5 py-1 rounded-lg bg-paper-border/50 hover:bg-paper-border cursor-pointer" data-syntax="> " title="উদ্ধৃতি">Quote</button>
+            <button type="button" class="md-tool-btn px-2.5 py-1 rounded-lg bg-paper-border/50 hover:bg-paper-border cursor-pointer" data-syntax="- " title="বুলেট তালিকা">• List</button>
+            
+            <span class="text-paper-border dark:text-night-border">|</span>
+
+            <!-- Footnote Quick Insert Button -->
+            <button
+              id="toolbar-add-footnote-btn"
+              type="button"
+              class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 font-bold border border-amber-500/30 text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+              title="কার্সরের স্থানে ফুটনোট যোগ করুন"
+            >
+              <span>📚</span>
+              <span>ফুটনোট</span>
+            </button>
+
+            <!-- Voice Dictation Button (বাংলা ভয়েস টাইপিং) -->
+            <button
+              id="voice-dictation-btn"
+              type="button"
+              class="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-800 dark:text-purple-300 font-bold border border-purple-500/30 text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+              title="মুখে বলুন, বাংলায় লেখা হয়ে যাবে"
+            >
+              <span id="voice-icon">🎙️</span>
+              <span id="voice-label">মুখে বলুন</span>
+            </button>
+          </div>
+
+          <!-- Body Content Area -->
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">মূল রচনা (Markdown Body):</label>
+            <textarea
+              id="editor-body"
+              rows="14"
+              placeholder="এখানে আপনার সম্পূর্ণ লেখাটি বাংলায় টাইপ করুন অথবা মুখে বলুন... ডানপাশে রিয়েল-টাইম সুন্দর ম্যাগাজিন প্রিভিউ ফুটে উঠবে।"
+              class="w-full px-4 py-3 rounded-2xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-sm focus:outline-none focus:border-paper-accent leading-relaxed"
+            ></textarea>
+          </div>
+
+          <!-- Footnotes Manager Box -->
+          <div class="p-4 rounded-2xl bg-paper-border/20 dark:bg-night-border/25 border border-paper-border/60 dark:border-night-border/60 space-y-3 font-sans">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">📚</span>
+                <label class="font-semibold text-paper-text dark:text-night-text text-xs">
+                  তথ্যসূত্র ও টীকার তালিকা (Footnotes Manager):
+                </label>
+              </div>
+              <button
+                id="add-footnote-row-btn"
+                type="button"
+                class="px-2.5 py-1 rounded-lg bg-paper-accent dark:bg-night-accent text-white text-[11px] font-semibold hover:opacity-90 flex items-center gap-1 cursor-pointer shadow-2xs"
+              >
+                <span>➕ নতুন টীকা</span>
+              </button>
+            </div>
+            <div id="writer-footnotes-list" class="space-y-2">
+              <!-- Dynamically populated footnote rows -->
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-3 border-t border-paper-border/60 flex items-center justify-between gap-3">
+            <button
+              id="reset-editor-btn"
+              type="button"
+              class="px-4 py-2.5 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-muted dark:text-night-muted font-medium transition-colors cursor-pointer"
+            >
+              নতুন খসড়া (Clear)
+            </button>
+
+            <button
+              id="save-publish-btn"
+              type="button"
+              class="px-6 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-xs hover:opacity-95 shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+            >
+              <span>💾</span>
+              <span id="save-btn-text">সংরক্ষণ ও প্রকাশ করুন</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Real-time Live Preview -->
+        <div class="rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6 font-serif sticky top-6">
+          <div class="flex items-center justify-between border-b border-paper-border/60 pb-3 font-sans">
+            <div class="flex items-center gap-2 text-xs font-semibold text-paper-accent dark:text-night-accent">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>লাইভ পাঠক প্রিভিউ</span>
+            </div>
+            <span class="text-[11px] text-paper-muted font-serif">কালপুরুষ ও হিন্দ শিলিগুড়ি হরফ</span>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
+              <span id="preview-category-badge" class="font-serif font-semibold text-paper-accent dark:text-night-accent">চিন্তা</span>
+              <span>·</span>
+              <span id="preview-date">আজকের তারিখ</span>
+              <span>·</span>
+              <span id="preview-reading-time">১ মিনিট পাঠ</span>
+            </div>
+
+            <h1 id="preview-title" class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text leading-tight">
+              লেখার শিরোনাম এখানে দৃশ্যমান হবে
+            </h1>
+
+            <p id="preview-description" class="text-sm font-serif italic text-paper-muted dark:text-night-muted border-l-2 border-paper-accent/40 pl-3">
+              সংক্ষিপ্ত বিবরণী এখানে প্রদর্শিত হবে...
+            </p>
+
+            <div class="pt-2 border-t border-paper-border/40 text-xs font-sans flex items-center gap-2">
+              <img src="/images/affan-labib.jpg" alt="Author" class="author-avatar-img w-7 h-7 rounded-full object-cover" />
+              <span class="font-semibold author-name-text">{author.name}</span>
+            </div>
+
+            <div id="preview-body" class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text text-base leading-relaxed pt-3">
+              <p>আপনার লেখা শুরু করুন বা মুখে বলুন, এখানে আসল পত্রিকার মতো ফুটে উঠবে।</p>
+            </div>
+
+            <!-- Footnotes Preview -->
+            <div id="preview-footnotes-section" class="hidden mt-6 pt-4 border-t border-paper-border/60 dark:border-night-border/60 text-xs">
+              <div class="font-sans font-bold text-[11px] text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span>📚</span>
+                <span>তথ্যসূত্র ও টীকা</span>
+              </div>
+              <ol id="preview-footnotes-list" class="space-y-1.5 list-decimal list-inside text-paper-muted dark:text-night-muted font-serif"></ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: Category & Dynamic Folder Manager -->
+    <!-- ======================================================== -->
+    <section id="tab-menu" class="admin-tab-content hidden space-y-6">
+      <div class="max-w-3xl mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+            <span>📁</span>
+            <span>বিষয়শ্রেণী ও ফোল্ডার ম্যানেজার</span>
+          </h3>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+            কম্পিউটারে নতুন ফোল্ডার খোলার মতোই এখানে লেখকের পছন্দ অনুযায়ী যেকোনো নতুন বিষয়শ্রেণী যোগ করতে পারবেন (যেমন: ভ্রমণকাহিনী, স্মৃতিকথা, কবিতা)।
+          </p>
+        </div>
+
+        <!-- Add Category Form -->
+        <div class="p-5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 font-sans text-xs">
+          <div class="font-semibold text-paper-text dark:text-night-text">নতুন ফোল্ডার / বিষয় তৈরি করুন:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              id="new-cat-label"
+              type="text"
+              placeholder="বিভাগের নাম (যেমন: ভ্রমণকাহিনী)"
+              class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"
+            />
+            <input
+              id="new-cat-slug"
+              type="text"
+              placeholder="ইংরেজি স্লাগ (যেমন: bhromon)"
+              class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text font-mono"
+            />
+          </div>
+          <input
+            id="new-cat-desc"
+            type="text"
+            placeholder="সংক্ষিপ্ত বিবরণ (যেমন: দেশ-বিদেশের পথ চলা ও দেখার স্মৃতিকথা)"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"
+          />
+          <button
+            id="add-cat-btn"
+            type="button"
+            class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-98 transition-all"
+          >
+            ➕ নতুন ফোল্ডার তৈরি করুন
           </button>
         </div>
-      </div> </div> </div> <!-- TAB 2: Split-View Live Writer's Desk --> <div id="tab-writer" class="admin-tab-content hidden space-y-4"> <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"> <!-- Left: Bengali Markdown Editor Form --> <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-sm space-y-4 font-sans text-xs"> <div class="flex items-center justify-between border-b border-paper-border/60 pb-3"> <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2"> <span>✍️</span> <span>রচনা সম্পাদক (Editor)</span> </h3> <span id="writer-word-counter" class="font-sans text-xs text-paper-muted">০ শব্দ · ০ মিনিট পাঠ</span> </div> <!-- Title Input --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">শিরোনাম (Title):</label> <input id="editor-title" type="text" placeholder="লেখার সুন্দর বাংলা শিরোনাম লিখুন..." class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-base focus:outline-none focus:border-paper-accent"> </div> <!-- Category & Date Grid --> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">বিষয়শ্রেণী (Category):</label> <select id="editor-category" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-serif"> <option value="chinta">চিন্তা</option><option value="pathalap">পাঠালাপ</option><option value="itihas">ইতিহাস</option><option value="boi-alochona">বই-আলোচনা</option><option value="onubad">অনুবাদ</option> </select> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">প্রকাশের তারিখ:</label> <input id="editor-date" type="date" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent"> </div> </div> <!-- Excerpt Description --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">সংক্ষিপ্ত বিবরণ (Excerpt / Description):</label> <textarea id="editor-description" rows="2" placeholder="লেখাটির সংক্ষিপ্ত সারমর্ম লিখুন..." class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-xs focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Tags --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগসমূহ (কমা দিয়ে আলাদা করুন):</label> <input id="editor-tags" type="text" placeholder="চিন্তা, পাঠাভ্যাস, বই" class="w-full px-3 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-sans"> </div> <!-- Markdown Toolbar --> <div class="flex items-center gap-1.5 flex-wrap pt-2 border-t border-paper-border/60"> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border font-bold" data-syntax="**" title="বোল্ড">B</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border italic" data-syntax="*" title="ইটালিক">I</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="## " title="হেডিং ২">H2</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="> " title="উদ্ধৃতি">Quote</button> <button type="button" class="md-tool-btn px-2 py-1 rounded bg-paper-border/50 hover:bg-paper-border" data-syntax="- " title="বুলেট তালিকা">• List</button> <span class="text-paper-border dark:text-night-border">|</span> <!-- Footnote Quick Insert Button --> <button id="toolbar-add-footnote-btn" type="button" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/40 text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="কার্সরের স্থানে স্বয়ংক্রিয়ভাবে [১], [২] টীকা বসান"> <span>📚</span> <span>ফুটনোট যোগ করুন</span> </button> </div> <!-- Body Content Area --> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">মূল রচনা (Markdown Body):</label> <textarea id="editor-body" rows="12" placeholder="এখানে আপনার সম্পূর্ণ লেখাটি বাংলায় টাইপ বা পেস্ট করুন... ডানপাশে রিয়েল-টাইম প্রিভিউ ফুটে উঠবে।" class="w-full px-4 py-3 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-serif text-sm focus:outline-none focus:border-paper-accent leading-relaxed"></textarea> </div> <!-- Footnotes Manager Box --> <div class="p-4 rounded-2xl bg-paper-border/20 dark:bg-night-border/25 border border-paper-border/60 dark:border-night-border/60 space-y-3 font-sans"> <div class="flex items-center justify-between"> <div class="flex items-center gap-2"> <span class="text-base">📚</span> <label class="font-semibold text-paper-text dark:text-night-text text-xs">
-তথ্যসূত্র ও টীকার তালিকা (Footnotes Manager):
-</label> </div> <button id="add-footnote-row-btn" type="button" class="px-2.5 py-1 rounded-lg bg-paper-accent dark:bg-night-accent text-white text-[11px] font-semibold hover:opacity-90 flex items-center gap-1 cursor-pointer shadow-2xs"> <span>➕ নতুন টীকা</span> </button> </div> <p class="text-[11px] text-paper-muted dark:text-night-muted leading-relaxed">
-টিপস: উপরের টুলবারের <strong>[📚 ফুটনোট যোগ করুন]</strong> বাটনে চাপ দিলে লেখার মাঝে স্বয়ংক্রিয়ভাবে [১], [২] বসে যাবে। নিচে সেই নম্বরের বিপরীতে টীকার বিস্তারিত ব্যাখ্যা লিখুন।
-</p> <div id="writer-footnotes-list" class="space-y-2"> <!-- Dynamically populated footnote rows --> </div> </div> <!-- Action Buttons --> <div class="pt-3 border-t border-paper-border/60 flex flex-wrap items-center justify-between gap-3"> <div class="flex items-center gap-2"> <button id="download-md-btn" type="button" class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/40 font-medium transition-colors flex items-center gap-1.5 cursor-pointer" title="Git বা ব্যাকআপের জন্য .md ফাইল ডাউনলোড করুন"> <span>📥</span> <span>Markdown ডাউনলোড</span> </button> <button id="copy-md-btn" type="button" class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/40 font-medium transition-colors cursor-pointer">
-কপি করুন
-</button> </div> <button id="save-publish-btn" type="button" class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 shadow-sm transition-all flex items-center gap-2 cursor-pointer"> <span>💾</span> <span>সংরক্ষণ ও তৈরি</span> </button> </div> </div> <!-- Right: Real-time Live Magazine Preview --> <div class="rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-sm space-y-6 font-serif"> <div class="flex items-center justify-between border-b border-paper-border/60 pb-3 font-sans"> <div class="flex items-center gap-2 text-xs font-semibold text-paper-accent dark:text-night-accent"> <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>লাইভ প্রিভিউ (পাঠক ভিউ)</span> </div> <span class="text-[11px] text-paper-muted">কালপুরুষ সাহিত্যিক হরফে রেন্ডার</span> </div> <div class="space-y-4"> <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted"> <span id="preview-category-badge" class="font-serif font-semibold text-paper-accent dark:text-night-accent">চিন্তা</span> <span>·</span> <span id="preview-date">আজকের তারিখ</span> <span>·</span> <span id="preview-reading-time">১ মিনিট পাঠ</span> </div> <h1 id="preview-title" class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text leading-tight">
-লেখার শিরোনাম এখানে দৃশ্যমান হবে
-</h1> <p id="preview-description" class="text-sm font-serif italic text-paper-muted dark:text-night-muted border-l-2 border-paper-accent/40 pl-3">
-সংক্ষিপ্ত বিবরণী এখানে প্রদর্শিত হবে...
-</p> <div class="pt-2 border-t border-paper-border/40 text-xs font-sans flex items-center gap-2"> <img src="/images/affan-labib.jpg" alt="Author" class="author-avatar-img w-7 h-7 rounded-full object-cover"> <span class="font-semibold">আফফান লাবীব</span> </div> <div id="preview-body" class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text text-base leading-relaxed pt-3"> <p>আপনার লেখা শুরু করুন, এখানে আসল পত্রিকার মতো ফুটে উঠবে।</p> </div> <!-- Live Preview Footnotes Section --> <div id="preview-footnotes-section" class="hidden mt-6 pt-4 border-t border-paper-border/60 dark:border-night-border/60 text-xs"> <div class="font-sans font-bold text-[11px] text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2 flex items-center gap-1.5"> <span>📚</span> <span>তথ্যসূত্র ও টীকা (প্রিভিউ)</span> </div> <ol id="preview-footnotes-list" class="space-y-1.5 list-decimal list-inside text-paper-muted dark:text-night-muted font-serif"></ol> </div> </div> </div> </div> </div> <!-- TAB 3: Category & Dynamic Menu Manager --> <div id="tab-menu" class="admin-tab-content hidden space-y-6"> <div class="max-w-2xl mx-auto rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-sm space-y-6"> <div> <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-📁 বিষয়শ্রেণী ও মেনু কাস্টমাইজার
-</h3> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-উইন্ডোজের নতুন ফোল্ডার খোলার মতো এখানে যেকোনো নতুন বিষয়শ্রেণী যোগ করুন (যেমন: ভ্রমণকাহিনী, চিঠিপত্র)।
-</p> </div> <!-- Add Category Form --> <div class="p-4 rounded-xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 font-sans text-xs"> <div class="font-semibold text-paper-text dark:text-night-text">নতুন ফোল্ডার / বিষয় যোগ করুন:</div> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <input id="new-cat-label" type="text" placeholder="বিভাগের নাম (যেমন: ভ্রমণকাহিনী)" class="px-3 py-2 rounded-lg border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <input id="new-cat-slug" type="text" placeholder="ইংরেজি স্লাগ (যেমন: bhromon)" class="px-3 py-2 rounded-lg border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text font-mono"> </div> <input id="new-cat-desc" type="text" placeholder="সংক্ষিপ্ত বিবরণ (যেমন: দেশ-বিদেশের পথ চলা ও দেখার স্মৃতিকথা)" class="w-full px-3 py-2 rounded-lg border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <button id="add-cat-btn" type="button" class="px-4 py-2 rounded-lg bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs">
-➕ নতুন ফোল্ডার তৈরি করুন
-</button> </div> <!-- Current Category List --> <div class="space-y-2"> <h4 class="font-sans font-semibold text-xs text-paper-text dark:text-night-text">বর্তমান বিষয়শ্রেণী তালিকা:</h4> <div class="divide-y divide-paper-border/60"> <div class="py-2.5 flex items-center justify-between text-xs"> <div> <span class="font-serif font-bold text-paper-text dark:text-night-text">চিন্তা</span> <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/chinta</span> <p class="text-[11px] font-serif text-paper-muted">সরল চিন্তা, জীবনবোধ ও দৈনন্দিন ভাবনা।</p> </div> <span class="text-xs font-sans px-2 py-0.5 rounded bg-paper-border/50 text-paper-muted"> 4টি রচনা
-</span> </div><div class="py-2.5 flex items-center justify-between text-xs"> <div> <span class="font-serif font-bold text-paper-text dark:text-night-text">পাঠালাপ</span> <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/pathalap</span> <p class="text-[11px] font-serif text-paper-muted">পড়তে পড়তে মনে জেগে ওঠা জিজ্ঞাসা, অনুভূতি ও ভাবনা।</p> </div> <span class="text-xs font-sans px-2 py-0.5 rounded bg-paper-border/50 text-paper-muted"> 2টি রচনা
-</span> </div><div class="py-2.5 flex items-center justify-between text-xs"> <div> <span class="font-serif font-bold text-paper-text dark:text-night-text">ইতিহাস</span> <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/itihas</span> <p class="text-[11px] font-serif text-paper-muted">ইতিহাসের আলো-আঁধারি, তথ্য ও অনুসন্ধানী পাঠ।</p> </div> <span class="text-xs font-sans px-2 py-0.5 rounded bg-paper-border/50 text-paper-muted"> 2টি রচনা
-</span> </div><div class="py-2.5 flex items-center justify-between text-xs"> <div> <span class="font-serif font-bold text-paper-text dark:text-night-text">বই-আলোচনা</span> <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/boi-alochona</span> <p class="text-[11px] font-serif text-paper-muted">পঠিত বইয়ের ব্যক্তিগত মূল্যায়ন ও অনুভূতি।</p> </div> <span class="text-xs font-sans px-2 py-0.5 rounded bg-paper-border/50 text-paper-muted"> 2টি রচনা
-</span> </div><div class="py-2.5 flex items-center justify-between text-xs"> <div> <span class="font-serif font-bold text-paper-text dark:text-night-text">অনুবাদ</span> <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/onubad</span> <p class="text-[11px] font-serif text-paper-muted">আরবি ও আন্তর্জাতিক চিন্তামূলক রচনার ভাবানুবাদ।</p> </div> <span class="text-xs font-sans px-2 py-0.5 rounded bg-paper-border/50 text-paper-muted"> 0টি রচনা
-</span> </div> </div> </div> </div> </div> <!-- TAB 4: Security & PIN Code Settings --> <div id="tab-settings" class="admin-tab-content hidden space-y-6"> <div class="max-w-md mx-auto rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 shadow-sm space-y-6"> <div> <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-⚙️ পিন কোড ও নিরাপত্তা পরিবর্তন
-</h3> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-আপনার অ্যাডমিন প্যানেলের পিন কোড পরিবর্তন করে নতুন পিন সেট করুন।
-</p> </div> <div class="space-y-3 font-sans text-xs"> <div class="space-y-1"> <label class="block font-semibold">নতুন ৪-সংখ্যার পিন কোড:</label> <input id="new-pin-input" type="password" maxlength="6" placeholder="যেমন: 5678" class="w-full text-center text-lg font-mono py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text"> </div> <button id="save-new-pin-btn" type="button" class="w-full py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs">
-নতুন পিন সংরক্ষণ করুন
-</button> </div> </div> </div> <!-- TAB: Author Profile & Bio Editor --> <div id="tab-profile" class="admin-tab-content hidden space-y-6"> <div class="max-w-3xl mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-sm space-y-6"> <div class="flex items-center justify-between pb-4 border-b border-paper-border/60 dark:border-night-border/60"> <div> <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2"> <span>👤</span> <span>লেখক পরিচিতি ও প্রোফাইল এডিটর</span> </h3> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-এখানে তথ্য পরিবর্তন করে সংরক্ষণ করলে হোমপেজ, হেডার, ফুটার এবং পরিচিতি পাতায় সাথে সাথে পরিবর্তন হয়ে যাবে।
-</p> </div> <button id="reset-profile-btn" type="button" class="text-xs font-sans text-red-600 dark:text-red-400 hover:underline cursor-pointer">
-ডিফল্ট তথ্যে ফিরুন
-</button> </div> <form id="author-profile-form" class="space-y-4 font-sans text-xs"> <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">লেখকের পূর্ণ নাম:</label> <input id="edit-author-name" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="আফফান লাবীব"> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">শিক্ষাগত পটভূমি / উপাধি:</label> <input id="edit-author-edu" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="মুতাখাসসিস ফিল ফিকহিল ইসলামী"> </div> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগলাইন / একলাইনের সারকথা:</label> <input id="edit-author-tagline" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="চিন্তা ও পাঠের নিভৃত আঙিনা"> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">হোমপেজের সংক্ষিপ্ত বায়ো (Bio Short):</label> <textarea id="edit-author-shortbio" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="আমার পড়ার ঘর, চিন্তার খাতা এবং ইতিহাসের জানালায় উঁকি দেওয়ার একান্ত কোণ..."></textarea> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">বিস্তারিত পরিচিতি (About Bio Full):</label> <textarea id="edit-author-fullbio" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="নাম আফফান লাবীব। কওমি মাদরাসা শিক্ষা ধারায় দাওরায়ে হাদিস সম্পন্ন করার পর..."></textarea> </div> <!-- About Manifesto (কেন এই পড়ার ঘর / উদ্দেশ্য ও বক্তব্য) --> <div class="p-4 rounded-2xl bg-paper-border/20 dark:bg-night-border/20 border border-paper-border/60 dark:border-night-border/60 space-y-3"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">উদ্দেশ্য ও প্রেক্ষাপটের শিরোনাম (Manifesto Title):</label> <input id="edit-author-manifesto-title" type="text" class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="কেন এই পড়ার ঘর?"> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">উদ্দেশ্য, বক্তব্য ও পাঠশালার প্রেক্ষাপট (About Manifesto):</label> <textarea id="edit-author-manifesto" rows="4" class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="এই ওয়েবসাইটটি কোনো বাণিজ্যিক পোর্টাল বা একাডেমিক গবেষণাপত্র প্রকাশের জায়গা নয়। এটি আমার ব্যক্তিগত খাতা..."></textarea> <p class="text-[11px] text-paper-muted dark:text-night-muted">টিপস: 'আমাদের সম্পর্কে' পেজের এই অংশটি লেখক নিজের মনমতো যেকোনো সময় পরিবর্তন করতে পারবেন।</p> </div> </div> <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">ফেসবুক প্রোফাইল URL:</label> <input id="edit-author-fb" type="url" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://www.facebook.com/affan.labib.902"> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">হোয়াটসঅ্যাপ নম্বর / লিংক:</label> <input id="edit-author-wa" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://wa.me/8801577118153"> </div> </div> <div class="space-y-1"> <label class="block font-semibold text-paper-text dark:text-night-text">প্রোফাইল ছবির লিংক (URL):</label> <div class="flex items-center gap-3"> <input id="edit-author-avatar" type="text" class="flex-grow px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="/images/affan-labib.jpg"> <img id="avatar-preview-box" src="/images/affan-labib.jpg" class="w-10 h-10 rounded-xl object-cover ring-2 ring-paper-accent/30 shrink-0"> </div> </div> <div class="pt-4 flex items-center justify-end gap-3"> <span id="profile-save-msg" class="hidden text-emerald-600 dark:text-emerald-400 font-semibold text-xs">✓ প্রোফাইল সফলভাবে সংরক্ষিত ও সর্বত্র আপডেট হয়েছে!</span> <button id="save-profile-btn" type="button" class="px-6 py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-xs hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2"> <span>💾</span> <span>প্রোফাইল সংরক্ষণ করুন</span> </button> </div> </form> </div> </div> <!-- TAB: Bookshelf & Library Manager --> <div id="tab-bookshelf" class="admin-tab-content hidden space-y-6"> <div class="max-w-4xl mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-sm space-y-8"> <div> <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2"> <span>📚</span> <span>পাঠাগার ও বুকশেলফ ম্যানেজার</span> </h3> <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-আপনার পড়া শেষ হওয়া কিতাব এবং পরবর্তীতে পড়ার উইশলিস্ট টাস্ক এক ক্লিকে ম্যানেজ করুন।
-</p> </div> <!-- Section 1: পড়া শেষ বই যুক্ত করুন --> <div class="p-5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-4"> <div class="flex items-center justify-between pb-2 border-b border-paper-border/60"> <h4 class="font-bold font-serif text-base text-paper-text dark:text-night-text flex items-center gap-2"> <span>📖</span> <span>ঘর ১: পড়া শেষ বই তালিকায় যুক্ত করুন</span> </h4> <span class="text-xs font-sans text-paper-muted">পঠিত কিতাব</span> </div> <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans"> <input id="new-read-title" type="text" placeholder="বইয়ের নাম (যেমন: গাযার দিনলিপি)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <input id="new-read-author" type="text" placeholder="লেখকের নাম" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <div class="flex items-center gap-2"> <input id="new-read-year" type="text" placeholder="পড়ার সাল (২০২৬)" class="w-1/2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <input id="new-read-rating" type="number" step="0.1" min="1" max="5" placeholder="রেটিং (৫)" class="w-1/2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> </div> </div> <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans"> <input id="new-read-tag" type="text" placeholder="ট্যাগ / বিষয় (যেমন: ইতিহাস ও দর্শন)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <input id="new-read-review" type="text" placeholder="সংক্ষিপ্ত পাঠপ্রতিক্রিয়া বা অনুভূতি..." class="sm:col-span-2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> </div> <button id="add-read-book-btn" type="button" class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 shadow-xs cursor-pointer flex items-center gap-1.5"> <span>➕</span> <span>পড়া বইয়ের তালিকায় যুক্ত করুন</span> </button> </div> <!-- Section 2: পড়ার উইশলিস্টে নতুন বই যুক্ত করুন --> <div class="p-5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-4"> <div class="flex items-center justify-between pb-2 border-b border-paper-border/60"> <h4 class="font-bold font-serif text-base text-paper-text dark:text-night-text flex items-center gap-2"> <span>🎯</span> <span>ঘর ২: পড়ার উইশলিস্ট টাস্ক যুক্ত করুন</span> </h4> <span class="text-xs font-sans text-paper-muted">অপেক্ষমাণ কিতাব</span> </div> <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans"> <input id="new-wish-title" type="text" placeholder="বইয়ের নাম (যেমন: আল-মুওয়াফাকাত)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <input id="new-wish-author" type="text" placeholder="লেখকের নাম" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <select id="new-wish-priority" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"> <option value="উচ্চ">উচ্চ অগ্রাধিকার</option> <option value="মাঝারি">মাঝারি অগ্রাধিকার</option> <option value="সাধারণ">সাধারণ অগ্রাধিকার</option> </select> </div> <input id="new-wish-note" type="text" placeholder="পড়ার উদ্দেশ্য বা কেন উইশলিস্টে রাখছেন..." class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text text-xs font-sans"> <button id="add-wish-book-btn" type="button" class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 shadow-xs cursor-pointer flex items-center gap-1.5"> <span>➕</span> <span>উইশলিস্টে যুক্ত করুন</span> </button> </div> <!-- Live Preview of Current Books in Admin --> <div class="space-y-4"> <div class="flex items-center justify-between pb-2 border-b border-paper-border/60"> <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text">
-📋 বর্তমান বুকশেলফ তালিকা (সরাসরি ম্যানেজ করুন):
-</h4> <a href="/bookshelf" target="_blank" class="text-xs font-sans text-paper-accent hover:underline">
-আসল বুকশেলফ পেজ দেখুন ↗
-</a> </div> <div id="admin-books-list" class="space-y-3 font-sans text-xs"> <!-- Rendered dynamically by script --> </div> <!-- Backend Persistence & Export Tools --> <div class="pt-6 border-t border-paper-border/60 dark:border-night-border/60 flex flex-wrap items-center justify-between gap-3 font-sans text-xs"> <div> <span class="font-bold text-paper-text dark:text-night-text block">💾 ব্যাকএন্ড ডেটা সিঙ্ক ও এক্সপোর্ট:</span> <span class="text-[11px] text-paper-muted dark:text-night-muted">আপনার পরিবর্তনগুলো স্বয়ংক্রিয়ভাবে লাইভ বুকশেলফে কার্যকর হয়েছে। সোর্স কোডে পারসিস্ট করতে JSON ডাউনলোড করুন।</span> </div> <div class="flex items-center gap-2 flex-wrap"> <button id="export-bookshelf-json-btn" type="button" class="px-3.5 py-2 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-90 cursor-pointer flex items-center gap-1.5 shadow-xs" title="বর্তমান সব বইয়ের তালিকা JSON ফাইল আকারে নামিয়ে নিন"> <span>📥</span> <span>bookshelf.json ডাউনলোড</span> </button> <button id="copy-bookshelf-json-btn" type="button" class="px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface hover:border-paper-accent cursor-pointer flex items-center gap-1.5"> <span>📋</span> <span id="copy-bookshelf-text">JSON কোড কপি</span> </button> <button id="reset-bookshelf-btn" type="button" class="px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900 cursor-pointer" title="ডিফল্ট ডেটায় ফিরে যান">
-🔄 রিসেট
-</button> </div> </div> </div> </div> </div> </div>
 
-  <script is:inline define:vars={{ serializedPosts: posts, author, initialBookshelf: defaultBookshelf }}>
+        <!-- Dynamic Category List -->
+        <div class="space-y-3">
+          <h4 class="font-sans font-semibold text-xs text-paper-text dark:text-night-text">বর্তমান বিষয়শ্রেণী তালিকা:</h4>
+          <div id="admin-category-list-container" class="divide-y divide-paper-border/60">
+            {categories.map((cat) => {
+              const count = posts.filter((p) => p.category === cat.id).length;
+              const isCore = ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad'].includes(cat.id);
+              return (
+                <div class="py-3 flex items-center justify-between text-xs gap-3">
+                  <div>
+                    <span class="font-serif font-bold text-paper-text dark:text-night-text text-sm">
+                      {cat.icon || '📁'} {cat.title}
+                    </span>
+                    <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/{cat.id}</span>
+                    <p class="text-[11px] font-serif text-paper-muted mt-0.5">{cat.desc}</p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-xs font-sans px-2.5 py-1 rounded-full bg-paper-border/50 text-paper-muted">
+                      {count}টি রচনা
+                    </span>
+                    {!isCore && (
+                      <button
+                        type="button"
+                        class="delete-cat-btn px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-500/10 text-[11px] font-sans font-semibold cursor-pointer"
+                        data-id={cat.id}
+                        title="ফোল্ডারটি মুছুন"
+                      >
+                        🗑️ মুছুন
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- ======================================================== -->
+    <!-- TAB 4: Bookshelf & Library Manager -->
+    <!-- ======================================================== -->
+    <section id="tab-bookshelf" class="admin-tab-content hidden space-y-6">
+      <div class="max-w-4xl mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-8">
+        <div>
+          <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+            <span>📚</span>
+            <span>পাঠাগার ও বুকশেলফ ম্যানেজার</span>
+          </h3>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+            আপনার পড়া শেষ হওয়া কিতাব এবং পরবর্তীতে পড়ার ইচ্ছেতালিকা এক ক্লিকে যুক্ত ও পরিচালনা করুন।
+          </p>
+        </div>
 
+        <!-- Section 1: পড়া শেষ বই যুক্ত করুন -->
+        <div class="p-5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-paper-border/60">
+            <h4 class="font-bold font-serif text-base text-paper-text dark:text-night-text flex items-center gap-2">
+              <span>📖</span>
+              <span>ঘর ১: পড়া শেষ বই তালিকায় যুক্ত করুন</span>
+            </h4>
+            <span class="text-xs font-sans text-paper-muted">পঠিত কিতাব</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans">
+            <input id="new-read-title" type="text" placeholder="বইয়ের নাম (যেমন: গাযার দিনলিপি)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            <input id="new-read-author" type="text" placeholder="লেখকের নাম" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            <div class="flex items-center gap-2">
+              <input id="new-read-year" type="text" placeholder="পড়ার সাল (২০২৬)" class="w-1/2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+              <input id="new-read-rating" type="number" step="0.1" min="1" max="5" placeholder="রেটিং (৫)" class="w-1/2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans">
+            <input id="new-read-tag" type="text" placeholder="ট্যাগ / বিষয় (যেমন: ইতিহাস ও দর্শন)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            <input id="new-read-review" type="text" placeholder="সংক্ষিপ্ত পাঠপ্রতিক্রিয়া বা অনুভূতি..." class="sm:col-span-2 px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+          </div>
+          <button id="add-read-book-btn" type="button" class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-98 transition-all">
+            <span>➕</span>
+            <span>পড়া বইয়ের তালিকায় যুক্ত করুন</span>
+          </button>
+        </div>
+
+        <!-- Section 2: পড়ার ইচ্ছেতালিকায় নতুন বই যুক্ত করুন -->
+        <div class="p-5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-paper-border/60">
+            <h4 class="font-bold font-serif text-base text-paper-text dark:text-night-text flex items-center gap-2">
+              <span>🎯</span>
+              <span>ঘর ২: পড়ার ইচ্ছেতালিকায় যুক্ত করুন</span>
+            </h4>
+            <span class="text-xs font-sans text-paper-muted">অপেক্ষমাণ কিতাব</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans">
+            <input id="new-wish-title" type="text" placeholder="বইয়ের নাম (যেমন: আল-মুওয়াফাকাত)" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            <input id="new-wish-author" type="text" placeholder="লেখকের নাম" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text" />
+            <select id="new-wish-priority" class="px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text">
+              <option value="উচ্চ">উচ্চ অগ্রাধিকার</option>
+              <option value="মাঝারি">মাঝারি অগ্রাধিকার</option>
+              <option value="সাধারণ">সাধারণ অগ্রাধিকার</option>
+            </select>
+          </div>
+          <input id="new-wish-note" type="text" placeholder="পড়ার উদ্দেশ্য বা কেন ইচ্ছেতালিকায় রাখছেন..." class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text text-xs font-sans" />
+          <button id="add-wish-book-btn" type="button" class="px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95 shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-98 transition-all">
+            <span>➕</span>
+            <span>ইচ্ছেতালিকায় যুক্ত করুন</span>
+          </button>
+        </div>
+
+        <!-- Live List of Books -->
+        <div id="admin-books-list" class="space-y-4 font-sans text-xs">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: Author Profile & Bio Editor -->
+    <!-- ======================================================== -->
+    <section id="tab-profile" class="admin-tab-content hidden space-y-6">
+      <div class="max-w-3xl mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
+        <div class="flex items-center justify-between pb-4 border-b border-paper-border/60 dark:border-night-border/60">
+          <div>
+            <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+              <span>👤</span>
+              <span>লেখক পরিচিতি ও প্রোফাইল এডিটর</span>
+            </h3>
+            <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+              এখানে তথ্য পরিবর্তন করে সংরক্ষণ করলে ব্লগে স্বয়ংক্রিয়ভাবে আপডেট হয়ে যাবে।
+            </p>
+          </div>
+          <button id="reset-profile-btn" type="button" class="text-xs font-sans text-red-600 dark:text-red-400 hover:underline cursor-pointer">
+            ডিফল্ট তথ্যে ফিরুন
+          </button>
+        </div>
+
+        <form id="author-profile-form" class="space-y-4 font-sans text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">লেখকের পূর্ণ নাম:</label>
+              <input id="edit-author-name" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="আফফান লাবীব" />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">শিক্ষাগত পটভূমি / উপাধি:</label>
+              <input id="edit-author-edu" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="মুতাখাসসিস ফিল ফিকহিল ইসলামী" />
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগলাইন:</label>
+            <input id="edit-author-tagline" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="চিন্তা ও পাঠের নিভৃত আঙিনা" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">হোমপেজের সংক্ষিপ্ত বায়ো:</label>
+            <textarea id="edit-author-shortbio" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="আমার পড়ার ঘর, চিন্তার খাতা..."></textarea>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">বিস্তারিত পরিচিতি (About Bio):</label>
+            <textarea id="edit-author-fullbio" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="নাম আফফান লাবীব..."></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">ফেসবুক প্রোফাইল URL:</label>
+              <input id="edit-author-fb" type="url" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://www.facebook.com/..." />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">হোয়াটসঅ্যাপ নম্বর / লিংক:</label>
+              <input id="edit-author-wa" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://wa.me/..." />
+            </div>
+          </div>
+
+          <div class="pt-4 flex items-center justify-end">
+            <button id="save-profile-btn" type="button" class="px-6 py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-xs hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
+              <span>💾</span>
+              <span>প্রোফাইল সংরক্ষণ করুন</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: Security & PIN Code -->
+    <!-- ======================================================== -->
+    <section id="tab-settings" class="admin-tab-content hidden space-y-6">
+      <div class="max-w-md mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
+            <span>⚙️</span>
+            <span>পিন কোড ও নিরাপত্তা</span>
+          </h3>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
+            আপনার লেখক স্টুডিওর ৪-সংখ্যার পিন কোড পরিবর্তন করুন।
+          </p>
+        </div>
+        <div class="space-y-3 font-sans text-xs">
+          <div class="space-y-1">
+            <label class="block font-semibold">নতুন ৪-সংখ্যার পিন কোড:</label>
+            <input
+              id="new-pin-input"
+              type="password"
+              maxlength="6"
+              placeholder="যেমন: 5678"
+              class="w-full text-center text-lg font-mono py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"
+            />
+          </div>
+          <button
+            id="save-new-pin-btn"
+            type="button"
+            class="w-full py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-98 transition-all"
+          >
+            নতুন পিন সংরক্ষণ করুন
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Raw Data Injection for Ultra-Fast Client Hydration -->
+  <script id="server-posts-data" type="application/json" set:html={JSON.stringify(posts)} />
+  <script id="server-categories-data" type="application/json" set:html={JSON.stringify(categories)} />
+  <script id="server-author-data" type="application/json" set:html={JSON.stringify(author)} />
+  <script id="server-bookshelf-data" type="application/json" set:html={JSON.stringify(defaultBookshelf)} />
+
+  <!-- Author Studio Client Engine -->
+  <script is:inline>
     (() => {
+      // 1. Data Bootstrap
+      const serverPostsEl = document.getElementById('server-posts-data');
+      let serializedPosts = serverPostsEl ? JSON.parse(serverPostsEl.textContent || '[]') : [];
+
+      const serverCatsEl = document.getElementById('server-categories-data');
+      let serializedCategories = serverCatsEl ? JSON.parse(serverCatsEl.textContent || '[]') : [];
+
+      const author = JSON.parse(document.getElementById('server-author-data')?.textContent || '{}');
+      const initialBookshelf = JSON.parse(document.getElementById('server-bookshelf-data')?.textContent || '{}');
+
+      // 2. Authentication Flow
       const pinScreen = document.getElementById('pin-screen');
       const studioScreen = document.getElementById('studio-screen');
       const pinInput = document.getElementById('pin-input');
@@ -159,116 +808,202 @@ const posts = await getAllPostsAsync();
       const pinError = document.getElementById('pin-error');
       const logoutBtn = document.getElementById('logout-btn');
 
-      // Check existing PIN in localStorage or default '1234'
       function getStoredPin() {
         return localStorage.getItem('kherokhata_admin_pin') || '1234';
       }
 
-      function checkAuth() {
-        const isAuth =
+      function isAuthorLoggedIn() {
+        return (
           sessionStorage.getItem('kherokhata_admin_auth') === 'true' ||
-          localStorage.getItem('kherokhata_admin_auth') === 'true';
-        if (isAuth) {
+          localStorage.getItem('kherokhata_admin_auth') === 'true'
+        );
+      }
+
+      function checkAuth() {
+        if (isAuthorLoggedIn()) {
           pinScreen?.classList.add('hidden');
           studioScreen?.classList.remove('hidden');
         } else {
           pinScreen?.classList.remove('hidden');
           studioScreen?.classList.add('hidden');
+          pinInput?.focus();
         }
       }
 
-      function attemptLogin() {
-        const val = pinInput?.value.trim();
-        if (val === getStoredPin()) {
+      function unlockStudio() {
+        const entered = pinInput?.value.trim();
+        if (entered === getStoredPin()) {
           sessionStorage.setItem('kherokhata_admin_auth', 'true');
           localStorage.setItem('kherokhata_admin_auth', 'true');
           pinError?.classList.add('hidden');
           checkAuth();
+          if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও আনলক হয়েছে! স্বাগতম।');
         } else {
           pinError?.classList.remove('hidden');
           pinInput?.classList.add('border-red-500');
-          setTimeout(() => {
-            pinInput?.classList.remove('border-red-500');
-          }, 1500);
+          setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
         }
       }
 
-      pinSubmitBtn?.addEventListener('click', attemptLogin);
+      pinSubmitBtn?.addEventListener('click', unlockStudio);
       pinInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') attemptLogin();
+        if (e.key === 'Enter') unlockStudio();
       });
 
       logoutBtn?.addEventListener('click', () => {
         sessionStorage.removeItem('kherokhata_admin_auth');
         localStorage.removeItem('kherokhata_admin_auth');
         checkAuth();
+        if (pinInput) pinInput.value = '';
+        if (window.showAdminToast) window.showAdminToast('সফলভাবে লগআউট হয়েছেন।');
       });
 
       checkAuth();
 
-      // Tab Switching
+      // 3. Tab Switching Engine
       const tabBtns = document.querySelectorAll('.admin-tab-btn');
       const tabContents = document.querySelectorAll('.admin-tab-content');
 
       tabBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
-          const target = btn.getAttribute('data-tab');
+          const tabId = btn.getAttribute('data-tab');
+
           tabBtns.forEach((b) => {
-            b.classList.remove('bg-paper-accent', 'text-white', 'shadow-2xs');
-            b.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'text-paper-muted');
+            b.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
+            b.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
           });
-          btn.classList.add('bg-paper-accent', 'text-white', 'shadow-2xs');
-          btn.classList.remove('border', 'border-paper-border', 'bg-paper-surface/60', 'text-paper-muted');
 
-          tabContents.forEach((c) => {
-            c.classList.toggle('hidden', c.id !== target);
-          });
+          btn.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+          btn.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+
+          tabContents.forEach((c) => c.classList.add('hidden'));
+          document.getElementById(tabId)?.classList.remove('hidden');
         });
       });
 
-      // Explorer Category Filtering
-      const folderBtns = document.querySelectorAll('.folder-item');
-      const fileRows = document.querySelectorAll('.file-row');
-      const folderTitle = document.getElementById('current-folder-title');
-
-      folderBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const cat = btn.getAttribute('data-cat');
-          folderBtns.forEach((b) => {
-            b.classList.remove('bg-paper-accent/15', 'dark:bg-night-accent/20', 'text-paper-accent', 'dark:text-night-accent', 'font-semibold');
-          });
-          btn.classList.add('bg-paper-accent/15', 'dark:bg-night-accent/20', 'text-paper-accent', 'dark:text-night-accent', 'font-semibold');
-
-          fileRows.forEach((row) => {
-            const rowCat = row.getAttribute('data-category');
-            if (cat === 'all' || rowCat === cat) {
-              row.classList.remove('hidden');
-            } else {
-              row.classList.add('hidden');
-            }
-          });
-
-          if (folderTitle) {
-            folderTitle.innerText = `📁 ${btn.querySelector('span:last-child')?.innerText || 'ফাইল তালিকা'}`;
-          }
-        });
-      });
-
-      // Quick new post button opens writer tab
+      // Quick Nav Buttons
       document.getElementById('quick-new-post-btn')?.addEventListener('click', () => {
         document.getElementById('tab-btn-writer')?.click();
+        document.getElementById('editor-title')?.focus();
       });
 
-      // Split-view Real-Time Live Preview Logic
+      document.getElementById('quick-new-folder-btn')?.addEventListener('click', () => {
+        document.getElementById('tab-btn-menu')?.click();
+        document.getElementById('new-cat-label')?.focus();
+      });
+
+      // 4. Admin Theme Switcher (Day / Sepia / Night)
+      const themeToggleBtn = document.getElementById('admin-theme-toggle-btn');
+      const themeIcon = document.getElementById('admin-theme-icon');
+      const THEMES = ['light', 'sepia', 'dark'];
+      const ICONS = { light: '☀️', sepia: '📜', dark: '🌙' };
+
+      function getCurrentTheme() {
+        if (document.documentElement.classList.contains('dark')) return 'dark';
+        if (document.documentElement.classList.contains('sepia')) return 'sepia';
+        return 'light';
+      }
+
+      function applyTheme(th) {
+        document.documentElement.classList.remove('dark', 'sepia');
+        if (th === 'dark') document.documentElement.classList.add('dark');
+        if (th === 'sepia') document.documentElement.classList.add('sepia');
+        localStorage.setItem('theme', th);
+        if (themeIcon) themeIcon.innerText = ICONS[th] || '☀️';
+      }
+
+      if (themeIcon) themeIcon.innerText = ICONS[getCurrentTheme()] || '☀️';
+
+      themeToggleBtn?.addEventListener('click', () => {
+        const curr = getCurrentTheme();
+        const nextIdx = (THEMES.indexOf(curr) + 1) % THEMES.length;
+        applyTheme(THEMES[nextIdx]);
+      });
+
+      // 5. C: Drive Explorer & Filtering Engine
+      let currentFilterCat = 'all';
+      const fileListContainer = document.getElementById('file-list-container');
+      const emptyFolderNotice = document.getElementById('empty-folder-notice');
+      const currentFolderTitle = document.getElementById('current-folder-title');
+      const currentFolderCount = document.getElementById('current-folder-count');
+      const folderTotalFilesBadge = document.getElementById('folder-total-files-badge');
+
+      function renderFileList() {
+        if (!fileListContainer) return;
+        const rows = fileListContainer.querySelectorAll('.file-row');
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+          const cat = row.getAttribute('data-category');
+          if (currentFilterCat === 'all' || cat === currentFilterCat) {
+            row.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+
+        if (emptyFolderNotice) {
+          emptyFolderNotice.classList.toggle('hidden', visibleCount > 0);
+        }
+        if (currentFolderCount) {
+          currentFolderCount.innerText = visibleCount.toString();
+        }
+      }
+
+      function updateFolderBadges() {
+        const total = serializedPosts.length;
+        if (folderTotalFilesBadge) folderTotalFilesBadge.innerText = `${total}টি ফাইল`;
+
+        document.querySelectorAll('.folder-count-badge').forEach((badge) => {
+          const catId = badge.getAttribute('data-count-cat');
+          if (catId === 'all') {
+            badge.innerText = `(${total})`;
+          } else {
+            const count = serializedPosts.filter((p) => p.category === catId).length;
+            badge.innerText = `(${count})`;
+          }
+        });
+      }
+
+      function attachFolderClickListeners() {
+        document.querySelectorAll('.folder-item').forEach((item) => {
+          item.addEventListener('click', () => {
+            document.querySelectorAll('.folder-item').forEach((f) => {
+              f.classList.remove('bg-paper-accent/15', 'dark:bg-night-accent/20', 'text-paper-accent', 'dark:text-night-accent', 'font-semibold');
+              f.classList.add('text-paper-text', 'dark:text-night-text');
+            });
+
+            item.classList.add('bg-paper-accent/15', 'dark:bg-night-accent/20', 'text-paper-accent', 'dark:text-night-accent', 'font-semibold');
+            item.classList.remove('text-paper-text', 'dark:text-night-text');
+
+            currentFilterCat = item.getAttribute('data-cat') || 'all';
+
+            const catObj = serializedCategories.find((c) => c.id === currentFilterCat);
+            if (currentFolderTitle) {
+              currentFolderTitle.innerText = currentFilterCat === 'all'
+                ? '📁 সকল রচনা (ফাইল তালিকা)'
+                : `${catObj?.icon || '📁'} ${catObj?.title || currentFilterCat} (ফোল্ডার তালিকা)`;
+            }
+
+            renderFileList();
+          });
+        });
+      }
+
+      attachFolderClickListeners();
+
+      // 6. Live Writer's Desk & Markdown Preview Engine
       const editorTitle = document.getElementById('editor-title');
       const editorCat = document.getElementById('editor-category');
-      const editorDesc = document.getElementById('editor-description');
-      const editorBody = document.getElementById('editor-body');
       const editorDate = document.getElementById('editor-date');
+      const editorDesc = document.getElementById('editor-description');
       const editorTags = document.getElementById('editor-tags');
+      const editorBody = document.getElementById('editor-body');
 
       const prevTitle = document.getElementById('preview-title');
       const prevCat = document.getElementById('preview-category-badge');
+      const prevDate = document.getElementById('preview-date');
       const prevDesc = document.getElementById('preview-description');
       const prevBody = document.getElementById('preview-body');
       const prevWordCount = document.getElementById('writer-word-counter');
@@ -276,61 +1011,43 @@ const posts = await getAllPostsAsync();
       const prevFootnotesSection = document.getElementById('preview-footnotes-section');
       const prevFootnotesList = document.getElementById('preview-footnotes-list');
 
-      // Markdown Toolbar Syntax Insertion
-      document.querySelectorAll('.md-tool-btn').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          if (!editorBody) return;
-          const syntax = btn.getAttribute('data-syntax');
-          const start = editorBody.selectionStart;
-          const end = editorBody.selectionEnd;
-          const val = editorBody.value;
-          const selected = val.substring(start, end);
-          let replacement = '';
-          if (syntax === '**' || syntax === '*') {
-            replacement = `${syntax}${selected || 'শব্দ'}${syntax}`;
-          } else {
-            replacement = `${syntax}${selected}`;
-          }
-          editorBody.setRangeText(replacement, start, end, 'end');
-          editorBody.focus();
-          updateLivePreview();
-        });
-      });
-
-      // Footnotes Management in Writer's Desk
-      let writerFootnotes = [];
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-      function toBnNum(n) {
-        return String(n).replace(/\d/g, (d) => bnDigits[d]);
-      }
-
       const footnotesListContainer = document.getElementById('writer-footnotes-list');
-      const addFootnoteRowBtn = document.getElementById('add-footnote-row-btn');
       const addFootnoteToolbarBtn = document.getElementById('toolbar-add-footnote-btn');
+      const addFootnoteRowBtn = document.getElementById('add-footnote-row-btn');
+
+      let writerFootnotes = [];
+
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      function toBnNum(num) {
+        return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+      }
 
       function renderFootnotesEditor() {
         if (!footnotesListContainer) return;
         footnotesListContainer.innerHTML = '';
+
         if (writerFootnotes.length === 0) {
-          footnotesListContainer.innerHTML = '<p class="text-xs text-paper-muted italic py-1">এখনো কোনো টীকা যোগ করা হয়নি। টুলবারের [📚 ফুটনোট যোগ করুন] বাটনে চাপ দিন।</p>';
+          footnotesListContainer.innerHTML = '<p class="text-[11px] text-paper-muted italic">এখনও কোনো টীকা যুক্ত করা হয়নি।</p>';
           return;
         }
 
         writerFootnotes.forEach((fn) => {
           const row = document.createElement('div');
-          row.className = 'flex items-center gap-2 p-2 rounded-xl bg-paper-surface/90 dark:bg-night-surface/90 border border-paper-border/60 dark:border-night-border/60 text-xs';
+          row.className = 'flex items-center gap-2 text-xs font-sans';
           row.innerHTML = `
-            <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold font-mono text-xs shrink-0">[${toBnNum(fn.id)}]</span>
+            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold flex items-center justify-center shrink-0">
+              [${toBnNum(fn.id)}]
+            </span>
             <input
               type="text"
-              class="fn-text-input flex-grow px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs font-serif"
-              placeholder="টীকা ${toBnNum(fn.id)}-এর তথ্যসূত্র বা সারসংক্ষেপ লিখুন..."
-              value="${fn.text ? fn.text.replace(/"/g, '&quot;') : ''}"
               data-id="${fn.id}"
+              class="fn-text-input flex-grow px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-paper-text dark:text-night-text"
+              placeholder="টীকা বা তথ্যসূত্রের বিবরণ লিখুন..."
+              value="${fn.text || ''}"
             />
             <button
               type="button"
-              class="fn-remove-btn w-7 h-7 rounded-lg text-red-500 hover:bg-red-500/10 flex items-center justify-center shrink-0 cursor-pointer"
+              class="fn-remove-btn w-6 h-6 rounded-lg text-red-500 hover:bg-red-500/10 flex items-center justify-center shrink-0 cursor-pointer"
               data-id="${fn.id}"
               title="মুছুন"
             >✕</button>
@@ -338,7 +1055,7 @@ const posts = await getAllPostsAsync();
           footnotesListContainer.appendChild(row);
         });
 
-        // Attach input listeners
+        // Event delegation
         footnotesListContainer.querySelectorAll('.fn-text-input').forEach((input) => {
           input.addEventListener('input', (e) => {
             const id = Number(e.target.getAttribute('data-id'));
@@ -348,7 +1065,6 @@ const posts = await getAllPostsAsync();
           });
         });
 
-        // Attach remove listeners
         footnotesListContainer.querySelectorAll('.fn-remove-btn').forEach((btn) => {
           btn.addEventListener('click', () => {
             const id = Number(btn.getAttribute('data-id'));
@@ -362,20 +1078,15 @@ const posts = await getAllPostsAsync();
       function insertFootnoteAtCursor() {
         if (!editorBody) return;
         const nextId = writerFootnotes.length + 1;
-        const bnMarker = `[${toBnNum(nextId)}]`;
+        const marker = `[${toBnNum(nextId)}]`;
         const start = editorBody.selectionStart;
         const end = editorBody.selectionEnd;
-        editorBody.setRangeText(bnMarker, start, end, 'end');
+        editorBody.setRangeText(marker, start, end, 'end');
         editorBody.focus();
 
         writerFootnotes.push({ id: nextId, text: '' });
         renderFootnotesEditor();
         updateLivePreview();
-
-        setTimeout(() => {
-          const lastInput = footnotesListContainer?.querySelector(`input[data-id="${nextId}"]`);
-          lastInput?.focus();
-        }, 100);
       }
 
       addFootnoteToolbarBtn?.addEventListener('click', insertFootnoteAtCursor);
@@ -386,10 +1097,8 @@ const posts = await getAllPostsAsync();
         updateLivePreview();
       });
 
-      renderFootnotesEditor();
-
       // Set default today's date
-      if (editorDate) {
+      if (editorDate && !editorDate.value) {
         editorDate.value = new Date().toISOString().split('T')[0];
       }
 
@@ -403,13 +1112,11 @@ const posts = await getAllPostsAsync();
         if (prevCat) prevCat.innerText = catVal;
         if (prevDesc) prevDesc.innerText = descVal;
 
-        // Word count & reading time
         const words = bodyVal.trim() ? bodyVal.trim().split(/\s+/).length : 0;
         const readMins = Math.max(1, Math.ceil(words / 180));
         if (prevWordCount) prevWordCount.innerText = `${words} শব্দ · ${readMins} মিনিট পাঠ`;
         if (prevReadingTime) prevReadingTime.innerText = `${readMins} মিনিট পাঠ`;
 
-        // Simple Markdown parsing for preview
         if (prevBody) {
           let html = bodyVal
             .replace(/### (.*$)/gim, '<h3 class="text-lg font-bold font-serif my-2">$1</h3>')
@@ -420,13 +1127,11 @@ const posts = await getAllPostsAsync();
             .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-paper-accent/60 pl-3 my-2 italic">$1</blockquote>')
             .replace(/\n\n/gim, '</p><p class="my-3">');
 
-          // Highlight footnotes in preview
           html = html.replace(/\[([১-৯\d]+)\]/g, '<sup class="px-1 py-0.5 rounded bg-amber-500/20 text-paper-accent dark:text-night-accent font-bold cursor-pointer hover:underline text-[11px]">[$1]</sup>');
 
           prevBody.innerHTML = `<p class="my-3">${html}</p>`;
         }
 
-        // Render preview footnotes list
         if (prevFootnotesSection && prevFootnotesList) {
           if (writerFootnotes.length > 0) {
             prevFootnotesSection.classList.remove('hidden');
@@ -446,178 +1151,479 @@ const posts = await getAllPostsAsync();
         el?.addEventListener('input', updateLivePreview);
       });
 
-      // Load post into writer
-      document.querySelectorAll('.load-in-writer-btn').forEach((btn) => {
+      // Markdown Toolbar Syntax Insertion
+      document.querySelectorAll('.md-tool-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
-          const slug = btn.getAttribute('data-slug');
-          const post = serializedPosts.find((p) => p.slug === slug);
-          if (!post) return;
+          if (!editorBody) return;
+          const syntax = btn.getAttribute('data-syntax');
+          const start = editorBody.selectionStart;
+          const end = editorBody.selectionEnd;
+          const selected = editorBody.value.substring(start, end);
 
-          if (editorTitle) editorTitle.value = post.title;
-          if (editorCat) editorCat.value = post.category;
-          if (editorDesc) editorDesc.value = post.description;
-          if (editorBody) editorBody.value = post.body;
-          if (editorTags) editorTags.value = post.tags.join(', ');
-
-          writerFootnotes = post.footnotes ? JSON.parse(JSON.stringify(post.footnotes)) : [];
-          renderFootnotesEditor();
-
+          if (syntax === '## ' || syntax === '> ' || syntax === '- ') {
+            editorBody.setRangeText(`\n${syntax}${selected}`, start, end, 'end');
+          } else {
+            editorBody.setRangeText(`${syntax}${selected || 'পাঠ্য'}${syntax}`, start, end, 'end');
+          }
+          editorBody.focus();
           updateLivePreview();
-          document.getElementById('tab-btn-writer')?.click();
         });
       });
 
-      // Download Markdown file (.md)
-      document.getElementById('download-md-btn')?.addEventListener('click', () => {
-        const title = editorTitle?.value.trim() || 'untitled';
+      // 7. Bengali Voice Dictation Engine (Web Speech API)
+      const voiceBtn = document.getElementById('voice-dictation-btn');
+      const voiceIcon = document.getElementById('voice-icon');
+      const voiceLabel = document.getElementById('voice-label');
+      let isVoiceActive = false;
+      let recognition = null;
+
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRec();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'bn-BD'; // Bengali (Bangladesh)
+
+        recognition.onstart = () => {
+          isVoiceActive = true;
+          if (voiceBtn) {
+            voiceBtn.classList.remove('bg-purple-500/15', 'text-purple-800', 'dark:text-purple-300');
+            voiceBtn.classList.add('bg-rose-600', 'text-white', 'animate-pulse');
+          }
+          if (voiceLabel) voiceLabel.innerText = 'শুনছি... বলুন';
+          if (voiceIcon) voiceIcon.innerText = '🔴';
+          if (window.showAdminToast) window.showAdminToast('ভয়েস টাইপিং সক্রিয়: স্পষ্ট বাংলায় কথা বলুন...');
+        };
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              transcript += event.results[i][0].transcript + ' ';
+            }
+          }
+          if (transcript && editorBody) {
+            const start = editorBody.selectionStart;
+            const end = editorBody.selectionEnd;
+            editorBody.setRangeText(transcript, start, end, 'end');
+            updateLivePreview();
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.warn('[Speech] Error:', e.error);
+          stopVoice();
+        };
+
+        recognition.onend = () => {
+          stopVoice();
+        };
+      }
+
+      function stopVoice() {
+        isVoiceActive = false;
+        if (voiceBtn) {
+          voiceBtn.classList.add('bg-purple-500/15', 'text-purple-800', 'dark:text-purple-300');
+          voiceBtn.classList.remove('bg-rose-600', 'text-white', 'animate-pulse');
+        }
+        if (voiceLabel) voiceLabel.innerText = 'মুখে বলুন';
+        if (voiceIcon) voiceIcon.innerText = '🎙️';
+      }
+
+      voiceBtn?.addEventListener('click', () => {
+        if (!recognition) {
+          alert('আপনার ব্রাউজারে বাংলা ভয়েস টাইপিং সমর্থন করে না। অনুগ্রহ করে Chrome বা Edge ব্যবহার করুন।');
+          return;
+        }
+        if (isVoiceActive) {
+          recognition.stop();
+        } else {
+          try {
+            recognition.start();
+          } catch (e) {
+            recognition.stop();
+          }
+        }
+      });
+
+      // Clear / Reset Editor
+      document.getElementById('reset-editor-btn')?.addEventListener('click', () => {
+        if (!confirm('আপনি কি লেখার খসড়া পরিষ্কার করতে চান?')) return;
+        if (editorTitle) editorTitle.value = '';
+        if (editorDesc) editorDesc.value = '';
+        if (editorTags) editorTags.value = '';
+        if (editorBody) editorBody.value = '';
+        writerFootnotes = [];
+        renderFootnotesEditor();
+        updateLivePreview();
+        if (window.showAdminToast) window.showAdminToast('খসড়া পাতা পরিষ্কার করা হয়েছে।');
+      });
+
+      // 8. Load Post Into Editor
+      function attachLoadPostListeners() {
+        document.querySelectorAll('.load-in-writer-btn').forEach((btn) => {
+          if (btn.getAttribute('data-load-bound')) return;
+          btn.setAttribute('data-load-bound', 'true');
+
+          btn.addEventListener('click', () => {
+            const slug = btn.getAttribute('data-slug');
+            const post = serializedPosts.find((p) => p.slug === slug);
+            if (!post) return;
+
+            if (editorTitle) editorTitle.value = post.title;
+            if (editorCat) editorCat.value = post.category;
+            if (editorDate) editorDate.value = post.publishedAt;
+            if (editorDesc) editorDesc.value = post.description;
+            if (editorTags) editorTags.value = (post.tags || []).join(', ');
+            if (editorBody) editorBody.value = post.body;
+
+            writerFootnotes = Array.isArray(post.footnotes) ? JSON.parse(JSON.stringify(post.footnotes)) : [];
+            renderFootnotesEditor();
+            updateLivePreview();
+
+            // Switch to writer tab
+            document.getElementById('tab-btn-writer')?.click();
+            if (window.showAdminToast) window.showAdminToast(`'${post.title}' সম্পাদনা ডেস্কে লোড হয়েছে।`);
+          });
+        });
+      }
+
+      attachLoadPostListeners();
+
+      // 9. Post Deletion Handler (Reactive with ZERO reload)
+      function attachDeleteListeners() {
+        document.querySelectorAll('.delete-post-btn').forEach((btn) => {
+          if (btn.getAttribute('data-delete-bound')) return;
+          btn.setAttribute('data-delete-bound', 'true');
+
+          btn.addEventListener('click', async () => {
+            const slug = btn.getAttribute('data-slug');
+            if (!slug) return;
+
+            const row = btn.closest('.file-row');
+            const title = row?.querySelector('.font-serif.font-semibold span:last-child')?.innerText || slug;
+
+            if (!confirm(`আপনি কি নিশ্চিত যে "${title}" লেখাটি স্থায়ীভাবে মুছে ফেলতে চান?`)) {
+              return;
+            }
+
+            // Animate out and remove from DOM
+            row?.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => row?.remove(), 200);
+
+            // Update in-memory posts
+            const idx = serializedPosts.findIndex((p) => p.slug === slug);
+            if (idx !== -1) serializedPosts.splice(idx, 1);
+
+            updateFolderBadges();
+            renderFileList();
+
+            // Send real DELETE to API
+            try {
+              await fetch('/api/posts', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug })
+              });
+            } catch (e) {
+              console.warn('[Admin] DELETE API error:', e);
+            }
+
+            if (window.showAdminToast) window.showAdminToast(`'${title}' সফলভাবে মুছে ফেলা হয়েছে! ✓`);
+          });
+        });
+      }
+
+      attachDeleteListeners();
+
+      // 10. Save & Publish Handler (Reactive with ZERO reload)
+      const saveBtn = document.getElementById('save-publish-btn');
+      const saveBtnText = document.getElementById('save-btn-text');
+
+      saveBtn?.addEventListener('click', async () => {
+        const title = editorTitle?.value.trim();
         const category = editorCat?.value || 'chinta';
         const date = editorDate?.value || new Date().toISOString().split('T')[0];
         const desc = editorDesc?.value.trim() || '';
         const tags = (editorTags?.value || '').split(',').map((t) => t.trim()).filter(Boolean);
         const body = editorBody?.value || '';
 
-        let footnotesYaml = '';
-        if (writerFootnotes && writerFootnotes.length > 0) {
-          footnotesYaml = `footnotes:\n` + writerFootnotes.map((f) => `  - id: ${f.id}\n    text: "${(f.text || '').replace(/"/g, '\\"')}"`).join('\n') + '\n';
+        if (!title) {
+          alert('অনুগ্রহ করে লেখার শিরোনাম দিন।');
+          editorTitle?.focus();
+          return;
+        }
+        if (!body) {
+          alert('অনুগ্রহ করে লেখার মূল বিষয়বস্তু লিখুন।');
+          editorBody?.focus();
+          return;
         }
 
-        const mdContent = `---
-title: "${title}"
-description: "${desc}"
-publishedAt: "${date}"
-category: "${category}"
-tags: [${tags.map((t) => `"${t}"`).join(', ')}]
-${footnotesYaml}---
+        if (saveBtn) saveBtn.disabled = true;
+        if (saveBtnText) saveBtnText.innerText = 'সংরক্ষণ হচ্ছে...';
 
-${body}
-`;
+        try {
+          const slug = title
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\u0980-\u09FF-]+/g, '-')
+            .replace(/^-+|-+$/g, '') || ('post-' + Date.now());
 
-        const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'new-post';
-        a.download = `${slug}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+          const postPayload = {
+            slug,
+            title,
+            description: desc,
+            category,
+            publishedAt: date,
+            formattedDate: date,
+            tags,
+            body,
+            wordCount: body.trim().split(/\s+/).length,
+            footnotes: writerFootnotes
+          };
 
-      // Copy Markdown
-      document.getElementById('copy-md-btn')?.addEventListener('click', async () => {
-        const body = editorBody?.value || '';
-        await navigator.clipboard.writeText(body);
-        alert('মূল লেখার মার্কডাউন কপি হয়েছে!');
-      });
+          // Send POST to API
+          const res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postPayload)
+          });
+          const json = await res.json();
 
-      // Change PIN
-      document.getElementById('save-new-pin-btn')?.addEventListener('click', () => {
-        const newPin = document.getElementById('new-pin-input')?.value.trim();
-        if (newPin && newPin.length >= 4) {
-          localStorage.setItem('kherokhata_admin_pin', newPin);
-          alert('পিন কোড সফলভাবে পরিবর্তন হয়েছে!');
-        } else {
-          alert('অনুগ্রহ করে কমপক্ষে ৪-সংখ্যার পিন কোড লিখুন।');
+          // Update in-memory state
+          const existIdx = serializedPosts.findIndex((p) => p.slug === slug);
+          if (existIdx >= 0) {
+            serializedPosts[existIdx] = postPayload;
+            // Update existing DOM row
+            const existingRow = document.querySelector(`.file-row[data-slug="${slug}"]`);
+            if (existingRow) {
+              existingRow.setAttribute('data-category', category);
+              const titleEl = existingRow.querySelector('.font-serif.font-semibold span:last-child');
+              if (titleEl) titleEl.innerText = title;
+            }
+          } else {
+            serializedPosts.unshift(postPayload);
+            // Prepend new row to file-list-container
+            if (fileListContainer) {
+              const newRow = document.createElement('div');
+              newRow.className = 'file-row p-3.5 rounded-2xl border border-paper-accent/50 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex items-center justify-between gap-3 text-xs';
+              newRow.setAttribute('data-category', category);
+              newRow.setAttribute('data-slug', slug);
+              newRow.innerHTML = `
+                <div class="space-y-0.5 flex-grow">
+                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
+                    <span class="text-paper-accent">✨</span>
+                    <span>${title}</span>
+                  </div>
+                  <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                    <span>তারিখ: ${date}</span>
+                    <span>·</span>
+                    <span>শব্দ: ${postPayload.wordCount}</span>
+                    <span>·</span>
+                    <span class="font-mono opacity-75">${slug}.md</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <a href="/${slug}" target="_blank" class="px-3 py-1.5 rounded-xl border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors">
+                    পড়ুন ↗
+                  </a>
+                  <button type="button" class="load-in-writer-btn px-3 py-1.5 rounded-xl bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${slug}">
+                    সম্পাদনা ✍️
+                  </button>
+                  <button type="button" class="delete-post-btn px-3 py-1.5 rounded-xl border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
+                    🗑️ ডিলিট
+                  </button>
+                </div>
+              `;
+              fileListContainer.prepend(newRow);
+              attachLoadPostListeners();
+              attachDeleteListeners();
+            }
+          }
+
+          updateFolderBadges();
+          renderFileList();
+
+          if (window.showAdminToast) {
+            window.showAdminToast(`'${title}' সফলভাবে সংরক্ষিত ও প্রকাশিত হয়েছে! ✓`);
+          }
+
+          // Switch smoothly to Explorer tab without reloading
+          document.getElementById('tab-btn-explorer')?.click();
+        } catch (err) {
+          alert('সংরক্ষণ ত্রুটি: ' + err.message);
+        } finally {
+          if (saveBtn) saveBtn.disabled = false;
+          if (saveBtnText) saveBtnText.innerText = 'সংরক্ষণ ও প্রকাশ করুন';
         }
       });
 
-      // ==========================================
-      // AUTHOR PROFILE MANAGER LOGIC
-      // ==========================================
-      const nameInput = document.getElementById('edit-author-name');
-      const eduInput = document.getElementById('edit-author-edu');
-      const taglineInput = document.getElementById('edit-author-tagline');
-      const shortbioInput = document.getElementById('edit-author-shortbio');
-      const fullbioInput = document.getElementById('edit-author-fullbio');
-      const manifestoTitleInput = document.getElementById('edit-author-manifesto-title');
-      const manifestoInput = document.getElementById('edit-author-manifesto');
-      const fbInput = document.getElementById('edit-author-fb');
-      const waInput = document.getElementById('edit-author-wa');
-      const avatarInput = document.getElementById('edit-author-avatar');
-      const avatarPreview = document.getElementById('avatar-preview-box');
-      const saveProfileBtn = document.getElementById('save-profile-btn');
-      const resetProfileBtn = document.getElementById('reset-profile-btn');
-      const profileSaveMsg = document.getElementById('profile-save-msg');
+      // 11. Dynamic Category / Folder Creation & Deletion
+      const newCatLabel = document.getElementById('new-cat-label');
+      const newCatSlug = document.getElementById('new-cat-slug');
+      const newCatDesc = document.getElementById('new-cat-desc');
+      const addCatBtn = document.getElementById('add-cat-btn');
+      const catListContainer = document.getElementById('admin-category-list-container');
+      const folderTreeList = document.getElementById('folder-tree-list');
 
-      function loadAuthorProfileForm() {
-        const stored = localStorage.getItem('kherokhata_author_custom');
-        let current = author;
-        if (stored) {
-          try {
-            current = { ...author, ...JSON.parse(stored) };
-          } catch(e) {}
-        }
-        if (nameInput) nameInput.value = current.name || '';
-        if (eduInput) eduInput.value = current.education || '';
-        if (taglineInput) taglineInput.value = current.tagline || '';
-        if (shortbioInput) shortbioInput.value = current.bioShort || current.bio || '';
-        if (fullbioInput) fullbioInput.value = current.bioFull || current.bio || '';
-        if (manifestoTitleInput) manifestoTitleInput.value = current.aboutManifestoTitle || current.manifestoTitle || '';
-        if (manifestoInput) manifestoInput.value = current.aboutManifesto || current.manifesto || '';
-        if (fbInput) fbInput.value = current.social?.facebook || '';
-        if (waInput) waInput.value = current.social?.whatsapp || '';
-        const savedAv = localStorage.getItem('kherokhata_author_avatar');
-        if (avatarInput) avatarInput.value = savedAv || current.avatar || '';
-        if (avatarPreview) avatarPreview.src = savedAv || current.avatar || '/images/affan-labib.jpg';
+      function syncCategoryDropdown() {
+        if (!editorCat) return;
+        const currentVal = editorCat.value;
+        editorCat.innerHTML = serializedCategories.map((c) => `
+          <option value="${c.id}" ${c.id === currentVal ? 'selected' : ''}>${c.title}</option>
+        `).join('');
       }
 
-      avatarInput?.addEventListener('input', () => {
-        if (avatarPreview && avatarInput.value.trim()) {
-          avatarPreview.src = avatarInput.value.trim();
+      function renderCategoriesTab() {
+        if (!catListContainer) return;
+        catListContainer.innerHTML = serializedCategories.map((cat) => {
+          const count = serializedPosts.filter((p) => p.category === cat.id).length;
+          const isCore = ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad'].includes(cat.id);
+          return `
+            <div class="py-3 flex items-center justify-between text-xs gap-3">
+              <div>
+                <span class="font-serif font-bold text-paper-text dark:text-night-text text-sm">
+                  ${cat.icon || '📁'} ${cat.title}
+                </span>
+                <span class="ml-2 font-mono text-[11px] text-paper-muted">/category/${cat.id}</span>
+                <p class="text-[11px] font-serif text-paper-muted mt-0.5">${cat.desc || ''}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-sans px-2.5 py-1 rounded-full bg-paper-border/50 text-paper-muted">
+                  ${count}টি রচনা
+                </span>
+                ${!isCore ? `
+                  <button
+                    type="button"
+                    class="delete-cat-btn px-2.5 py-1 rounded-lg text-red-600 hover:bg-red-500/10 text-[11px] font-sans font-semibold cursor-pointer"
+                    data-id="${cat.id}"
+                    title="ফোল্ডারটি মুছুন"
+                  >
+                    🗑️ মুছুন
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        attachDeleteCategoryListeners();
+      }
+
+      function renderExplorerFolderTree() {
+        if (!folderTreeList) return;
+        folderTreeList.innerHTML = `
+          <button
+            type="button"
+            class="folder-item w-full text-left px-3.5 py-2.5 rounded-xl ${currentFilterCat === 'all' ? 'bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent font-semibold' : 'hover:bg-paper-border/40 text-paper-text dark:text-night-text'} flex items-center justify-between transition-colors cursor-pointer"
+            data-cat="all"
+          >
+            <span class="flex items-center gap-2">
+              <span>📁</span>
+              <span>সকল রচনা</span>
+            </span>
+            <span class="text-[11px] opacity-80 folder-count-badge" data-count-cat="all">(${serializedPosts.length})</span>
+          </button>
+          ${serializedCategories.map((cat) => {
+            const count = serializedPosts.filter((p) => p.category === cat.id).length;
+            const isActive = currentFilterCat === cat.id;
+            return `
+              <button
+                type="button"
+                class="folder-item w-full text-left px-3.5 py-2.5 rounded-xl ${isActive ? 'bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent font-semibold' : 'hover:bg-paper-border/40 text-paper-text dark:text-night-text'} flex items-center justify-between transition-colors cursor-pointer"
+                data-cat="${cat.id}"
+              >
+                <span class="flex items-center gap-2">
+                  <span>${cat.icon || '📁'}</span>
+                  <span>${cat.title}</span>
+                </span>
+                <span class="text-[11px] text-paper-muted opacity-80 folder-count-badge" data-count-cat="${cat.id}">(${count})</span>
+              </button>
+            `;
+          }).join('')}
+        `;
+        attachFolderClickListeners();
+      }
+
+      function attachDeleteCategoryListeners() {
+        document.querySelectorAll('.delete-cat-btn').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            if (!confirm('আপনি কি নিশ্চিত যে এই ফোল্ডারটি মুছে ফেলতে চান?')) return;
+
+            try {
+              const res = await fetch('/api/categories', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+              });
+              const json = await res.json();
+              if (json.success) {
+                serializedCategories = serializedCategories.filter((c) => c.id !== id);
+                renderCategoriesTab();
+                renderExplorerFolderTree();
+                syncCategoryDropdown();
+                if (window.showAdminToast) window.showAdminToast('ফোল্ডার সফলভাবে মুছে ফেলা হয়েছে! ✓');
+              } else {
+                alert(json.message || 'ডিলিট করতে সমস্যা হয়েছে।');
+              }
+            } catch (err) {
+              alert('ত্রুটি: ' + err.message);
+            }
+          });
+        });
+      }
+
+      addCatBtn?.addEventListener('click', async () => {
+        const title = newCatLabel?.value.trim();
+        const customSlug = newCatSlug?.value.trim();
+        const desc = newCatDesc?.value.trim();
+
+        if (!title) {
+          alert('অনুগ্রহ করে ফোল্ডার বা বিভাগের নাম লিখুন।');
+          newCatLabel?.focus();
+          return;
+        }
+
+        addCatBtn.disabled = true;
+        addCatBtn.innerText = 'তৈরি হচ্ছে...';
+
+        try {
+          const res = await fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: customSlug, title, desc })
+          });
+          const json = await res.json();
+
+          if (json.success && json.category) {
+            serializedCategories.push(json.category);
+            renderCategoriesTab();
+            renderExplorerFolderTree();
+            syncCategoryDropdown();
+
+            if (newCatLabel) newCatLabel.value = '';
+            if (newCatSlug) newCatSlug.value = '';
+            if (newCatDesc) newCatDesc.value = '';
+
+            if (window.showAdminToast) {
+              window.showAdminToast(`'${title}' ফোল্ডার সফলভাবে তৈরি হয়েছে! ✓`);
+            }
+          } else {
+            alert(json.message || 'বিভাগ সংরক্ষণ ব্যর্থ হয়েছে।');
+          }
+        } catch (err) {
+          alert('ত্রুটি: ' + err.message);
+        } finally {
+          addCatBtn.disabled = false;
+          addCatBtn.innerText = '➕ নতুন ফোল্ডার তৈরি করুন';
         }
       });
 
-      saveProfileBtn?.addEventListener('click', () => {
-        const chosenAvatar = avatarInput?.value.trim() || localStorage.getItem('kherokhata_author_avatar') || author.avatar;
-        if (chosenAvatar) {
-          try { localStorage.setItem('kherokhata_author_avatar', chosenAvatar); } catch(e) {}
-        }
+      attachDeleteCategoryListeners();
 
-        const profileData = {
-          name: nameInput?.value.trim() || author.name,
-          education: eduInput?.value.trim() || author.education,
-          tagline: taglineInput?.value.trim() || author.tagline,
-          bio: shortbioInput?.value.trim() || author.bioShort,
-          bioShort: shortbioInput?.value.trim() || author.bioShort,
-          bioFull: fullbioInput?.value.trim() || author.bioFull,
-          manifestoTitle: manifestoTitleInput?.value.trim() || author.aboutManifestoTitle,
-          aboutManifestoTitle: manifestoTitleInput?.value.trim() || author.aboutManifestoTitle,
-          manifesto: manifestoInput?.value.trim() || author.aboutManifesto,
-          aboutManifesto: manifestoInput?.value.trim() || author.aboutManifesto,
-          avatar: chosenAvatar,
-          facebook: fbInput?.value.trim() || author.social?.facebook,
-          whatsapp: waInput?.value.trim() || author.social?.whatsapp,
-        };
-
-        localStorage.setItem('kherokhata_author_custom', JSON.stringify(profileData));
-        if (profileData.avatar) {
-          localStorage.setItem('kherokhata_author_avatar', profileData.avatar);
-        }
-
-        // Trigger global sync event
-        window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
-
-        if (profileSaveMsg) {
-          profileSaveMsg.classList.remove('hidden');
-          setTimeout(() => {
-            profileSaveMsg.classList.add('hidden');
-          }, 3000);
-        }
-      });
-
-      resetProfileBtn?.addEventListener('click', () => {
-        if (confirm('আপনি কি পূর্বের মূল লেখকের ডিফল্ট তথ্যে ফিরে যেতে চান?')) {
-          localStorage.removeItem('kherokhata_author_custom');
-          loadAuthorProfileForm();
-          window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
-          alert('ডিফল্ট তথ্য পুনরুদ্ধার করা হয়েছে!');
-        }
-      });
-
-      loadAuthorProfileForm();
-
-      // ==========================================
-      // BOOKSHELF & LIBRARY MANAGER LOGIC
-      // ==========================================
+      // 12. Bookshelf Manager (Add Read, Add Wish, Quick Delete)
       const adminBooksList = document.getElementById('admin-books-list');
       const addReadBtn = document.getElementById('add-read-book-btn');
       const addWishBtn = document.getElementById('add-wish-book-btn');
@@ -627,15 +1633,15 @@ ${body}
         if (stored) {
           try {
             return JSON.parse(stored);
-          } catch(e) {}
+          } catch (e) {}
         }
         return JSON.parse(JSON.stringify(initialBookshelf));
       }
 
       function saveBookshelfData(data) {
         localStorage.setItem('kherokhata_bookshelf_custom', JSON.stringify(data));
-        window.dispatchEvent(new CustomEvent('kherokhata-bookshelf-sync'));
         renderAdminBooks();
+        if (window.showAdminToast) window.showAdminToast('বুকশেলফ হালনাগাদ করা হয়েছে! ✓');
       }
 
       function renderAdminBooks() {
@@ -648,84 +1654,68 @@ ${body}
         readWrapper.className = 'space-y-2';
         readWrapper.innerHTML = `
           <h5 class="font-bold text-xs text-paper-accent dark:text-night-accent flex items-center gap-1.5">
-            <span>📖</span> <span>পড়া শেষ বইসমূহ (${data.readBooks.length}টি):</span>
+            <span>📖</span> <span>পড়া শেষ বইসমূহ (${data.readBooks?.length || 0}টি):</span>
           </h5>
         `;
 
-        if (data.readBooks.length === 0) {
+        if (!data.readBooks || data.readBooks.length === 0) {
           readWrapper.innerHTML += `<p class="text-xs text-paper-muted italic">কোনো পঠিত বই যুক্ত করা হয়নি।</p>`;
         } else {
           data.readBooks.forEach((book, idx) => {
             const item = document.createElement('div');
-            item.className = 'p-3 rounded-xl border border-paper-border/60 dark:border-night-border/60 bg-paper-surface flex items-center justify-between gap-3';
+            item.className = 'p-3 rounded-xl border border-paper-border/60 dark:border-night-border/60 bg-paper-surface dark:bg-night-surface flex items-center justify-between gap-3';
             item.innerHTML = `
               <div>
-                <span class="font-bold font-serif text-sm text-paper-text dark:text-night-text">${book.title}</span>
-                <span class="text-xs text-paper-muted ml-2">— ${book.author} (${book.readYear})</span>
-                <span class="ml-2 text-amber-500 font-mono">★ ${book.rating}</span>
-                ${book.review ? `<p class="text-xs font-serif text-paper-muted italic mt-0.5">"${book.review}"</p>` : ''}
+                <span class="font-bold text-paper-text dark:text-night-text">${book.title}</span>
+                <span class="text-paper-muted"> — ${book.author} (${book.readYear || '২০২৬'})</span>
+                <span class="ml-2 text-amber-500 font-bold">★ ${book.rating || '৫'}</span>
               </div>
-              <button
-                type="button"
-                data-delete-read="${book.id || idx}"
-                class="px-2.5 py-1 rounded-lg text-xs font-sans text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900 transition-colors cursor-pointer"
-                title="মুছে ফেলুন"
-              >
-                🗑️
+              <button type="button" class="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer" data-delete-read="${book.id || idx}">
+                মুছুন ✕
               </button>
             `;
             readWrapper.appendChild(item);
           });
         }
-        adminBooksList.appendChild(readWrapper);
 
         // Wishlist Sub-List
         const wishWrapper = document.createElement('div');
         wishWrapper.className = 'space-y-2 pt-4 border-t border-paper-border/60';
         wishWrapper.innerHTML = `
           <h5 class="font-bold text-xs text-paper-accent dark:text-night-accent flex items-center gap-1.5">
-            <span>🎯</span> <span>পড়ার উইশলিস্ট টাস্ক (${data.wishlistBooks.length}টি):</span>
+            <span>🎯</span> <span>পড়ার ইচ্ছেতালিকা (${data.wishlistBooks?.length || 0}টি):</span>
           </h5>
         `;
 
-        if (data.wishlistBooks.length === 0) {
-          wishWrapper.innerHTML += `<p class="text-xs text-paper-muted italic">উইশলিস্টে কোনো বই নেই।</p>`;
+        if (!data.wishlistBooks || data.wishlistBooks.length === 0) {
+          wishWrapper.innerHTML += `<p class="text-xs text-paper-muted italic">ইচ্ছেতালিকায় কোনো বই নেই।</p>`;
         } else {
-          data.wishlistBooks.forEach((wish, idx) => {
+          data.wishlistBooks.forEach((itemData, idx) => {
             const item = document.createElement('div');
-            item.className = 'p-3 rounded-xl border border-paper-border/60 dark:border-night-border/60 bg-paper-surface flex items-center justify-between gap-3';
+            item.className = 'p-3 rounded-xl border border-paper-border/60 dark:border-night-border/60 bg-paper-surface dark:bg-night-surface flex items-center justify-between gap-3';
             item.innerHTML = `
               <div>
-                <span class="font-bold font-serif text-sm text-paper-text dark:text-night-text">${wish.title}</span>
-                <span class="text-xs text-paper-muted ml-2">— ${wish.author}</span>
-                <span class="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-paper-border text-paper-text">${wish.priority}</span>
-                ${wish.note ? `<p class="text-xs font-serif text-paper-muted italic mt-0.5">"${wish.note}"</p>` : ''}
+                <span class="font-bold text-paper-text dark:text-night-text">${itemData.title}</span>
+                <span class="text-paper-muted"> — ${itemData.author}</span>
+                <span class="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-paper-accent/10 text-paper-accent font-semibold">${itemData.priority || 'উচ্চ'}</span>
               </div>
               <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  data-complete-wish="${wish.id || idx}"
-                  class="px-2.5 py-1 rounded-lg text-xs font-sans bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 hover:opacity-90 cursor-pointer flex items-center gap-1"
-                  title="পড়া শেষ হিসেবে পড়া বইয়ের ঘরে স্থানান্তর করুন"
-                >
-                  <span>✓</span> <span>পড়া শেষ</span>
+                <button type="button" class="text-emerald-600 hover:text-emerald-700 text-xs font-semibold cursor-pointer" data-complete-wish="${itemData.id || idx}" title="পড়া শেষ হিসেবে চিহ্নিত করুন">
+                  ✓ পড়া শেষ
                 </button>
-                <button
-                  type="button"
-                  data-delete-wish="${wish.id || idx}"
-                  class="px-2 py-1 rounded-lg text-xs font-sans text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900 transition-colors cursor-pointer"
-                  title="মুছে ফেলুন"
-                >
-                  🗑️
+                <button type="button" class="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer" data-delete-wish="${itemData.id || idx}">
+                  মুছুন ✕
                 </button>
               </div>
             `;
             wishWrapper.appendChild(item);
           });
         }
+
+        adminBooksList.appendChild(readWrapper);
         adminBooksList.appendChild(wishWrapper);
 
-        // Attach action handlers
+        // Delete handlers
         adminBooksList.querySelectorAll('[data-delete-read]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-delete-read');
@@ -748,423 +1738,145 @@ ${body}
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-complete-wish');
             const d = getBookshelfData();
-            const targetIndex = d.wishlistBooks.findIndex((w, i) => (w.id ? w.id === id : i.toString() === id));
-            if (targetIndex !== -1) {
-              const completed = d.wishlistBooks.splice(targetIndex, 1)[0];
+            const targetIdx = d.wishlistBooks.findIndex((w, i) => (w.id ? w.id === id : i.toString() === id));
+            if (targetIdx !== -1) {
+              const comp = d.wishlistBooks.splice(targetIdx, 1)[0];
               d.readBooks.unshift({
                 id: 'read-' + Date.now(),
-                title: completed.title,
-                author: completed.author,
+                title: comp.title,
+                author: comp.author,
                 readYear: new Date().getFullYear().toString(),
-                review: completed.note || 'সম্প্রতি পড়া সমাপ্ত হয়েছে।',
-                rating: 5,
-                tag: 'নব্য সমাপ্ত কিতাব',
-                coverBg: 'from-amber-950/40 via-neutral-900 to-orange-950/30'
+                rating: '৫',
+                tag: 'নির্বাচিত পাঠ',
+                review: comp.note || 'পড়া সম্পন্ন হয়েছে।'
               });
               saveBookshelfData(d);
-              alert(`'${completed.title}' বইটি পড়া শেষ তালিকায় যুক্ত করা হয়েছে! ✓`);
             }
           });
         });
       }
 
       addReadBtn?.addEventListener('click', () => {
-        const title = document.getElementById('new-read-title')?.value.trim();
-        const bAuthor = document.getElementById('new-read-author')?.value.trim();
-        const year = document.getElementById('new-read-year')?.value.trim() || '২০২৬';
-        const rating = parseFloat(document.getElementById('new-read-rating')?.value) || 5;
-        const tag = document.getElementById('new-read-tag')?.value.trim() || 'পঠিত কিতাব';
-        const review = document.getElementById('new-read-review')?.value.trim() || '';
+        const titleInput = document.getElementById('new-read-title');
+        const authorInput = document.getElementById('new-read-author');
+        const yearInput = document.getElementById('new-read-year');
+        const ratingInput = document.getElementById('new-read-rating');
+        const tagInput = document.getElementById('new-read-tag');
+        const reviewInput = document.getElementById('new-read-review');
 
-        if (!title || !bAuthor) {
-          alert('অনুগ্রহ করে বইয়ের নাম ও লেখকের নাম লিখুন।');
+        if (!titleInput?.value.trim()) {
+          alert('বইয়ের নাম আবশ্যক।');
+          titleInput?.focus();
           return;
         }
 
         const d = getBookshelfData();
         d.readBooks.unshift({
           id: 'read-' + Date.now(),
-          title,
-          author: bAuthor,
-          readYear: year,
-          rating,
-          tag,
-          review,
-          coverBg: 'from-amber-950/40 via-neutral-900 to-orange-950/30'
+          title: titleInput.value.trim(),
+          author: authorInput?.value.trim() || 'অজ্ঞাত',
+          readYear: yearInput?.value.trim() || '২০২৬',
+          rating: ratingInput?.value.trim() || '৫',
+          tag: tagInput?.value.trim() || 'সাধারণ',
+          review: reviewInput?.value.trim() || ''
         });
+
         saveBookshelfData(d);
 
-        document.getElementById('new-read-title').value = '';
-        document.getElementById('new-read-author').value = '';
-        document.getElementById('new-read-review').value = '';
-        alert('নতুন পড়া বই সফলভাবে যুক্ত হয়েছে! ✓');
+        if (titleInput) titleInput.value = '';
+        if (authorInput) authorInput.value = '';
+        if (reviewInput) reviewInput.value = '';
       });
 
       addWishBtn?.addEventListener('click', () => {
-        const title = document.getElementById('new-wish-title')?.value.trim();
-        const bAuthor = document.getElementById('new-wish-author')?.value.trim();
-        const priority = document.getElementById('new-wish-priority')?.value || 'উচ্চ';
-        const note = document.getElementById('new-wish-note')?.value.trim() || '';
+        const titleInput = document.getElementById('new-wish-title');
+        const authorInput = document.getElementById('new-wish-author');
+        const priorityInput = document.getElementById('new-wish-priority');
+        const noteInput = document.getElementById('new-wish-note');
 
-        if (!title || !bAuthor) {
-          alert('অনুগ্রহ করে বইয়ের নাম ও লেখকের নাম লিখুন।');
+        if (!titleInput?.value.trim()) {
+          alert('বইয়ের নাম আবশ্যক।');
+          titleInput?.focus();
           return;
         }
 
         const d = getBookshelfData();
         d.wishlistBooks.unshift({
           id: 'wish-' + Date.now(),
-          title,
-          author: bAuthor,
-          priority,
-          note,
-          isCompleted: false
+          title: titleInput.value.trim(),
+          author: authorInput?.value.trim() || 'অজ্ঞাত',
+          priority: priorityInput?.value || 'উচ্চ',
+          note: noteInput?.value.trim() || ''
         });
+
         saveBookshelfData(d);
 
-        document.getElementById('new-wish-title').value = '';
-        document.getElementById('new-wish-author').value = '';
-        document.getElementById('new-wish-note').value = '';
-        alert('উইশলিস্টে নতুন বই সফলভাবে যুক্ত হয়েছে! ✓');
-      });
-
-      // Export JSON File Download Handler
-      document.getElementById('export-bookshelf-json-btn')?.addEventListener('click', () => {
-        const data = getBookshelfData();
-        const jsonStr = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'bookshelf.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        alert('আপডেটকৃত bookshelf.json ডাউনলোড হয়েছে! এটি প্রজেক্টের src/data/ ফোল্ডারে রিপ্লেস করতে পারেন।');
-      });
-
-      // Copy JSON Code Handler
-      document.getElementById('copy-bookshelf-json-btn')?.addEventListener('click', async () => {
-        const data = getBookshelfData();
-        const jsonStr = JSON.stringify(data, null, 2);
-        try {
-          await navigator.clipboard.writeText(jsonStr);
-          const copyLabel = document.getElementById('copy-bookshelf-text');
-          if (copyLabel) copyLabel.innerText = '✓ কপি হয়েছে!';
-          setTimeout(() => {
-            if (copyLabel) copyLabel.innerText = 'JSON কোড কপি';
-          }, 2000);
-        } catch (err) {
-          prompt('সম্পূর্ণ bookshelf.json কোড কপি করুন:', jsonStr);
-        }
-      });
-
-      // Reset to Default Bookshelf
-      document.getElementById('reset-bookshelf-btn')?.addEventListener('click', () => {
-        if (!confirm('আপনি কি ডিফল্ট বুকশেলফ ডেটায় ফিরে যেতে চান? আপনার কাস্টম সব পরিবর্তন মুছে যাবে।')) return;
-        localStorage.removeItem('kherokhata_bookshelf_custom');
-        window.dispatchEvent(new CustomEvent('kherokhata-bookshelf-sync'));
-        renderAdminBooks();
-        alert('বুকশেলফ ডিফল্ট অবস্থায় ফিরে গেছে! ✓');
+        if (titleInput) titleInput.value = '';
+        if (authorInput) authorInput.value = '';
+        if (noteInput) noteInput.value = '';
       });
 
       renderAdminBooks();
 
-      // ==========================================
-      // EXPLORER POSTS SYNC (Sync deleted and custom posts on load)
-      // ==========================================
-      function syncExplorerPosts() {
-        try {
-          const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-          if (deleted.length > 0) {
-            document.querySelectorAll('.file-row').forEach((row) => {
-              const slug = row.getAttribute('data-slug');
-              if (slug && deleted.includes(slug)) {
-                row.remove();
-              }
-            });
-          }
+      // 13. Profile & Bio Editor
+      const nameInp = document.getElementById('edit-author-name');
+      const eduInp = document.getElementById('edit-author-edu');
+      const tagInp = document.getElementById('edit-author-tagline');
+      const shortbioInp = document.getElementById('edit-author-shortbio');
+      const fullbioInp = document.getElementById('edit-author-fullbio');
+      const fbInp = document.getElementById('edit-author-fb');
+      const waInp = document.getElementById('edit-author-wa');
+      const saveProfileBtn = document.getElementById('save-profile-btn');
 
-          // Prepend any custom posts created by author
-          const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-          const container = document.getElementById('file-list-container');
-          if (container && customPosts.length > 0) {
-            customPosts.forEach((post) => {
-              if (deleted.includes(post.slug)) return;
-              if (document.querySelector(`.file-row[data-slug="${post.slug}"]`)) return;
+      function loadProfileIntoForm() {
+        const custom = localStorage.getItem('kherokhata_author_custom');
+        const current = custom ? { ...author, ...JSON.parse(custom) } : author;
 
-              const row = document.createElement('div');
-              row.className = 'file-row p-3 rounded-xl border border-paper-accent/40 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex items-center justify-between gap-3 text-xs';
-              row.setAttribute('data-category', post.category);
-              row.setAttribute('data-slug', post.slug);
-              row.innerHTML = `
-                <div class="space-y-0.5 flex-grow">
-                  <div class="font-serif font-semibold text-sm text-paper-text dark:text-night-text flex items-center gap-2">
-                    <span class="text-paper-accent">✨</span>
-                    <span>${post.title}</span>
-                  </div>
-                  <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
-                    <span>তারিখ: ${post.publishedAt}</span>
-                    <span>·</span>
-                    <span>শব্দ: ${post.body ? post.body.trim().split(/\\s+/).length : 0}</span>
-                    <span>·</span>
-                    <span class="font-mono">${post.slug}.md</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <a href="/${post.slug}" target="_blank" class="px-2.5 py-1 rounded-md border border-paper-border dark:border-night-border hover:text-paper-accent text-[11px] font-sans transition-colors">
-                    পড়ুন ↗
-                  </a>
-                  <button type="button" class="load-in-writer-btn px-2.5 py-1 rounded-md bg-paper-accent/10 hover:bg-paper-accent text-paper-accent hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${post.slug}">
-                    সম্পাদনা ✍️
-                  </button>
-                  <button type="button" class="delete-post-btn px-2.5 py-1 rounded-md border border-red-300 dark:border-red-900/50 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-[11px] font-sans font-medium transition-colors cursor-pointer" data-slug="${post.slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
-                    🗑️ ডিলিট
-                  </button>
-                </div>
-              `;
-              container.prepend(row);
-              if (!serializedPosts.some((p) => p.slug === post.slug)) {
-                serializedPosts.unshift(post);
-              }
-            });
-          }
-        } catch (e) {}
+        if (nameInp) nameInp.value = current.name || '';
+        if (eduInp) eduInp.value = current.education || '';
+        if (tagInp) tagInp.value = current.tagline || '';
+        if (shortbioInp) shortbioInp.value = current.bioShort || '';
+        if (fullbioInp) fullbioInp.value = current.bioFull || '';
+        if (fbInp) fbInp.value = current.social?.facebook || '';
+        if (waInp) waInp.value = current.social?.whatsapp || '';
       }
 
-      syncExplorerPosts();
+      loadProfileIntoForm();
 
-      // ==========================================
-      // POST DELETION HANDLER (100% Reliable Client + Server)
-      // ==========================================
-      function attachDeleteListeners() {
-        document.querySelectorAll('.delete-post-btn').forEach((btn) => {
-          if (btn.getAttribute('data-delete-bound')) return;
-          btn.setAttribute('data-delete-bound', 'true');
-
-          btn.addEventListener('click', async () => {
-            const slug = btn.getAttribute('data-slug');
-            if (!slug) return;
-
-            const row = btn.closest('.file-row');
-            const title = row ? (row.querySelector('.font-serif.font-semibold span:last-child')?.innerText || slug) : slug;
-
-            if (!confirm(`আপনি কি নিশ্চিত যে "${title}" লেখাটি স্থায়ীভাবে মুছে ফেলতে চান?\nএই পরিবর্তনটি সাইট থেকে তৎক্ষণাৎ মুছে যাবে।`)) {
-              return;
-            }
-
-            // 1. Immediately remove row from DOM
-            row?.remove();
-
-            // 2. Remove from serializedPosts
-            const pIdx = serializedPosts.findIndex((p) => p.slug === slug);
-            if (pIdx !== -1) serializedPosts.splice(pIdx, 1);
-
-            // 3. Add to kherokhata_deleted_posts in LocalStorage
-            try {
-              const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-              if (!deleted.includes(slug)) {
-                deleted.push(slug);
-                localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(deleted));
-              }
-            } catch (e) {}
-
-            // 4. Remove from kherokhata_custom_posts if user created it
-            try {
-              const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-              const updatedCustom = customPosts.filter((p) => p.slug !== slug);
-              localStorage.setItem('kherokhata_custom_posts', JSON.stringify(updatedCustom));
-            } catch (e) {}
-
-            // 5. Send real DELETE to backend API
-            try {
-              const delRes = await fetch('/api/posts', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slug })
-              });
-              const delJson = await delRes.json();
-              if (!delRes.ok || !delJson.success) {
-                console.warn('[Admin] Server delete returned:', delJson);
-              }
-            } catch (e) {
-              console.warn('[Admin] Network delete error:', e);
-            }
-
-            // 6. Broadcast sync events
-            window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
-            window.dispatchEvent(new Event('storage'));
-
-            alert(`'${title}' লেখাটি সফলভাবে মুছে ফেলা হয়েছে! ✓`);
-          });
-        });
-      }
-
-      attachDeleteListeners();
-
-      // ==========================================
-      // LIVE WRITER SAVE & PUBLISH HANDLER (100% Client + Server)
-      // ==========================================
-      document.getElementById('save-publish-btn')?.addEventListener('click', async () => {
-        const title = editorTitle?.value.trim();
-        const category = editorCat?.value || 'chinta';
-        const date = editorDate?.value || new Date().toISOString().split('T')[0];
-        const desc = editorDesc?.value.trim() || '';
-        const tags = (editorTags?.value || '').split(',').map((t) => t.trim()).filter(Boolean);
-        const body = editorBody?.value || '';
-
-        if (!title) {
-          alert('অনুগ্রহ করে লেখার শিরোনাম দিন।');
-          editorTitle?.focus();
-          return;
-        }
-        if (!body) {
-          alert('অনুগ্রহ করে লেখার মূল বিষয়বস্তু লিখুন।');
-          editorBody?.focus();
-          return;
-        }
-
-        const saveBtn = document.getElementById('save-publish-btn');
-        const origText = saveBtn ? saveBtn.innerHTML : '';
-        if (saveBtn) {
-          saveBtn.disabled = true;
-          saveBtn.innerText = 'সংরক্ষণ হচ্ছে...';
-        }
-
-        try {
-          const slug = title
-            .toLowerCase()
-            .replace(/[^\w\u0980-\u09FF-]+/g, '-')
-            .replace(/^-+|-+$/g, '') || ('post-' + Date.now());
-
-          const postPayload = {
-            slug,
-            title,
-            description: desc,
-            category,
-            publishedAt: date,
-            formattedDate: date,
-            tags,
-            body,
-            wordCount: body.trim().split(/\s+/).length,
-            footnotes: writerFootnotes && writerFootnotes.length > 0 ? writerFootnotes : []
-          };
-
-          // 1. Save in localStorage custom posts
-          try {
-            const customPosts = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-            const existingIdx = customPosts.findIndex((p) => p.slug === slug);
-            if (existingIdx >= 0) {
-              customPosts[existingIdx] = postPayload;
-            } else {
-              customPosts.unshift(postPayload);
-            }
-            localStorage.setItem('kherokhata_custom_posts', JSON.stringify(customPosts));
-
-            // Also remove from deleted posts if it was deleted previously
-            const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-            const filteredDeleted = deleted.filter((s) => s !== slug);
-            localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(filteredDeleted));
-          } catch (e) {}
-
-          // 2. Real Cloud API POST
-          try {
-            const apiRes = await fetch('/api/posts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(postPayload)
-            });
-            const apiJson = await apiRes.json();
-            if (!apiRes.ok || !apiJson.success) {
-              console.warn('[Admin] Server save returned warning:', apiJson);
-            }
-          } catch (e) {
-            console.warn('[Admin] API POST warning:', e);
+      saveProfileBtn?.addEventListener('click', () => {
+        const updated = {
+          name: nameInp?.value.trim() || author.name,
+          education: eduInp?.value.trim() || author.education,
+          tagline: tagInp?.value.trim() || author.tagline,
+          bioShort: shortbioInp?.value.trim() || author.bioShort,
+          bioFull: fullbioInp?.value.trim() || author.bioFull,
+          social: {
+            facebook: fbInp?.value.trim() || author.social?.facebook,
+            whatsapp: waInp?.value.trim() || author.social?.whatsapp
           }
+        };
 
-          // 3. Broadcast sync events
-          window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
-          window.dispatchEvent(new Event('storage'));
+        localStorage.setItem('kherokhata_author_custom', JSON.stringify(updated));
+        document.querySelectorAll('.author-name-text').forEach((el) => { el.innerText = updated.name; });
 
-          alert(`'${title}' লেখাটি সফলভাবে সংরক্ষিত ও প্রকাশিত হয়েছে! ✓`);
-          window.location.reload();
-        } catch (err) {
-          alert('সংরক্ষণ ত্রুটি: ' + err.message);
-        } finally {
-          if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = origText;
-          }
-        }
+        if (window.showAdminToast) window.showAdminToast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে! ✓');
       });
 
-      // ==========================================
-      // EXPORT POSTS.JSON HANDLER
-      // ==========================================
-      document.getElementById('export-posts-json-btn')?.addEventListener('click', () => {
-        try {
-          const deleted = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-          const custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-          const activeDefault = serializedPosts.filter((p) => !deleted.includes(p.slug));
-          const allCurrentPosts = [...custom, ...activeDefault];
+      // 14. Security / PIN Change
+      const newPinInput = document.getElementById('new-pin-input');
+      const saveNewPinBtn = document.getElementById('save-new-pin-btn');
 
-          const jsonStr = JSON.stringify(allCurrentPosts, null, 2);
-          const blob = new Blob([jsonStr], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'posts.json';
-          a.click();
-          URL.revokeObjectURL(url);
-          alert('posts.json ফাইল সফলভাবে ডাউনলোড হয়েছে! ✓');
-        } catch (e) {
-          alert('ডাউনলোড করতে সমস্যা হয়েছে: ' + e.message);
-        }
-      });
-
-      // ==========================================
-      // CATEGORY & FOLDER MANAGER HANDLER
-      // ==========================================
-      const addCatBtn = document.getElementById('add-cat-btn');
-      const newCatLabel = document.getElementById('new-cat-label');
-      const newCatSlug = document.getElementById('new-cat-slug');
-      const newCatDesc = document.getElementById('new-cat-desc');
-
-      addCatBtn?.addEventListener('click', () => {
-        const label = newCatLabel?.value.trim();
-        const slug = newCatSlug?.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-        const desc = newCatDesc?.value.trim();
-
-        if (!label || !slug) {
-          alert('অনুগ্রহ করে বিভাগের নাম ও স্লাগ লিখুন।');
+      saveNewPinBtn?.addEventListener('click', () => {
+        const val = newPinInput?.value.trim();
+        if (!val || val.length < 4) {
+          alert('অনুগ্রহ করে কমপক্ষে ৪ সংখ্যার পিন কোড লিখুন।');
+          newPinInput?.focus();
           return;
         }
-
-        const customCats = JSON.parse(localStorage.getItem('kherokhata_custom_categories') || '[]');
-        if (customCats.some((c) => c.slug === slug)) {
-          alert('এই স্লাগ দিয়ে ইতিমধ্যে একটি বিষয়শ্রেণী তৈরি আছে।');
-          return;
-        }
-
-        customCats.push({ label, slug, desc });
-        localStorage.setItem('kherokhata_custom_categories', JSON.stringify(customCats));
-
-        if (editorCat) {
-          const opt = document.createElement('option');
-          opt.value = slug;
-          opt.textContent = `${label} (${slug})`;
-          editorCat.appendChild(opt);
-        }
-
-        if (newCatLabel) newCatLabel.value = '';
-        if (newCatSlug) newCatSlug.value = '';
-        if (newCatDesc) newCatDesc.value = '';
-
-        alert(`'${label}' নতুন ফোল্ডার/বিষয়শ্রেণী সফলভাবে তৈরি হয়েছে! ✓`);
+        localStorage.setItem('kherokhata_admin_pin', val);
+        if (newPinInput) newPinInput.value = '';
+        if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে! ✓');
       });
-
-  })();
-
+    })();
   </script>
-</Layout>
+</AdminLayout>

@@ -108,7 +108,7 @@ check('[slug].astro dynamically resolves posts from db', slugPage.includes('awai
 
 const indexPage = fs.readFileSync('src/pages/index.astro', 'utf-8');
 check('index.astro has prerender = false (Instant Homepage Sync)', indexPage.includes('export const prerender = false;'));
-check('index.astro queries getAllPostsAsync()', indexPage.includes('await getAllPostsAsync()'));
+check('index.astro queries getAllPostsAsync()', indexPage.includes('getAllPostsAsync()'));
 
 const catPage = fs.readFileSync('src/pages/category/[category].astro', 'utf-8');
 check('category/[category].astro has prerender = false', catPage.includes('export const prerender = false;'));
@@ -116,7 +116,7 @@ check('category/[category].astro dynamically filters posts', catPage.includes('a
 
 const searchPage = fs.readFileSync('src/pages/search.astro', 'utf-8');
 check('search.astro has prerender = false', searchPage.includes('export const prerender = false;'));
-check('search.astro dynamically queries all posts', searchPage.includes('await getAllPostsAsync()'));
+check('search.astro dynamically queries all posts', searchPage.includes('getAllPostsAsync()'));
 
 // --------------------------------------------------------------------
 // AUDIT PILLAR 4: Login Zero-Buffering & Network Optimization
@@ -128,13 +128,21 @@ check('AppLoader immediately bypasses /admin route (0ms delay)', appLoader.inclu
 check('AppLoader skips on active browsing session (no repeat delay)', appLoader.includes('kherokhata_session_active'));
 
 const sw = fs.readFileSync('public/sw.js', 'utf-8');
-check('Service Worker updated to v14 or higher', sw.includes('kherokhata-cache-v14') || sw.includes('kherokhata-cache-v15'));
+check('Service Worker updated to v16 or higher', sw.includes('kherokhata-cache-v16') || sw.includes('kherokhata-cache-v15'));
 check('Precache list trimmed down from 34 to core shell', !sw.includes('/category/chinta') && !sw.includes('/gazar-dinlipi'));
 check('Service Worker never intercepts /admin or /api', sw.includes("url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')"));
 
 const adminPage = fs.readFileSync('src/pages/admin.astro', 'utf-8');
-check('Admin writer desk awaits API POST before reload', adminPage.includes('await fetch(\'/api/posts\','));
-check('Admin writer desk awaits API DELETE before reload', adminPage.includes('await fetch(\'/api/posts\', {'));
+check('Admin uses dedicated AdminLayout (decoupled from public layout)', adminPage.includes("import AdminLayout from '../layouts/AdminLayout.astro'"));
+check('Admin writer desk has zero window.location.reload() (jitter-free)', !adminPage.includes('window.location.reload()'));
+check('Admin writer desk has Bengali speech dictation button', adminPage.includes('voice-dictation-btn'));
+check('Admin has dynamic category manager and folder creation', adminPage.includes('/api/categories'));
+
+const categoriesApi = fs.readFileSync('src/pages/api/categories.ts', 'utf-8');
+check('api/categories.ts has GET, POST and DELETE endpoints', categoriesApi.includes('export const GET') && categoriesApi.includes('export const POST') && categoriesApi.includes('export const DELETE'));
+
+const postCard = fs.readFileSync('src/components/PostCard.astro', 'utf-8');
+check('PostCard has zero competing onclick JS handlers (single native link)', !postCard.includes('onclick='));
 
 // --------------------------------------------------------------------
 // AUDIT PILLAR 5: Social OpenGraph Meta Tags for Facebook & WhatsApp

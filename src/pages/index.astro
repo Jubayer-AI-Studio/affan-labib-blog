@@ -4,25 +4,31 @@ import Layout from '../layouts/Layout.astro';
 import PostCard from '../components/PostCard.astro';
 import QuoteSection from '../components/QuoteSection.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
-import { getAllPostsAsync } from '../lib/db';
+import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
 import author from '../data/author.json';
 import bookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
-const posts = await getAllPostsAsync();
+const [posts, categories] = await Promise.all([
+  getAllPostsAsync(),
+  getCategoriesAsync()
+]);
 
 // Feature post
 const spotlightPost = posts.find((p) => p.slug === 'gazar-dinlipi') || posts[0];
 const gridPosts = posts.filter((p) => p.slug !== spotlightPost.slug);
 
-// Category counts
-const countAll = posts.length;
-const countChinta = posts.filter((p) => p.category === 'chinta').length;
-const countPathalap = posts.filter((p) => p.category === 'pathalap').length;
-const countItihas = posts.filter((p) => p.category === 'itihas').length;
-const countBoi = posts.filter((p) => p.category === 'boi-alochona').length;
-const countOnubad = posts.filter((p) => p.category === 'onubad').length;
+// Dynamic category list with post counts
+const categoryCounts = categories.map((cat) => {
+  const count = posts.filter((p) => p.category === cat.id).length;
+  const gridCount = cat.id === spotlightPost.category ? Math.max(0, count - 1) : count;
+  return {
+    ...cat,
+    count,
+    gridCount
+  };
+});
 
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 function toBn(n: number) {
@@ -316,23 +322,15 @@ function toBn(n: number) {
       <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs" data-filter="all">
         <span>সব রচনা</span> <span class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
       </button>
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="chinta">
-        <span>চিন্তা</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countChinta)})</span>
-      </button>
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="pathalap">
-        <span>পাঠালাপ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countPathalap)})</span>
-      </button>
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="itihas">
-        <span>ইতিহাস</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countItihas)})</span>
-      </button>
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="boi-alochona">
-        <span>বই-আলোচনা</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countBoi - (spotlightPost.category === 'boi-alochona' ? 1 : 0))})</span>
-      </button>
-      {countOnubad > 0 && (
-        <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs" data-filter="onubad">
-          <span>অনুবাদ</span> <span class="ml-1 text-[11px] opacity-75">({toBn(countOnubad)})</span>
+      {categoryCounts.map((cat) => (
+        <button
+          type="button"
+          class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs"
+          data-filter={cat.id}
+        >
+          <span>{cat.title}</span> <span class="ml-1 text-[11px] opacity-75">({toBn(cat.gridCount)})</span>
         </button>
-      )}
+      ))}
     </div>
 
     <!-- 2-Column Responsive Post Grid -->
@@ -441,8 +439,11 @@ function toBn(n: number) {
     // Check URL hash for direct category deep-linking
     function checkUrlFilter() {
       const hash = window.location.hash.replace('#', '');
-      if (hash && ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad'].includes(hash)) {
-        activateTab(hash, true);
+      if (hash && hash !== 'categories') {
+        const matchingTab = document.querySelector(`.category-tab[data-filter="${hash}"]`);
+        if (matchingTab) {
+          activateTab(hash, true);
+        }
       } else if (hash === 'categories') {
         const sec = document.getElementById('categories');
         if (sec) sec.scrollIntoView({ behavior: 'smooth' });

@@ -33,7 +33,6 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
   class="post-item group relative flex flex-col justify-between rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs hover:shadow-2xl hover:shadow-paper-accent/10 dark:hover:shadow-night-accent/15 md:hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 overflow-hidden cursor-pointer"
   data-category={post.category}
   data-slug={post.slug}
-  onclick={`if (!event.target.closest('a')) window.location.href='/${post.slug}';`}
 >
   <!-- Ambient Liquid Glow on Hover -->
   <div class="absolute -right-20 -top-20 w-48 h-48 rounded-full bg-paper-accent/5 dark:bg-night-accent/10 blur-2xl group-hover:scale-150 group-hover:bg-paper-accent/12 dark:group-hover:bg-night-accent/20 transition-all duration-700 pointer-events-none"></div>
@@ -43,11 +42,11 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
 
   <div class="relative space-y-4">
     <!-- Meta Bar with Category Pill -->
-    <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted">
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+    <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted relative z-20">
+      <a href={`/#${post.category}`} class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
         <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
         {categoryName}
-      </span>
+      </a>
       <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
         <time datetime={post.publishedAt} class="opacity-80">{post.formattedDate}</time>
         <span>·</span>
@@ -55,9 +54,9 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
       </div>
     </div>
 
-    <!-- Title -->
+    <!-- Title with Full-Card Stretched Link -->
     <h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-snug">
-      <a href={`/${post.slug}`} class="block hover:underline">
+      <a href={`/${post.slug}`} class="hover:underline focus:outline-none after:absolute after:inset-0 after:z-10">
         {post.title}
       </a>
     </h3>
@@ -78,15 +77,14 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
       ))}
     </div>
 
-    <a
-      href={`/${post.slug}`}
-      class="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-full bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent font-semibold text-xs font-sans border border-paper-accent/25 dark:border-night-accent/30 hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-all duration-200 cursor-pointer active:scale-95 shadow-2xs z-20"
-      aria-label={`সম্পূর্ণ পড়ুন: ${post.title}`}
+    <span
+      class="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-full bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent font-semibold text-xs font-sans border border-paper-accent/25 dark:border-night-accent/30 group-hover:bg-paper-accent group-hover:text-white dark:group-hover:bg-night-accent dark:group-hover:text-stone-900 transition-all duration-200 pointer-events-none shadow-2xs"
+      aria-hidden="true"
     >
       <span class="font-sans font-medium">পড়ুন</span>
       <svg class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
       </svg>
-    </a>
+    </span>
   </div>
 </article>

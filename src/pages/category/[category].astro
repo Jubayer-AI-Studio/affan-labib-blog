@@ -2,20 +2,15 @@
 // src/pages/category/[category].astro
 import Layout from '../../layouts/Layout.astro';
 import PostCard from '../../components/PostCard.astro';
-import { getAllPostsAsync } from '../../lib/db';
+import { getAllPostsAsync, getCategoriesAsync } from '../../lib/db';
 
 export const prerender = false;
 
 const { category } = Astro.params;
-const allPosts = await getAllPostsAsync();
-
-const categories = [
-  { id: 'chinta', title: 'চিন্তা', desc: 'সরল মনন, জীবন ও দৈনন্দিন ভাবনার নানা প্রসঙ্গ' },
-  { id: 'pathalap', title: 'পাঠালাপ', desc: 'বই পড়তে পড়তে জেগে ওঠা চিন্তা ও আলাপচারিতা' },
-  { id: 'itihas', title: 'ইতিহাস', desc: 'অতীত ঐতিহ্য, মনীষী জীবন ও ইতিহাসের গভীর অনুসন্ধান' },
-  { id: 'boi-alochona', title: 'বই-আলোচনা', desc: 'পঠিত প্রিয় বইগুলোর ব্যক্তিগত পর্যালোচনা ও পাঠপ্রতিক্রিয়া' },
-  { id: 'onubad', title: 'অনুবাদ', desc: 'আরবি ও অন্যান্য ভাষার ধ্রুপদী ও সমকালীন সাহিত্যের অনুবাদ' }
-];
+const [allPosts, categories] = await Promise.all([
+  getAllPostsAsync(),
+  getCategoriesAsync()
+]);
 
 const categoryInfo = categories.find((c) => c.id === category) || { id: category, title: category, desc: '' };
 const categoryPosts = allPosts.filter((p) => p.category === category);

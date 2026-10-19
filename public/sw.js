@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v15 (Zero-Contention PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v15';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v16 (Zero-Contention PWA Engine)
+const CACHE_NAME = 'kherokhata-cache-v16';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -57,39 +57,21 @@ self.addEventListener('fetch', (event) => {
   // Never cache admin studio or API routes
   if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')) return;
 
-  // 1. Navigation requests (HTML pages): Fast Shell Race (550ms) -> Network with instant cached fallback
+  // 1. Navigation requests (HTML pages): Pure Network-First (direct route loading without jumping)
   if (request.mode === 'navigate') {
     event.respondWith(
-      (async () => {
-        try {
-          const networkPromise = fetch(request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
-            return networkResponse;
-          });
-
-          // Check if cached shell/page is available
-          const cached = (await caches.match(request, { ignoreSearch: true })) || (await caches.match('/', { ignoreSearch: true }));
-
-          if (cached) {
-            // Race: If network doesn't respond within 120ms, serve cached shell instantly!
-            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 120));
-            const winner = await Promise.race([networkPromise, timeoutPromise]);
-            if (winner !== 'TIMEOUT') {
-              return winner;
-            }
-            // 120ms reached: serve fast cached shell so user immediately sees the app with 0 white screen delay!
-            // Network fetch continues in background to refresh cache.
-            return cached;
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
-
-          // If no cache exists yet, wait for network
-          return await networkPromise;
-        } catch (err) {
-          const cachedFallback = (await caches.match(request, { ignoreSearch: true })) || (await caches.match('/', { ignoreSearch: true }));
-          if (cachedFallback) return cachedFallback;
+          return networkResponse;
+        })
+        .catch(async () => {
+          // Offline fallback only when network is unavailable
+          const cached = await caches.match(request, { ignoreSearch: true });
+          if (cached) return cached;
           const offline = await caches.match('/offline', { ignoreSearch: true });
           return (
             offline ||
@@ -101,8 +83,7 @@ self.addEventListener('fetch', (event) => {
               }
             )
           );
-        }
-      })()
+        })
     );
     return;
   }
