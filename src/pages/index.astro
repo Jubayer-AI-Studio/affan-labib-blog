@@ -614,12 +614,26 @@ function toBn(n: number) {
       } catch (e) {}
     }
 
-    // 4. Instant Card Tap Navigation Everywhere (Tap anywhere on card or button to read)
+    // 4. Instant Card Tap Navigation & Touch/Hover Prefetching
+    const prefetchUrl = (url) => {
+      if (!url || document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = url;
+      document.head.appendChild(link);
+    };
+
     document.querySelectorAll('.post-item').forEach((card) => {
+      const slug = card.getAttribute('data-slug');
+      if (slug) {
+        const url = `/${slug}`;
+        card.addEventListener('pointerenter', () => prefetchUrl(url), { passive: true });
+        card.addEventListener('touchstart', () => prefetchUrl(url), { passive: true });
+      }
+
       card.addEventListener('click', (e) => {
         // If clicked on any anchor link (like category filter, title link, or "পড়ুন" button), let the native link navigate cleanly
         if (e.target.closest('a')) return;
-        const slug = card.getAttribute('data-slug');
         if (slug) {
           window.location.href = `/${slug}`;
         }
@@ -628,9 +642,14 @@ function toBn(n: number) {
 
     const spotCard = document.getElementById('spotlight-section');
     if (spotCard) {
+      const slug = spotCard.getAttribute('data-slug');
+      if (slug) {
+        const url = `/${slug}`;
+        spotCard.addEventListener('pointerenter', () => prefetchUrl(url), { passive: true });
+        spotCard.addEventListener('touchstart', () => prefetchUrl(url), { passive: true });
+      }
       spotCard.addEventListener('click', (e) => {
         if (e.target.closest('a')) return;
-        const slug = spotCard.getAttribute('data-slug');
         if (slug) {
           window.location.href = `/${slug}`;
         }

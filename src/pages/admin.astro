@@ -1223,11 +1223,6 @@ const [posts, categories] = await Promise.all([
 
       let writerFootnotes = [];
 
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-      function toBnNum(num) {
-        return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-      }
-
       function renderFootnotesEditor() {
         if (!footnotesListContainer) return;
         footnotesListContainer.innerHTML = '';

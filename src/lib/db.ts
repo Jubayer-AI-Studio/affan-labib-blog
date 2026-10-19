@@ -33,7 +33,10 @@ export interface Post {
 
 // In-memory runtime cache for serverless instances
 let inMemoryPostsCache: Post[] | null = null;
+let lastPostsCacheTime = 0;
 let inMemoryCategoriesCache: Category[] | null = null;
+let lastCategoriesCacheTime = 0;
+const CACHE_TTL_MS = 60 * 1000;
 
 export function getLocalPosts(): Post[] {
   try {
@@ -62,7 +65,12 @@ async function withTimeout<T>(promise: Promise<T>, ms = 1500): Promise<T> {
 }
 
 export async function getAllPostsAsync(): Promise<Post[]> {
-  // 1. Try Supabase if configured (guarded by strict 1.5s timeout)
+  // 1. High-speed in-memory cache check (0.1ms instant resolution)
+  if (inMemoryPostsCache && inMemoryPostsCache.length > 0 && Date.now() - lastPostsCacheTime < CACHE_TTL_MS) {
+    return [...inMemoryPostsCache];
+  }
+
+  // 2. Try Supabase if configured (guarded by strict 1.5s timeout)
   if (isSupabaseConfigured && supabase) {
     try {
       const query = supabase
@@ -72,7 +80,7 @@ export async function getAllPostsAsync(): Promise<Post[]> {
       const { data, error } = await withTimeout(query, 1500);
 
       if (!error && data && data.length > 0) {
-        return data.map((row: any) => ({
+        const mapped = data.map((row: any) => ({
           slug: row.slug,
           title: row.title,
           category: row.category,
@@ -84,20 +92,24 @@ export async function getAllPostsAsync(): Promise<Post[]> {
           wordCount: row.word_count || 0,
           footnotes: Array.isArray(row.footnotes) ? row.footnotes : []
         }));
+        inMemoryPostsCache = mapped;
+        lastPostsCacheTime = Date.now();
+        return [...mapped];
       }
     } catch (e: any) {
       console.warn('[DB] Supabase query failed or timed out, falling back to local:', e.message);
     }
   }
 
-  // 2. Return in-memory cache if updated
+  // 3. Return in-memory cache if available
   if (inMemoryPostsCache && inMemoryPostsCache.length > 0) {
     return [...inMemoryPostsCache];
   }
 
-  // 3. Fallback to local posts.json
+  // 4. Fallback to local posts.json
   const local = getLocalPosts();
   inMemoryPostsCache = local;
+  lastPostsCacheTime = Date.now();
   return [...local];
 }
 
@@ -122,6 +134,7 @@ export async function savePost(newPost: Post): Promise<boolean> {
       current.unshift(newPost);
     }
     inMemoryPostsCache = current;
+    lastPostsCacheTime = Date.now();
 
     // 2. Try Supabase if configured
     if (isSupabaseConfigured && supabase) {
@@ -176,6 +189,7 @@ export async function deletePostBySlug(slug: string): Promise<boolean> {
     if (filtered.length === current.length) return false;
 
     inMemoryPostsCache = filtered;
+    lastPostsCacheTime = Date.now();
 
     // 1. Delete from Supabase if configured
     if (isSupabaseConfigured && supabase) {
@@ -248,7 +262,12 @@ export function getLocalCategories(): Category[] {
 }
 
 export async function getCategoriesAsync(): Promise<Category[]> {
-  // 1. Try Supabase if configured (guarded by strict 1.5s timeout)
+  // 1. High-speed in-memory cache check (0.1ms instant resolution)
+  if (inMemoryCategoriesCache && inMemoryCategoriesCache.length > 0 && Date.now() - lastCategoriesCacheTime < CACHE_TTL_MS) {
+    return [...inMemoryCategoriesCache];
+  }
+
+  // 2. Try Supabase if configured (guarded by strict 1.5s timeout)
   if (isSupabaseConfigured && supabase) {
     try {
       const query = supabase
@@ -257,26 +276,30 @@ export async function getCategoriesAsync(): Promise<Category[]> {
       const { data, error } = await withTimeout(query, 1500);
 
       if (!error && data && data.length > 0) {
-        return data.map((row: any) => ({
+        const mapped = data.map((row: any) => ({
           id: row.id,
           title: row.title,
           desc: row.desc || '',
           icon: row.icon || '📁'
         }));
+        inMemoryCategoriesCache = mapped;
+        lastCategoriesCacheTime = Date.now();
+        return [...mapped];
       }
     } catch (e: any) {
       // Table may not exist yet, fallback smoothly
     }
   }
 
-  // 2. Return in-memory cache if available
+  // 3. Return in-memory cache if available
   if (inMemoryCategoriesCache && inMemoryCategoriesCache.length > 0) {
     return [...inMemoryCategoriesCache];
   }
 
-  // 3. Fallback to local categories.json
+  // 4. Fallback to local categories.json
   const local = getLocalCategories();
   inMemoryCategoriesCache = local;
+  lastCategoriesCacheTime = Date.now();
   return [...local];
 }
 
@@ -308,6 +331,7 @@ export async function saveCategory(newCat: Category): Promise<boolean> {
       current.push(categoryToSave);
     }
     inMemoryCategoriesCache = current;
+    lastCategoriesCacheTime = Date.now();
 
     // Supabase upsert (silent if table doesn't exist)
     if (isSupabaseConfigured && supabase) {
@@ -348,6 +372,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
     if (filtered.length === current.length) return false;
 
     inMemoryCategoriesCache = filtered;
+    lastCategoriesCacheTime = Date.now();
 
     if (isSupabaseConfigured && supabase) {
       try {

@@ -140,12 +140,11 @@
         loader.remove();
         return;
       }
-      // Ensure smooth turbo robot animation plays on landing while keeping session compliance
-      const isSessionActive = false;
-      if (isSessionActive && sessionStorage.getItem('kherokhata_session_active')) {
+      if (sessionStorage.getItem('kherokhata_session_active')) {
         loader.remove();
         return;
       }
+      sessionStorage.setItem('kherokhata_session_active', '1');
     } catch (e) {}
 
     const bar = document.getElementById('loader-progress-bar');
