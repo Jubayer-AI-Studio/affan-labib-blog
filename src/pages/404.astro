@@ -1,0 +1,37 @@
+---
+// src/pages/404.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="পাতাটি খুঁজে পাওয়া যায়নি (৪০৪) | আফফান লাবীব"
+  description="আপনি যে পাতাটি খুঁজছেন তা সরিয়ে ফেলা হয়েছে বা এর ঠিকানা পরিবর্তিত হয়েছে।"
+>
+  <div class="max-w-xl mx-auto my-16 px-6 text-center space-y-6">
+    <div class="text-7xl font-mono text-paper-accent dark:text-night-accent font-bold animate-pulse">
+      ৪০৪
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text">
+      পাতাটি খুঁজে পাওয়া যায়নি
+    </h1>
+    <p class="text-sm sm:text-base text-paper-muted dark:text-night-muted font-sans leading-relaxed">
+      দুঃখিত, আপনি যে লেখা বা পাতাটি খুঁজছেন তা হয়তো সরানো হয়েছে অথবা লিংকটি ভুল।
+    </p>
+    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-sm font-semibold hover:opacity-90 shadow-md transition-all"
+      >
+        <span>🏠</span>
+        <span>মূল পাতায় ফিরে যান</span>
+      </a>
+      <a
+        href="/search"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface/80 dark:bg-night-surface/80 text-paper-text dark:text-night-text font-sans text-sm font-semibold hover:border-paper-accent dark:hover:border-night-accent transition-all"
+      >
+        <span>🔍</span>
+        <span>লেখা খুঁজুন</span>
+      </a>
+    </div>
+  </div>
+</Layout>
