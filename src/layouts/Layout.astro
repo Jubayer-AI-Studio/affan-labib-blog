@@ -3,8 +3,6 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import InstallModal from '../components/InstallModal.astro';
-import AvatarModal from '../components/AvatarModal.astro';
-import AdminBarModal from '../components/AdminBarModal.astro';
 import AppLoader from '../components/AppLoader.astro';
 
 export interface Props {
@@ -192,12 +190,6 @@ const schemaData = article
 
     <!-- Global PWA Install Modal -->
     <InstallModal />
-
-    <!-- Global Avatar Change Modal -->
-    <AvatarModal />
-
-    <!-- Secret Author Mode Bar & PIN Login Modal -->
-    <AdminBarModal />
 
     <!-- Bulletproof Author Profile & Avatar Sync Everywhere -->
     <script is:inline>

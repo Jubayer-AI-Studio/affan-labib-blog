@@ -47,11 +47,7 @@ import initialBookshelf from '../data/bookshelf.json';
 </span> </div> <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
 লেখক: <span class="font-medium text-paper-text dark:text-night-text">ইবনে আতাউল্লাহ আল-ইসকান্দারি রহ.</span> </p> <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic pt-0.5">
 "তাযকিয়াতুন নাফস ও আধ্যাত্মিক প্রজ্ঞার সংক্ষিপ্ত কিন্তু সুগভীর রত্নভাণ্ডার।"
-</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div> </div> </section> <!-- Admin Link Quick Note --> <div class="text-center pt-8 border-t border-paper-border/60 dark:border-night-border/60"> <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
-আপনি কি নতুন বই যুক্ত করতে চান?
-<button type="button" onclick="window.openAdminStudio && window.openAdminStudio()" class="text-paper-accent dark:text-night-accent font-semibold hover:underline cursor-pointer ml-1">
-লেখক স্টুডিওতে যান 🔐
-</button> </p> </div> </div>
+</p> </div> </div> <div class="shrink-0 sm:self-center"> <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans bg-paper-bg dark:bg-night-bg border border-paper-border dark:border-night-border text-paper-muted dark:text-night-muted"> <span>⏳</span> <span>পড়ার অপেক্ষায়</span> </span> </div> </div> </div> </section> </div>
 
   <script id="initial-bookshelf-data" type="application/json" set:html={JSON.stringify(initialBookshelf)} />
 
@@ -155,7 +151,7 @@ import initialBookshelf from '../data/bookshelf.json';
             <div class="col-span-full py-12 text-center rounded-3xl border border-dashed border-paper-border/80 dark:border-night-border/80 p-8 space-y-3 bg-paper-surface/50 dark:bg-night-surface/50">
               <span class="text-4xl block">📖</span>
               <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">পঠিত কিতাবের তালিকা ফাঁকা</h3>
-              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">লেখক স্টুডিও থেকে নতুন পড়া বই যুক্ত করুন।</p>
+              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">বর্তমানে কোনো কিতাব এই তালিকায় অন্তর্ভুক্ত নেই।</p>
             </div>
           `;
           return;
@@ -227,7 +223,7 @@ import initialBookshelf from '../data/bookshelf.json';
             <div class="py-12 text-center rounded-3xl border border-dashed border-paper-border/80 dark:border-night-border/80 p-8 space-y-3 bg-paper-surface/50 dark:bg-night-surface/50">
               <span class="text-4xl block">🎯</span>
               <h3 class="text-base font-bold font-serif text-paper-text dark:text-night-text">উইশলিস্টে কোনো বই নেই</h3>
-              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">লেখক স্টুডিও থেকে পড়ার তালিকায় নতুন বই যুক্ত করুন।</p>
+              <p class="text-xs text-paper-muted dark:text-night-muted font-sans">বর্তমানে ইচ্ছেতালিকায় কোনো কিতাব অন্তর্ভুক্ত নেই।</p>
             </div>
           `;
           return;
