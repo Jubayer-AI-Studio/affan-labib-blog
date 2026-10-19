@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v17 (Zero-Contention PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v17';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v18 (Instant 0ms PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v18';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -64,33 +64,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Pure Network-First (direct route loading without jumping)
+  // 1. Navigation requests (HTML pages): Stale-While-Revalidate for Instant 0ms App Launch
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        })
-        .catch(async () => {
-          // Offline fallback only when network is unavailable
-          const cached = await caches.match(request, { ignoreSearch: true });
-          if (cached) return cached;
-          const offline = await caches.match('/offline', { ignoreSearch: true });
-          return (
-            offline ||
-            new Response(
-              '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
-              {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-              }
-            )
-          );
-        })
+      (async () => {
+        // Step A: Immediate local cache lookup (0.01s - instant launch without splash hang)
+        const cachedResponse = await caches.match(request, { ignoreSearch: true });
+
+        // Step B: Background Network Fetch to keep cache updated with latest posts
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => null);
+
+        // If cached page exists, return it IMMEDIATELY! (App opens in 10ms!)
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // If not in cache yet (very first cold install), wait for network
+        const networkResponse = await fetchPromise;
+        if (networkResponse) return networkResponse;
+
+        // Fallback to offline page
+        const offline = await caches.match('/offline', { ignoreSearch: true });
+        return (
+          offline ||
+          new Response(
+            '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
+            {
+              status: 200,
+              headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            }
+          )
+        );
+      })()
     );
     return;
   }

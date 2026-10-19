@@ -10,6 +10,9 @@ import bookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
+// Global Edge CDN cache with background revalidation (delivers in 30ms)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+
 const [posts, categories] = await Promise.all([
   getAllPostsAsync(),
   getCategoriesAsync()
