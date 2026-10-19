@@ -541,6 +541,16 @@ function toBn(n: number) {
         fetchServerPosts();
       }
     });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncCustomPosts();
+        fetchServerPosts();
+      }
+    });
+    window.addEventListener('focus', () => {
+      syncCustomPosts();
+      fetchServerPosts();
+    });
 
     function activateTab(filter, shouldScroll = false) {
       const targetTab = document.querySelector(`.category-tab[data-filter="${filter}"]`) || document.querySelector('.category-tab[data-filter="all"]');

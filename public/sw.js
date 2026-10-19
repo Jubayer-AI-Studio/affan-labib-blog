@@ -192,3 +192,11 @@ self.addEventListener('fetch', (event) => {
     })()
   );
 });
+
+// Instant update trigger: skip waiting on demand
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
