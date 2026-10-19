@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v18 (Instant 0ms PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v18';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v19 (Instant 0ms PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v19';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -102,32 +102,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Stale-While-Revalidate for Instant 0ms App Launch & Offline Access
+  // 1. Navigation requests (HTML pages): Network-First when online for instant new post visibility on refresh, Cache Fallback when offline
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        // Step A: Immediate local cache lookup (0.01s - instant launch without splash hang)
-        const cachedResponse = await caches.match(request, { ignoreSearch: true });
-
-        // Step B: Background Network Fetch to keep cache updated with latest posts
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
+        // Step A: Attempt network fetch first when online so refreshed pages immediately reflect new posts
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
             return networkResponse;
-          })
-          .catch(() => null);
+          }
+        } catch (err) {
+          // Offline or network error: gracefully fall through to cache
+        }
 
-        // If cached page exists, return it IMMEDIATELY! (App opens in 10ms!)
+        // Step B: Instant local cache lookup for offline mode or network failure
+        const cachedResponse = await caches.match(request, { ignoreSearch: true });
         if (cachedResponse) {
           return cachedResponse;
         }
-
-        // If not in cache yet (first visit to this specific URL), wait for network
-        const networkResponse = await fetchPromise;
-        if (networkResponse) return networkResponse;
 
         // Fallback to offline page
         const offline = await caches.match('/offline', { ignoreSearch: true });

@@ -397,6 +397,14 @@ function toBn(n: number) {
       }
     }
 
+    function prefetchUrl(url) {
+      if (!url || document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = url;
+      document.head.appendChild(link);
+    }
+
     function createPostCardElement(post) {
       const categoryLabels = {
         chinta: 'চিন্তা',
@@ -462,9 +470,12 @@ function toBn(n: number) {
         </div>
       `;
 
+      const cardUrl = `/${post.slug}`;
+      article.addEventListener('pointerenter', () => prefetchUrl(cardUrl), { passive: true });
+      article.addEventListener('touchstart', () => prefetchUrl(cardUrl), { passive: true });
       article.addEventListener('click', (e) => {
         if (e.target.closest('a')) return;
-        window.location.href = `/${post.slug}`;
+        window.location.href = cardUrl;
       });
 
       return article;
@@ -516,14 +527,18 @@ function toBn(n: number) {
       } catch (e) {}
     }
 
-    // Hydrate local posts immediately
+    // Hydrate local and cloud posts immediately with zero latency
     syncCustomPosts();
-    setTimeout(() => fetchServerPosts(), 600);
+    fetchServerPosts();
 
-    window.addEventListener('kherokhata-posts-sync', () => syncCustomPosts());
+    window.addEventListener('kherokhata-posts-sync', () => {
+      syncCustomPosts();
+      fetchServerPosts();
+    });
     window.addEventListener('storage', (e) => {
       if (e.key === 'kherokhata_custom_posts' || e.key === 'kherokhata_deleted_posts') {
         syncCustomPosts();
+        fetchServerPosts();
       }
     });
 
@@ -615,14 +630,6 @@ function toBn(n: number) {
     }
 
     // 4. Instant Card Tap Navigation & Touch/Hover Prefetching
-    const prefetchUrl = (url) => {
-      if (!url || document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
-      const link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.href = url;
-      document.head.appendChild(link);
-    };
-
     document.querySelectorAll('.post-item').forEach((card) => {
       const slug = card.getAttribute('data-slug');
       if (slug) {
@@ -661,7 +668,7 @@ function toBn(n: number) {
       const warmOfflineCache = async () => {
         try {
           if (!navigator.onLine) return;
-          const cache = await caches.open('kherokhata-cache-v18');
+          const cache = await caches.open('kherokhata-cache-v19');
           const slugs = Array.from(document.querySelectorAll('[data-slug]'))
             .map((el) => el.getAttribute('data-slug'))
             .filter(Boolean);

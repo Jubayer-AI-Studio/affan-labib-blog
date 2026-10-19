@@ -41,6 +41,35 @@ html.sepia .text-paper-muted {
   color: #796551 !important;
 }
 
+/* Sepia Mode Footnote Popover Modal - Crystal-Clear Contrast */
+html.sepia #footnote-popover-card {
+  background-color: #FBF4E8 !important;
+  border-color: #B58448 !important;
+  color: #2D2115 !important;
+  box-shadow: 0 25px 50px -12px rgba(62, 48, 36, 0.45) !important;
+}
+html.sepia #fn-popover-content {
+  color: #2D2115 !important;
+}
+html.sepia #fn-popover-num,
+html.sepia .fn-modal-title {
+  color: #8C430B !important;
+}
+html.sepia #close-fn-popover-btn {
+  color: #6B543D !important;
+}
+html.sepia #close-fn-popover-btn:hover {
+  background-color: #EFE3CE !important;
+  color: #2D2115 !important;
+}
+html.sepia #done-fn-popover-btn {
+  background-color: #8C430B !important;
+  color: #FFFFFF !important;
+}
+html.sepia #done-fn-popover-btn:hover {
+  background-color: #723406 !important;
+}
+
 /* Liquid / Ambient Animations */
 @keyframes spinSlow {
   from { transform: rotate(0deg); }

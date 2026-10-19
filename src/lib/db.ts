@@ -50,7 +50,7 @@ export function getLocalPosts(): Post[] {
   return [];
 }
 
-async function withTimeout<T>(promise: Promise<T>, ms = 1500): Promise<T> {
+async function withTimeout<T>(promise: Promise<T>, ms = 4000): Promise<T> {
   let timer: any;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error('DB query timeout')), ms);
@@ -70,14 +70,14 @@ export async function getAllPostsAsync(): Promise<Post[]> {
     return [...inMemoryPostsCache];
   }
 
-  // 2. Try Supabase if configured (guarded by strict 1.5s timeout)
+  // 2. Try Supabase if configured (guarded by 4s timeout for cross-region latency)
   if (isSupabaseConfigured && supabase) {
     try {
       const query = supabase
         .from('posts')
         .select('*')
         .order('published_at', { ascending: false });
-      const { data, error } = await withTimeout(query, 1500);
+      const { data, error } = await withTimeout(query, 4000);
 
       if (!error && data && data.length > 0) {
         const mapped = data.map((row: any) => ({
@@ -267,13 +267,13 @@ export async function getCategoriesAsync(): Promise<Category[]> {
     return [...inMemoryCategoriesCache];
   }
 
-  // 2. Try Supabase if configured (guarded by strict 1.5s timeout)
+  // 2. Try Supabase if configured (guarded by 4s timeout)
   if (isSupabaseConfigured && supabase) {
     try {
       const query = supabase
         .from('categories')
         .select('*');
-      const { data, error } = await withTimeout(query, 1500);
+      const { data, error } = await withTimeout(query, 4000);
 
       if (!error && data && data.length > 0) {
         const mapped = data.map((row: any) => ({

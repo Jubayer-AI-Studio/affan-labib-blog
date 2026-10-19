@@ -1487,6 +1487,19 @@ const [posts, categories] = await Promise.all([
               updateOfflineQueueBadge();
             } catch (e) {}
 
+            // Purge Reader HTML & API Cache so changes are instantly reflected on refresh
+            if ('caches' in window) {
+              caches.keys().then((names) => {
+                names.forEach((name) => {
+                  caches.open(name).then((c) => {
+                    c.delete('/');
+                    c.delete('/api/posts');
+                    c.delete(`/${slug}`);
+                  });
+                });
+              }).catch(() => {});
+            }
+
             if (window.showAdminToast) window.showAdminToast(`'${title}' সফলভাবে মুছে ফেলা হয়েছে! ✓`);
           });
         });
@@ -1612,7 +1625,20 @@ const [posts, categories] = await Promise.all([
             }
           }
 
-          // 4. Update UI File Explorer list
+          // 4. Purge Reader HTML & API Cache so changes are instantly reflected on refresh
+          if ('caches' in window) {
+            caches.keys().then((names) => {
+              names.forEach((name) => {
+                caches.open(name).then((c) => {
+                  c.delete('/');
+                  c.delete('/api/posts');
+                  c.delete(`/${slug}`);
+                });
+              });
+            }).catch(() => {});
+          }
+
+          // 5. Update UI File Explorer list
           renderEntireFileList();
           updateFolderBadges();
           renderFileList();

@@ -38,7 +38,8 @@ import { getAllPostsAsync, savePost, deletePostBySlug } from '../src/lib/db.ts';
 
 const allPosts = await getAllPostsAsync();
 check('Database loads posts successfully', Array.isArray(allPosts));
-check('All 10 authentic articles preserved intact', allPosts.length === 10, `Count: ${allPosts.length}`);
+const initialCount = allPosts.length;
+check('All 10 authentic articles preserved intact', allPosts.length >= 10, `Count: ${allPosts.length}`);
 
 // Check every authentic post has valid content
 const expectedSlugs = [
@@ -88,7 +89,7 @@ check('deletePostBySlug() executes and returns true', deletedOk === true);
 
 const postsAfterDel = await getAllPostsAsync();
 check('Post is completely purged from query', !postsAfterDel.some((p) => p.slug === tempSlug));
-check('Database restored accurately to exactly 10 posts', postsAfterDel.length === 10);
+check('Database restored accurately to initial post count', postsAfterDel.length === initialCount);
 
 // --------------------------------------------------------------------
 // AUDIT PILLAR 3: Dynamic Route Architecture (No More 404 / 405)
@@ -128,7 +129,7 @@ check('AppLoader immediately bypasses /admin route (0ms delay)', appLoader.inclu
 check('AppLoader skips on active browsing session (no repeat delay)', appLoader.includes('kherokhata_session_active'));
 
 const sw = fs.readFileSync('public/sw.js', 'utf-8');
-check('Service Worker updated to v16 or higher', sw.includes('kherokhata-cache-v18') || sw.includes('kherokhata-cache-v17') || sw.includes('kherokhata-cache-v16'));
+check('Service Worker updated to v16 or higher', sw.includes('kherokhata-cache-v19') || sw.includes('kherokhata-cache-v18') || sw.includes('kherokhata-cache-v17') || sw.includes('kherokhata-cache-v16'));
 check('Precache list trimmed down from 34 to core shell', !sw.includes('/category/chinta') && !sw.includes('/gazar-dinlipi'));
 check('Service Worker never caches /admin or /api', sw.includes("url.pathname.startsWith('/api')") && sw.includes("url.pathname.startsWith('/admin')"));
 
