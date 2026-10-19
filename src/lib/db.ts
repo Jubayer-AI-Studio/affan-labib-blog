@@ -314,8 +314,11 @@ export function getAllCategories(): Category[] {
 
 export async function saveCategory(newCat: Category): Promise<boolean> {
   try {
-    if (!newCat.id || !newCat.title) return false;
-    const cleanId = newCat.id.toLowerCase().trim().replace(/[^\w-]+/g, '-');
+    if (!newCat.title) return false;
+    let cleanId = (newCat.id || '').toLowerCase().trim().replace(/[^\w-]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!cleanId) {
+      cleanId = 'cat-' + Date.now().toString(36);
+    }
     const categoryToSave: Category = {
       id: cleanId,
       title: newCat.title.trim(),

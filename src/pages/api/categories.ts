@@ -30,12 +30,16 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Auto-generate slug if not provided
-    const id = (body.id || body.title)
+    // Auto-generate slug if not provided or non-ASCII
+    let id = (body.id || '')
       .toLowerCase()
       .trim()
-      .replace(/[^\w\u0980-\u09FF-]+/g, '-')
-      .replace(/^-+|-+$/g, '') || ('cat-' + Date.now());
+      .replace(/[^\w-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!id) {
+      id = 'cat-' + Date.now().toString(36);
+    }
 
     const newCategory = {
       id,
