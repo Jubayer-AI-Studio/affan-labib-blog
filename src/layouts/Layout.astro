@@ -25,6 +25,7 @@ const {
 const siteUrl = 'https://affan-labib-blog.vercel.app';
 const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
 const absoluteImageURL = new URL(image, siteUrl).href;
+const ogImageWithVersion = `${absoluteImageURL}?v=2`;
 
 // JSON-LD Schema
 const schemaData = article
@@ -104,22 +105,29 @@ const schemaData = article
     <meta name="description" content={description} />
     <meta name="author" content="আফফান লাবীব" />
 
-    <!-- Open Graph / Facebook / WhatsApp (FIXED: Absolute Image URLs) -->
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Telegram -->
     <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
+    <meta property="og:locale" content="bn_BD" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={absoluteImageURL} />
-    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
+    <meta property="og:image" content={ogImageWithVersion} />
+    <meta property="og:image:secure_url" content={ogImageWithVersion} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
     {article?.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
     {article?.tags?.map((t) => <meta property="article:tag" content={t} />)}
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={absoluteImageURL} />
+    <!-- Twitter / X Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageWithVersion} />
+    <meta name="twitter:image:alt" content={title} />
 
     <!-- RSS Feed -->
     <link rel="alternate" type="application/rss+xml" title="আফফান লাবীব - RSS Feed" href="/rss.xml" />
