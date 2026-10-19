@@ -18,18 +18,26 @@ const [posts, categories] = await Promise.all([
   getCategoriesAsync()
 ]);
 
-// Feature post
-const spotlightPost = posts.find((p) => p.slug === 'gazar-dinlipi') || posts[0];
-const gridPosts = posts.filter((p) => p.slug !== spotlightPost.slug);
+// Feature post: always the latest published post by author
+const spotlightPost = posts[0] || {
+  slug: 'gazar-dinlipi',
+  title: 'গাযার দিনলিপি: ধ্বংসস্তূপের ভেতর দিয়ে হেঁটে যাওয়া',
+  category: 'chinta',
+  description: '',
+  publishedAt: '',
+  formattedDate: '',
+  tags: [],
+  wordCount: 200
+};
+const gridPosts = posts;
 
 // Dynamic category list with post counts
 const categoryCounts = categories.map((cat) => {
   const count = posts.filter((p) => p.category === cat.id).length;
-  const gridCount = cat.id === spotlightPost.category ? Math.max(0, count - 1) : count;
   return {
     ...cat,
     count,
-    gridCount
+    gridCount: count
   };
 });
 
@@ -129,13 +137,13 @@ function toBn(n: number) {
           <span>প্রধান নির্বাচিত রচনা</span>
         </div>
         <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-          <a href="/#categories" class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm">
-            বই-আলোচনা
+          <a href={`/#${spotlightPost.category}`} class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm" id="spotlight-cat-name">
+            {categories.find((c) => c.id === spotlightPost.category)?.title || spotlightPost.category}
           </a>
           <span>·</span>
-          <time>{spotlightPost.formattedDate}</time>
+          <time id="spotlight-date">{spotlightPost.formattedDate || spotlightPost.publishedAt}</time>
           <span>·</span>
-          <span>২ মিনিটে পাঠ্য</span>
+          <span id="spotlight-read-time">{toBn(Math.max(1, Math.ceil((spotlightPost.wordCount || 200) / 100)))} মিনিটে পাঠ্য</span>
         </div>
       </div>
 
@@ -503,16 +511,42 @@ function toBn(n: number) {
 
     async function fetchServerPosts() {
       try {
-        const res = await fetch('/api/posts', { cache: 'no-store' });
+        const res = await fetch('/api/posts?t=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (data && Array.isArray(data.posts) && grid) {
           const deleted = getDeletedSlugs();
           let custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          const validPosts = data.posts.filter((p) => !deleted.includes(p.slug));
 
-          data.posts.forEach((post) => {
-            if (deleted.includes(post.slug)) return;
-            const exists = document.querySelector(`[data-slug="${post.slug}"]`);
+          // 1. Update top spotlight hero dynamically if a newer post exists
+          if (validPosts.length > 0) {
+            const latest = validPosts[0];
+            const spotSection = document.getElementById('spotlight-section');
+            if (spotSection && spotSection.getAttribute('data-slug') !== latest.slug) {
+              spotSection.setAttribute('data-slug', latest.slug);
+              const titleLink = spotSection.querySelector('h2 a');
+              if (titleLink) {
+                titleLink.textContent = latest.title;
+                titleLink.setAttribute('href', '/' + latest.slug);
+              }
+              const descP = spotSection.querySelector('p.text-base');
+              if (descP) descP.textContent = latest.description || '';
+              const readBtn = spotSection.querySelector('a.min-h-\\[48px\\]');
+              if (readBtn) readBtn.setAttribute('href', '/' + latest.slug);
+              const dateEl = document.getElementById('spotlight-date');
+              if (dateEl) dateEl.textContent = latest.formattedDate || latest.publishedAt;
+              const catLink = document.getElementById('spotlight-cat-name');
+              if (catLink) {
+                catLink.textContent = latest.category;
+                catLink.setAttribute('href', '/#' + latest.category);
+              }
+            }
+          }
+
+          // 2. Ensure every post has a card in the grid
+          validPosts.forEach((post) => {
+            const exists = grid.querySelector(`[data-slug="${post.slug}"]`);
             if (!exists) {
               const card = createPostCardElement(post);
               grid.prepend(card);
@@ -678,7 +712,7 @@ function toBn(n: number) {
       const warmOfflineCache = async () => {
         try {
           if (!navigator.onLine) return;
-          const cache = await caches.open('kherokhata-cache-v19');
+          const cache = await caches.open('kherokhata-cache-v22');
           const slugs = Array.from(document.querySelectorAll('[data-slug]'))
             .map((el) => el.getAttribute('data-slug'))
             .filter(Boolean);
