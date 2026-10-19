@@ -50,9 +50,9 @@ function renderBody(body: string) {
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/\n/g, '<br />');
 
-      // Convert footnote references like [1] to interactive superscripts
+      // Convert footnote references like [1] to interactive buttons
       formatted = formatted.replace(/\[(\d+)\]/g, (match, num) => {
-        return `<sup class="footnote-ref inline-block mx-0.5"><a href="#fn-${num}" data-fn-id="${num}" class="text-paper-accent dark:text-night-accent font-bold hover:underline select-none">[${num}]</a></sup>`;
+        return `<button type="button" data-fn-id="${num}" class="footnote-btn inline-flex items-center justify-center mx-1 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-colors cursor-pointer select-none align-super"><span>[${num}]</span></button>`;
       });
 
       return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;
@@ -199,30 +199,37 @@ const renderedContent = renderBody(post.body);
     </footer>
   </article>
 
-  <!-- In-Situ Footnote Popover Modal -->
+  <!-- In-Situ Footnote Popover Modal (Full Focus Backdrop) -->
   <div
     id="footnote-popover-modal"
-    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-200"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
     role="dialog"
     aria-modal="true"
   >
     <div
       id="footnote-popover-card"
-      class="bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3 transform translate-y-8 transition-transform duration-200"
+      class="bg-paper-surface dark:bg-night-surface border-2 border-amber-500/40 dark:border-night-accent/40 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 transform translate-y-6 transition-all duration-200"
     >
-      <div class="flex items-center justify-between pb-2 border-b border-paper-border/60 dark:border-night-border/60">
-        <span class="text-xs font-sans font-bold text-paper-accent dark:text-night-accent flex items-center gap-1.5">
-          <span>📌</span>
-          <span>টীকা <span id="fn-popover-num">[১]</span></span>
+      <div class="flex items-center justify-between pb-3 border-b border-paper-border/60 dark:border-night-border/60">
+        <span class="text-sm font-sans font-bold text-paper-accent dark:text-night-accent flex items-center gap-2">
+          <span class="text-lg">📌</span>
+          <span>টীকা ও তথ্যসূত্র <span id="fn-popover-num" class="font-mono text-base">[১]</span></span>
         </span>
-        <button id="close-fn-popover-btn" type="button" class="text-paper-muted hover:text-paper-accent text-sm p-1 cursor-pointer">✕</button>
+        <button id="close-fn-popover-btn" type="button" class="text-paper-muted hover:text-paper-accent text-xl p-1.5 rounded-xl hover:bg-paper-border/40 transition-colors cursor-pointer" aria-label="বন্ধ করুন">✕</button>
       </div>
-      <p id="fn-popover-content" class="text-sm font-serif text-paper-text dark:text-night-text leading-relaxed">
-        টীকা লোড হচ্ছে...
-      </p>
-      <div class="pt-1 text-right">
-        <button id="done-fn-popover-btn" type="button" class="px-3 py-1 text-xs rounded-lg bg-paper-accent text-white font-medium cursor-pointer">
-          বুঝেছি
+
+      <div class="py-2 min-h-[60px]">
+        <p id="fn-popover-content" class="text-base sm:text-lg font-serif text-paper-text dark:text-night-text leading-relaxed">
+          টীকা লোড হচ্ছে...
+        </p>
+      </div>
+
+      <div class="pt-3 flex items-center justify-between border-t border-paper-border/50 dark:border-night-border/50">
+        <span class="text-xs text-paper-muted dark:text-night-muted font-sans">
+          পড়া শেষে মূল লেখায় ফিরে যান
+        </span>
+        <button id="done-fn-popover-btn" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-paper-accent text-white dark:bg-night-accent dark:text-stone-900 font-sans text-xs font-semibold hover:opacity-90 shadow-md cursor-pointer transition-all">
+          <span>← ফিরে যান লেখাতে</span>
         </button>
       </div>
     </div>
@@ -264,39 +271,45 @@ const renderedContent = renderBody(post.body);
     const fnDataEl = document.getElementById('article-footnotes-data');
     if (fnDataEl) {
       try {
-        const raw = JSON.parse(fnDataEl.textContent);
+        const raw = JSON.parse(fnDataEl.textContent || '[]');
         raw.forEach((f) => { footnotesMap[f.id] = f.text; });
       } catch (e) {}
     }
 
     function openFootnote(id, fallback) {
       if (!modal || !card) return;
-      fnNum.textContent = `[${id}]`;
-      fnContent.textContent = footnotesMap[id] || fallback || 'কোনো টীকা পাওয়া যায়নি।';
+      if (fnNum) fnNum.textContent = `[${id}]`;
+      const text = footnotesMap[id] || fallback || 'কোনো টীকা পাওয়া যায়নি।';
+      if (fnContent) fnContent.textContent = text;
       modal.classList.remove('opacity-0', 'pointer-events-none');
-      card.classList.remove('translate-y-8');
+      card.classList.remove('translate-y-6');
       card.classList.add('translate-y-0');
     }
 
     function closeFootnote() {
       if (!modal || !card) return;
       modal.classList.add('opacity-0', 'pointer-events-none');
-      card.classList.add('translate-y-8');
+      card.classList.add('translate-y-6');
       card.classList.remove('translate-y-0');
     }
 
     closeBtn?.addEventListener('click', closeFootnote);
     doneBtn?.addEventListener('click', closeFootnote);
     modal?.addEventListener('click', (e) => { if (e.target === modal) closeFootnote(); });
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFootnote(); });
 
-    document.querySelectorAll('.footnote-ref a').forEach((link) => {
-      link.addEventListener('click', (e) => {
+    // Handle footnote buttons inside article
+    document.querySelectorAll('.footnote-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const fnId = link.getAttribute('data-fn-id') || link.textContent.replace(/[^\d]/g, '');
+        e.stopPropagation();
+        const fnId = btn.getAttribute('data-fn-id') || btn.textContent.replace(/[^\d]/g, '');
         const targetLi = document.getElementById(`fn-${fnId}`);
         const fallback = targetLi ? targetLi.textContent : '';
         openFootnote(fnId, fallback);
       });
+    });
+
     // Check if this article was deleted by author
     try {
       const deletedSlugs = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');

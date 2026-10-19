@@ -39,6 +39,7 @@ function toBn(n: number) {
 <Layout
   title="আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা"
   description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
+  showLoader={true}
 >
   <!-- 1. Author Bio & Introduction Card (Directly on Front Page - Author First) -->
   <section id="author-intro-card" class="mb-14 relative group">
@@ -482,7 +483,8 @@ function toBn(n: number) {
     // 4. Instant Card Tap Navigation Everywhere (Tap anywhere on card or button to read)
     document.querySelectorAll('.post-item').forEach((card) => {
       card.addEventListener('click', (e) => {
-        if (e.target.closest('a[data-category-filter]')) return;
+        // If clicked on any anchor link (like category filter, title link, or "পড়ুন" button), let the native link navigate cleanly
+        if (e.target.closest('a')) return;
         const slug = card.getAttribute('data-slug');
         if (slug) {
           window.location.href = `/${slug}`;
@@ -493,7 +495,7 @@ function toBn(n: number) {
     const spotCard = document.getElementById('spotlight-section');
     if (spotCard) {
       spotCard.addEventListener('click', (e) => {
-        if (e.target.closest('a[href*="#categories"]')) return;
+        if (e.target.closest('a')) return;
         const slug = spotCard.getAttribute('data-slug');
         if (slug) {
           window.location.href = `/${slug}`;

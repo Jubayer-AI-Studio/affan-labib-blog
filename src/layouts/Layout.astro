@@ -9,6 +9,7 @@ export interface Props {
   title?: string;
   description?: string;
   image?: string;
+  showLoader?: boolean;
   article?: {
     publishedTime: string;
     tags?: string[];
@@ -19,6 +20,7 @@ const {
   title = 'আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা',
   description = 'সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।',
   image = '/images/og-default.jpg',
+  showLoader = false,
   article
 } = Astro.props;
 
@@ -174,8 +176,8 @@ const schemaData = article
     id="top"
     class="bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text min-h-screen flex flex-col font-sans selection:bg-orange-200 dark:selection:bg-orange-950 relative"
   >
-    <!-- Entertaining App Launch Screen with Live 1-100% Progress & Pushing Robot -->
-    <AppLoader />
+    <!-- Entertaining App Launch Screen with Live 1-100% Progress & Pushing Robot (First Cold Launch only) -->
+    {showLoader && <AppLoader />}
 
     <!-- Ambient Literary Glow Orbs -->
     <div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden select-none" aria-hidden="true">

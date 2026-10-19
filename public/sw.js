@@ -1,13 +1,15 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v16 (Zero-Contention PWA Engine)
-const CACHE_NAME = 'kherokhata-cache-v16';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v17 (Zero-Contention PWA Engine)
+const CACHE_NAME = 'kherokhata-cache-v17';
 const PRECACHE_URLS = [
   '/',
   '/offline',
   '/about',
   '/bookshelf',
   '/manifest.webmanifest',
+  '/admin-manifest.webmanifest',
   '/favicon.svg',
   '/icons/icon-192.png',
+  '/icons/icon-512.png',
   '/images/meshk-logo-day.png',
   '/images/meshk-logo-sepia.png',
   '/images/meshk-logo-dark.png',
@@ -51,11 +53,16 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Only handle GET requests
-  if (request.method !== 'GET') return;
+  // Skip API routes from caching
+  if (url.pathname.startsWith('/api')) return;
 
-  // Never cache admin studio or API routes
-  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api')) return;
+  // Dedicated Network-First for Admin Studio to satisfy Chrome WebAPK installability without browser badge
+  if (url.pathname.startsWith('/admin')) {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/offline'))
+    );
+    return;
+  }
 
   // 1. Navigation requests (HTML pages): Pure Network-First (direct route loading without jumping)
   if (request.mode === 'navigate') {
