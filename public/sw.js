@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v22 (Instant 0ms PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v22';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v23 (Instant 0ms PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v23';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -109,9 +109,11 @@ self.addEventListener('fetch', (event) => {
         // Step A: Attempt network fetch first when online so refreshed pages immediately reflect new posts
         try {
           const networkResponse = await fetch(request);
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          if (networkResponse) {
+            if (networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
             return networkResponse;
           }
         } catch (err) {

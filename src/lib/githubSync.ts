@@ -1,11 +1,13 @@
 // src/lib/githubSync.ts
 // Automatic Cloud Sync via GitHub REST API
 
-const GITHUB_TOKEN =
+const rawToken =
   process.env.GITHUB_TOKEN ||
   process.env.GH_TOKEN ||
   (typeof import.meta !== 'undefined' && import.meta.env && (import.meta.env.GITHUB_TOKEN || import.meta.env.GH_TOKEN)) ||
   '';
+
+const GITHUB_TOKEN = rawToken.replace(/^\uFEFF/, '').trim();
 
 const REPO_OWNER = 'Jubayer-AI-Studio';
 const REPO_NAME = 'affan-labib-blog-v2';
