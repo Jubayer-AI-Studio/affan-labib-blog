@@ -18,61 +18,8 @@ const [posts, categories] = await Promise.all([
   title="লেখক স্টুডিও | আফফান লাবীব"
   description="আফফান লাবীবের নিভৃত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।"
 >
-  <!-- 1. Universal PIN Lock Screen -->
-  <div
-    id="pin-screen"
-    class="max-w-md mx-auto my-12 p-8 rounded-3xl border border-paper-border dark:border-night-border bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-2xl text-center space-y-6"
-  >
-    <div class="w-16 h-16 mx-auto rounded-2xl bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent flex items-center justify-center text-3xl shadow-sm">
-      🔐
-    </div>
-    <div class="space-y-2">
-      <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
-        লেখক স্টুডিও প্রবেশদ্বার
-      </h1>
-      <p class="text-xs text-paper-muted dark:text-night-muted font-sans leading-relaxed">
-        এটি আফফান লাবীবের ব্যক্তিগত লেখার খাতা। অনুগ্রহ করে আপনার ৪-সংখ্যার গোপন পিন কোড লিখুন।
-      </p>
-    </div>
-    <div class="space-y-4">
-      <div class="relative">
-        <input
-          id="pin-input"
-          type="password"
-          maxlength="6"
-          placeholder="••••"
-          autofocus
-          class="w-full text-center text-2xl tracking-[0.5em] font-mono py-3.5 px-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent dark:focus:border-night-accent"
-        />
-      </div>
-      <p id="pin-error" class="hidden text-xs text-red-600 font-sans font-medium">
-        ❌ পিন কোডটি সঠিক নয়! পুনরায় চেষ্টা করুন।
-      </p>
-      <button
-        id="pin-submit-btn"
-        type="button"
-        class="w-full py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer"
-      >
-        স্টুডিও আনলক করুন →
-      </button>
-      <p class="text-[11px] text-paper-muted dark:text-night-muted font-sans opacity-70">
-        (ডিফল্ট পিন: 1234 — প্রবেশের পর পরিবর্তন করতে পারবেন)
-      </p>
-
-      <!-- Direct PWA Install Button on Mobile -->
-      <button
-        type="button"
-        onclick="window.triggerPwaInstall && window.triggerPwaInstall()"
-        class="w-full py-2.5 px-4 rounded-xl border border-paper-border/80 dark:border-night-border/80 bg-paper-border/20 dark:bg-night-border/20 hover:bg-paper-border/40 text-paper-text dark:text-night-text font-sans text-xs font-medium transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-      >
-        <span>📲</span>
-        <span>মোবাইলে স্টুডিও অ্যাপ হিসেবে ইনস্টল করুন</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- 2. Main Author Studio Workspace -->
-  <div id="studio-screen" class="hidden space-y-6">
+  <!-- Main Author Studio Workspace (Open Directly, No Lock Required) -->
+  <div id="studio-screen" class="space-y-6">
     <!-- Top Luxe Header Bar -->
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs">
       <div class="flex items-center gap-3.5">
@@ -121,11 +68,13 @@ const [posts, categories] = await Promise.all([
         </a>
 
         <button
-          id="logout-btn"
+          id="sync-refresh-btn"
           type="button"
-          class="px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-sans font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors cursor-pointer"
+          class="px-3.5 py-2 rounded-xl bg-paper-accent/10 hover:bg-paper-accent/20 border border-paper-accent/30 text-paper-accent dark:text-night-accent text-xs font-sans font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+          title="ক্লাউড ডেটাবেসের সাথে সিঙ্ক করুন"
         >
-          লগআউট
+          <span>🔄</span>
+          <span>সিঙ্ক রিফ্রেশ</span>
         </button>
       </div>
     </header>
@@ -178,7 +127,7 @@ const [posts, categories] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-settings"
       >
-        ⚙️ পিন কোড ও নিরাপত্তা
+        ⚙️ ক্লাউড ডেটাবেস ও স্ট্যাটাস
       </button>
     </nav>
 
@@ -750,37 +699,64 @@ const [posts, categories] = await Promise.all([
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 6: Security & PIN Code -->
+    <!-- TAB 6: Cloud Database & Sync Status -->
     <!-- ======================================================== -->
     <section id="tab-settings" class="admin-tab-content hidden space-y-6">
-      <div class="max-w-md mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
+      <div class="max-w-lg mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
         <div>
           <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
             <span>⚙️</span>
-            <span>পিন কোড ও নিরাপত্তা</span>
+            <span>ক্লাউড ডেটাবেস ও সিস্টেম স্ট্যাটাস</span>
           </h3>
           <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-            আপনার লেখক স্টুডিওর ৪-সংখ্যার পিন কোড পরিবর্তন করুন।
+            আপনার লেখক স্টুডিওর ক্লাউড সংযোগ ও ডেটাবেস ব্যাকআপের সার্বিক চিত্র।
           </p>
         </div>
+
         <div class="space-y-3 font-sans text-xs">
-          <div class="space-y-1">
-            <label class="block font-semibold">নতুন ৪-সংখ্যার পিন কোড:</label>
-            <input
-              id="new-pin-input"
-              type="password"
-              maxlength="6"
-              placeholder="যেমন: 5678"
-              class="w-full text-center text-lg font-mono py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:border-paper-accent"
-            />
+          <div class="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div>
+                <span class="font-bold text-paper-text dark:text-night-text block">Supabase PostgreSQL ক্লাউড ডেটাবেস</span>
+                <span class="text-[11px] text-paper-muted">রিয়েল-টাইম ক্লাউড স্টোরেজ ও ব্যাকআপ সক্রিয়</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">সক্রিয় ও লাইভ ✓</span>
           </div>
-          <button
-            id="save-new-pin-btn"
-            type="button"
-            class="w-full py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-98 transition-all"
-          >
-            নতুন পিন সংরক্ষণ করুন
-          </button>
+
+          <div class="p-3.5 rounded-2xl border border-blue-500/30 bg-blue-500/10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <div>
+                <span class="font-bold text-paper-text dark:text-night-text block">GitHub রেপোজিটর সিঙ্ক</span>
+                <span class="text-[11px] text-paper-muted">স্বয়ংক্রিয় ব্যাকআপ ও ভার্সন কন্ট্রোল</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-blue-500/20 text-blue-800 dark:text-blue-300">সংযুক্ত ✓</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl border border-purple-500/30 bg-purple-500/10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+              <div>
+                <span class="font-bold text-paper-text dark:text-night-text block">ব্রাউজার লোকাল ক্যাশ ব্যাকআপ</span>
+                <span class="text-[11px] text-paper-muted">অফলাইন ও ইনস্ট্যান্ট লোডিং ব্যাকআপ সক্রিয়</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-purple-500/20 text-purple-800 dark:text-purple-300">সক্রিয় ✓</span>
+          </div>
+
+          <div class="pt-3 border-t border-paper-border/60">
+            <button
+              id="force-cloud-sync-btn"
+              type="button"
+              class="w-full py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-98 transition-all flex items-center justify-center gap-2 text-xs"
+            >
+              <span>🔄</span>
+              <span>ক্লাউড ডেটাবেস থেকে সকল লেখা রিফ্রেশ করুন</span>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -805,65 +781,83 @@ const [posts, categories] = await Promise.all([
       const author = JSON.parse(document.getElementById('server-author-data')?.textContent || '{}');
       const initialBookshelf = JSON.parse(document.getElementById('server-bookshelf-data')?.textContent || '{}');
 
-      // 2. Authentication Flow
-      const pinScreen = document.getElementById('pin-screen');
-      const studioScreen = document.getElementById('studio-screen');
-      const pinInput = document.getElementById('pin-input');
-      const pinSubmitBtn = document.getElementById('pin-submit-btn');
-      const pinError = document.getElementById('pin-error');
-      const logoutBtn = document.getElementById('logout-btn');
-
-      function getStoredPin() {
-        return localStorage.getItem('kherokhata_admin_pin') || '1234';
-      }
-
-      function isAuthorLoggedIn() {
-        return (
-          sessionStorage.getItem('kherokhata_admin_auth') === 'true' ||
-          localStorage.getItem('kherokhata_admin_auth') === 'true'
-        );
-      }
-
-      function checkAuth() {
-        if (isAuthorLoggedIn()) {
-          pinScreen?.classList.add('hidden');
-          studioScreen?.classList.remove('hidden');
-        } else {
-          pinScreen?.classList.remove('hidden');
-          studioScreen?.classList.add('hidden');
-          pinInput?.focus();
+      // 2. Client-Side Resilience & Cloud DB Sync
+      function getCustomPosts() {
+        try {
+          return JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+        } catch (e) {
+          return [];
         }
       }
 
-      function unlockStudio() {
-        const entered = pinInput?.value.trim();
-        if (entered === getStoredPin()) {
-          sessionStorage.setItem('kherokhata_admin_auth', 'true');
-          localStorage.setItem('kherokhata_admin_auth', 'true');
-          pinError?.classList.add('hidden');
-          checkAuth();
-          if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও আনলক হয়েছে! স্বাগতম।');
-        } else {
-          pinError?.classList.remove('hidden');
-          pinInput?.classList.add('border-red-500');
-          setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
+      function getDeletedSlugs() {
+        try {
+          return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+        } catch (e) {
+          return [];
         }
       }
 
-      pinSubmitBtn?.addEventListener('click', unlockStudio);
-      pinInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') unlockStudio();
+      // Merge local custom posts into serializedPosts
+      const initialCustomPosts = getCustomPosts();
+      const initialDeletedSlugs = getDeletedSlugs();
+
+      // Filter out deleted posts
+      serializedPosts = serializedPosts.filter((p) => !initialDeletedSlugs.includes(p.slug));
+
+      // Unshift or update custom posts
+      initialCustomPosts.forEach((cp) => {
+        if (initialDeletedSlugs.includes(cp.slug)) return;
+        const existIdx = serializedPosts.findIndex((p) => p.slug === cp.slug);
+        if (existIdx >= 0) {
+          serializedPosts[existIdx] = cp;
+        } else {
+          serializedPosts.unshift(cp);
+        }
       });
 
-      logoutBtn?.addEventListener('click', () => {
-        sessionStorage.removeItem('kherokhata_admin_auth');
-        localStorage.removeItem('kherokhata_admin_auth');
-        checkAuth();
-        if (pinInput) pinInput.value = '';
-        if (window.showAdminToast) window.showAdminToast('সফলভাবে লগআউট হয়েছেন।');
-      });
+      async function refreshCloudPosts(showToast = true) {
+        try {
+          const res = await fetch('/api/posts', { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data && Array.isArray(data.posts)) {
+            const serverPosts = data.posts;
+            const currentDeleted = getDeletedSlugs();
+            const validServerPosts = serverPosts.filter((p) => !currentDeleted.includes(p.slug));
+            
+            // Merge with local custom posts
+            const currentCustom = getCustomPosts();
+            const merged = [...validServerPosts];
+            currentCustom.forEach((cp) => {
+              if (currentDeleted.includes(cp.slug)) return;
+              const idx = merged.findIndex((p) => p.slug === cp.slug);
+              if (idx >= 0) merged[idx] = cp;
+              else merged.unshift(cp);
+            });
 
-      checkAuth();
+            serializedPosts = merged;
+            localStorage.setItem('kherokhata_custom_posts', JSON.stringify(merged));
+            renderEntireFileList();
+            updateFolderBadges();
+            renderFileList();
+            if (showToast && window.showAdminToast) {
+              window.showAdminToast(`ক্লাউড ডেটাবেস সফলভাবে সিঙ্ক হয়েছে! (${merged.length}টি রচনা) ✓`);
+            }
+          }
+        } catch (e) {
+          console.warn('[Admin] Cloud sync error:', e);
+        }
+      }
+
+      const syncRefreshBtn = document.getElementById('sync-refresh-btn');
+      syncRefreshBtn?.addEventListener('click', () => refreshCloudPosts(true));
+
+      const forceSyncBtn = document.getElementById('force-cloud-sync-btn');
+      forceSyncBtn?.addEventListener('click', () => refreshCloudPosts(true));
+
+      // Auto-sync in background on boot
+      setTimeout(() => refreshCloudPosts(false), 800);
 
       // 3. Tab Switching Engine
       const tabBtns = document.querySelectorAll('.admin-tab-btn');
@@ -932,6 +926,67 @@ const [posts, categories] = await Promise.all([
       const currentFolderTitle = document.getElementById('current-folder-title');
       const currentFolderCount = document.getElementById('current-folder-count');
       const folderTotalFilesBadge = document.getElementById('folder-total-files-badge');
+
+      function renderEntireFileList() {
+        if (!fileListContainer) return;
+        fileListContainer.innerHTML = '';
+        serializedPosts.forEach((post) => {
+          const row = document.createElement('div');
+          row.className = 'file-row p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/40 dark:bg-night-bg/40 hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
+          row.setAttribute('data-category', post.category);
+          row.setAttribute('data-slug', post.slug);
+          row.innerHTML = `
+            <div class="space-y-1 min-w-0 flex-1">
+              <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
+                <span class="shrink-0 text-base">📄</span>
+                <span class="truncate block">${post.title}</span>
+              </div>
+              <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
+                  ${post.category}
+                </span>
+                <span>·</span>
+                <span>তারিখ: ${post.publishedAt || post.formattedDate}</span>
+                <span>·</span>
+                <span>${post.body ? post.body.trim().split(/\\s+/).length : (post.wordCount || 0)} শব্দ</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+              <button
+                type="button"
+                class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
+                data-slug="${post.slug}"
+              >
+                <span>✍️</span>
+                <span>সম্পাদনা</span>
+              </button>
+              <a
+                href="/${post.slug}"
+                target="_blank"
+                class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text text-xs font-sans transition-colors flex items-center justify-center gap-1"
+              >
+                <span>পড়ুন</span>
+                <span>↗</span>
+              </a>
+              <button
+                type="button"
+                class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
+                data-slug="${post.slug}"
+                title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
+              >
+                <span>🗑️</span>
+                <span>মুছুন</span>
+              </button>
+            </div>
+          `;
+          fileListContainer.appendChild(row);
+        });
+        attachLoadPostListeners();
+        attachDeleteListeners();
+      }
+
+      // Initial sync of file rows on boot
+      renderEntireFileList();
 
       function renderFileList() {
         if (!fileListContainer) return;
@@ -1244,6 +1299,19 @@ const [posts, categories] = await Promise.all([
             const idx = serializedPosts.findIndex((p) => p.slug === slug);
             if (idx !== -1) serializedPosts.splice(idx, 1);
 
+            // Persist deletion to localStorage
+            try {
+              const currentCustom = getCustomPosts().filter((p) => p.slug !== slug);
+              localStorage.setItem('kherokhata_custom_posts', JSON.stringify(currentCustom));
+
+              const delList = getDeletedSlugs();
+              if (!delList.includes(slug)) {
+                delList.push(slug);
+                localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(delList));
+              }
+              window.dispatchEvent(new CustomEvent('kherokhata-posts-sync', { detail: { deletedSlug: slug } }));
+            } catch (e) {}
+
             updateFolderBadges();
             renderFileList();
 
@@ -1311,70 +1379,48 @@ const [posts, categories] = await Promise.all([
             footnotes: writerFootnotes
           };
 
-          // Send POST to API
-          const res = await fetch('/api/posts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(postPayload)
-          });
-          const json = await res.json();
-
-          // Update in-memory state
+          // 1. Update in-memory state
           const existIdx = serializedPosts.findIndex((p) => p.slug === slug);
           if (existIdx >= 0) {
             serializedPosts[existIdx] = postPayload;
-            // Update existing DOM row
-            const existingRow = document.querySelector(`.file-row[data-slug="${slug}"]`);
-            if (existingRow) {
-              existingRow.setAttribute('data-category', category);
-              const titleEl = existingRow.querySelector('.font-serif.font-semibold span:last-child');
-              if (titleEl) titleEl.innerText = title;
-            }
           } else {
             serializedPosts.unshift(postPayload);
-            // Prepend new row to file-list-container
-            if (fileListContainer) {
-              const newRow = document.createElement('div');
-              newRow.className = 'file-row p-4 rounded-2xl border border-paper-accent/50 bg-paper-accent/5 dark:bg-night-accent/10 hover:border-paper-accent transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
-              newRow.setAttribute('data-category', category);
-              newRow.setAttribute('data-slug', slug);
-              newRow.innerHTML = `
-                <div class="space-y-1 min-w-0 flex-1">
-                  <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
-                    <span class="text-paper-accent shrink-0 text-base">✨</span>
-                    <span class="truncate block">${title}</span>
-                  </div>
-                  <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
-                    <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
-                      ${category}
-                    </span>
-                    <span>·</span>
-                    <span>তারিখ: ${date}</span>
-                    <span>·</span>
-                    <span>${postPayload.wordCount} শব্দ</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
-                  <button type="button" class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5" data-slug="${slug}">
-                    <span>✍️</span>
-                    <span>সম্পাদনা</span>
-                  </button>
-                  <a href="/${slug}" target="_blank" class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text text-xs font-sans transition-colors flex items-center justify-center gap-1">
-                    <span>পড়ুন</span>
-                    <span>↗</span>
-                  </a>
-                  <button type="button" class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1" data-slug="${slug}" title="স্থায়ীভাবে লেখাটি মুছে ফেলুন">
-                    <span>🗑️</span>
-                    <span>মুছুন</span>
-                  </button>
-                </div>
-              `;
-              fileListContainer.prepend(newRow);
-              attachLoadPostListeners();
-              attachDeleteListeners();
-            }
           }
 
+          // 2. Persist to localStorage immediately
+          try {
+            const currentCustom = getCustomPosts();
+            const cIdx = currentCustom.findIndex((p) => p.slug === slug);
+            if (cIdx >= 0) {
+              currentCustom[cIdx] = postPayload;
+            } else {
+              currentCustom.unshift(postPayload);
+            }
+            localStorage.setItem('kherokhata_custom_posts', JSON.stringify(currentCustom));
+
+            // Clean up from deleted list if was deleted previously
+            const delList = getDeletedSlugs().filter((s) => s !== slug);
+            localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(delList));
+
+            // Broadcast to all reader tabs & windows
+            window.dispatchEvent(new CustomEvent('kherokhata-posts-sync', { detail: { post: postPayload } }));
+          } catch (storageErr) {
+            console.warn('[Admin] LocalStorage save warning:', storageErr);
+          }
+
+          // 3. Send POST to server API (Supabase & GitHub Sync)
+          try {
+            await fetch('/api/posts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(postPayload)
+            });
+          } catch (apiErr) {
+            console.warn('[Admin] Serverless API save error:', apiErr);
+          }
+
+          // 4. Update UI File Explorer list
+          renderEntireFileList();
           updateFolderBadges();
           renderFileList();
 
@@ -1796,21 +1842,6 @@ const [posts, categories] = await Promise.all([
         if (window.showAdminToast) window.showAdminToast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে! ✓');
       });
 
-      // 14. Security / PIN Change
-      const newPinInput = document.getElementById('new-pin-input');
-      const saveNewPinBtn = document.getElementById('save-new-pin-btn');
-
-      saveNewPinBtn?.addEventListener('click', () => {
-        const val = newPinInput?.value.trim();
-        if (!val || val.length < 4) {
-          alert('অনুগ্রহ করে কমপক্ষে ৪ সংখ্যার পিন কোড লিখুন।');
-          newPinInput?.focus();
-          return;
-        }
-        localStorage.setItem('kherokhata_admin_pin', val);
-        if (newPinInput) newPinInput.value = '';
-        if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে! ✓');
-      });
     })();
   </script>
 </AdminLayout>

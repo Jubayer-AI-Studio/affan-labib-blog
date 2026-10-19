@@ -90,12 +90,11 @@ for (const fn of requiredFunctions) {
   assert(fs.existsSync(fullFn), `Required serverless function built: ${fn}`);
 }
 
-// 3. Admin Studio Secret Security Guard & 6 Authentic Tabs Test
-console.log('\n🔐 3. AUTHOR STUDIO PIN SECURITY & 6 AUTHENTIC TABS VERIFICATION:');
+// 3. Author Studio Direct Workspace & 6 Authentic Tabs Test
+console.log('\n✍️ 3. AUTHOR STUDIO DIRECT WORKSPACE & 6 AUTHENTIC TABS VERIFICATION:');
 const adminSrc = fs.readFileSync(path.resolve(process.cwd(), 'src/pages/admin.astro'), 'utf-8');
-assert(adminSrc.includes('id="pin-screen"'), 'Admin studio has secret PIN screen security gate');
-assert(adminSrc.includes('id="pin-input"'), 'Admin studio has pin-input field');
-assert(adminSrc.includes('id="studio-screen"'), 'Admin studio has studio-screen container');
+assert(!adminSrc.includes('id="pin-screen"'), 'Admin studio has removed PIN barrier per user directive');
+assert(adminSrc.includes('id="studio-screen"'), 'Admin studio has direct studio-screen container');
 assert(adminSrc.includes('delete-post-btn'), 'Explorer tab contains delete-post-btn buttons');
 assert(adminSrc.includes('load-in-writer-btn'), 'Explorer tab contains load-in-writer-btn buttons');
 assert(adminSrc.includes('id="toolbar-add-footnote-btn"'), 'Writer tab contains footnote insertion toolbar button');
@@ -104,7 +103,14 @@ assert(adminSrc.includes('id="save-publish-btn"'), 'Writer tab contains save & p
 assert(adminSrc.includes('id="tab-menu"'), 'Category & folder manager tab (tab-menu) is present');
 assert(adminSrc.includes('id="tab-bookshelf"'), 'Bookshelf management tab (tab-bookshelf) is present');
 assert(adminSrc.includes('id="tab-profile"'), 'Author profile editor tab (tab-profile) is present');
-assert(adminSrc.includes('id="tab-settings"'), 'Security PIN settings tab (tab-settings) is present');
+assert(adminSrc.includes('id="tab-settings"'), 'System status settings tab (tab-settings) is present');
+
+// 3a. Public Viewer Cleanliness Verification
+console.log('\n✨ 3a. PUBLIC VIEWER APP PURITY VERIFICATION (ZERO LOCKS/ADMIN TRACES):');
+const publicHeader = fs.readFileSync(path.resolve(process.cwd(), 'src/components/Header.astro'), 'utf-8');
+const publicFooter = fs.readFileSync(path.resolve(process.cwd(), 'src/components/Footer.astro'), 'utf-8');
+assert(!publicHeader.includes('href="/admin"'), 'Public Header contains NO admin link');
+assert(!publicFooter.includes('href="/admin"'), 'Public Footer contains NO admin link');
 
 // 3b. Bookshelf Two Rooms Verification
 console.log('\n📚 3b. BOOKSHELF TWO ROOMS VERIFICATION:');

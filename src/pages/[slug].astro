@@ -6,16 +6,26 @@ import { getAllPostsAsync } from '../lib/db';
 
 export const prerender = false;
 
-// Global Edge CDN cache with background revalidation (delivers article in 30ms)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+// Global Edge CDN cache with background revalidation (delivers article in 30ms, revalidates instantly)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=9');
 
 const { slug } = Astro.params;
 const allPosts = await getAllPostsAsync();
 const post = allPosts.find((p) => p.slug === slug);
+const isFallback = !post;
 
-if (!post) {
-  return Astro.redirect('/404');
-}
+const displayPost = post || {
+  slug: slug || '',
+  title: 'লেখা লোড হচ্ছে...',
+  category: 'chinta',
+  description: 'লেখা লোড হচ্ছে...',
+  publishedAt: '',
+  formattedDate: '',
+  tags: [],
+  body: '',
+  wordCount: 0,
+  footnotes: []
+};
 
 const categoryLabels: Record<string, string> = {
   chinta: 'চিন্তা',
@@ -25,13 +35,14 @@ const categoryLabels: Record<string, string> = {
   onubad: 'অনুবাদ'
 };
 
-const categoryName = categoryLabels[post.category] || post.category;
-const readTime = Math.max(1, Math.ceil((post.wordCount || 200) / 100));
+const categoryName = categoryLabels[displayPost.category] || displayPost.category;
+const readTime = Math.max(1, Math.ceil((displayPost.wordCount || 200) / 100));
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
 
 // Format body paragraphs (handles markdown headers, bolding, paragraphs)
 function renderBody(body: string) {
+  if (!body) return '<div class="py-12 text-center text-paper-muted animate-pulse">লেখা প্রস্তুত হচ্ছে...</div>';
   const paragraphs = body.split('\n\n');
   return paragraphs
     .map((p) => {
@@ -63,15 +74,15 @@ function renderBody(body: string) {
     .join('');
 }
 
-const renderedContent = renderBody(post.body);
+const renderedContent = renderBody(displayPost.body);
 ---
 
 <Layout
-  title={`${post.title} | আফফান লাবীব`}
-  description={post.description}
+  title={`${displayPost.title} | আফফান লাবীব`}
+  description={displayPost.description}
   article={{
-    publishedTime: post.publishedAt,
-    tags: post.tags
+    publishedTime: displayPost.publishedAt,
+    tags: displayPost.tags
   }}
 >
   <!-- Reading Progress Bar -->
@@ -79,19 +90,19 @@ const renderedContent = renderBody(post.body);
     <div id="reading-progress" class="h-full bg-gradient-to-r from-paper-accent via-amber-500 to-orange-500 w-0 transition-all duration-75"></div>
   </div>
 
-  <article class="max-w-3xl mx-auto space-y-8">
+  <article id="article-main" class="max-w-3xl mx-auto space-y-8" data-is-fallback={isFallback ? 'true' : 'false'} data-slug={displayPost.slug}>
     <!-- Meta Header -->
     <header class="space-y-4 pb-8 border-b border-paper-border/80 dark:border-night-border/80">
       <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
         <a href="/" class="hover:underline">প্রধান পাতা</a>
         <span>/</span>
-        <a href={`/category/${post.category}`} class="text-paper-accent dark:text-night-accent font-medium hover:underline">
+        <a id="article-category-link" href={`/category/${displayPost.category}`} class="text-paper-accent dark:text-night-accent font-medium hover:underline">
           {categoryName}
         </a>
       </div>
 
-      <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold font-serif text-paper-text dark:text-night-text leading-tight tracking-tight">
-        {post.title}
+      <h1 id="article-title" class="text-2xl sm:text-3xl md:text-4xl font-bold font-serif text-paper-text dark:text-night-text leading-tight tracking-tight">
+        {displayPost.title}
       </h1>
 
       <div class="flex flex-wrap items-center justify-between gap-4 pt-2 text-xs font-sans text-paper-muted dark:text-night-muted">
@@ -108,27 +119,27 @@ const renderedContent = renderBody(post.body);
         </div>
 
         <div class="flex items-center gap-2">
-          <time datetime={post.publishedAt}>{post.formattedDate}</time>
+          <time id="article-date" datetime={displayPost.publishedAt}>{displayPost.formattedDate}</time>
           <span>·</span>
-          <span>{readTimeBn} মিনিটে পাঠ্য</span>
+          <span id="article-read-time">{readTimeBn} মিনিটে পাঠ্য</span>
         </div>
       </div>
     </header>
 
     <!-- Post Body Content -->
-    <div class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text pt-2">
+    <div id="article-body-content" class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text pt-2">
       <Fragment set:html={renderedContent} />
     </div>
 
     <!-- Footnotes Section if present -->
-    {post.footnotes && post.footnotes.length > 0 && (
+    {displayPost.footnotes && displayPost.footnotes.length > 0 && (
       <section class="mt-12 pt-6 border-t border-paper-border/80 dark:border-night-border/80">
         <h4 class="text-sm font-bold font-sans text-paper-accent dark:text-night-accent uppercase tracking-wider mb-4 flex items-center gap-2">
           <span>📑</span>
           <span>টীকা ও তথ্যসূত্র</span>
         </h4>
         <ol class="space-y-2 list-decimal list-inside text-xs sm:text-sm text-paper-muted dark:text-night-muted font-serif">
-          {post.footnotes.map((fn: any) => (
+          {displayPost.footnotes.map((fn: any) => (
             <li id={`fn-${fn.id}`} class="leading-relaxed">
               <span class="font-serif">{fn.text}</span>
             </li>
@@ -138,14 +149,14 @@ const renderedContent = renderBody(post.body);
     )}
 
     <!-- Footnotes JSON Store for client popover -->
-    <script id="article-footnotes-data" type="application/json" set:html={JSON.stringify(post.footnotes || [])} />
+    <script id="article-footnotes-data" type="application/json" set:html={JSON.stringify(displayPost.footnotes || [])} />
 
     <!-- Article Footer: Tags & Action Bar -->
     <footer class="pt-8 border-t border-paper-border/80 dark:border-night-border/80 space-y-6">
       <!-- Tags -->
-      <div class="flex flex-wrap items-center gap-2">
+      <div id="article-tags-container" class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-sans text-paper-muted dark:text-night-muted">ট্যাগ:</span>
-        {post.tags.map((tag) => (
+        {displayPost.tags.map((tag) => (
           <span class="px-3 py-1 rounded-full bg-paper-border/50 dark:bg-night-border/50 text-paper-muted dark:text-night-muted text-xs font-sans">
             #{tag}
           </span>
@@ -162,7 +173,8 @@ const renderedContent = renderBody(post.body);
         <div class="flex items-center gap-2 flex-wrap">
           <!-- Facebook Share -->
           <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=https://affan-labib-blog.vercel.app/${post.slug}`}
+            id="share-fb-link"
+            href={`https://www.facebook.com/sharer/sharer.php?u=https://affan-labib-blog.vercel.app/${displayPost.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             class="px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
@@ -172,7 +184,8 @@ const renderedContent = renderBody(post.body);
 
           <!-- WhatsApp Share -->
           <a
-            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + ' ' + 'https://affan-labib-blog.vercel.app/' + post.slug)}`}
+            id="share-wa-link"
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(displayPost.title + ' ' + 'https://affan-labib-blog.vercel.app/' + displayPost.slug)}`}
             target="_blank"
             rel="noopener noreferrer"
             class="px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
@@ -330,8 +343,113 @@ const renderedContent = renderBody(post.body);
               </a>
             </div>
           `;
+          return;
         }
       }
     } catch (e) {}
+
+    // Resilient Fallback Hydration for newly written posts
+    const articleEl = document.getElementById('article-main');
+    const isFallbackMode = articleEl?.getAttribute('data-is-fallback') === 'true';
+    const currentSlug = articleEl?.getAttribute('data-slug') || window.location.pathname.replace(/^\/|\/$/g, '');
+
+    if (isFallbackMode && currentSlug) {
+      function hydrateDynamicPost(p) {
+        if (!p) return;
+        document.title = `${p.title} | আফফান লাবীব`;
+
+        const titleEl = document.getElementById('article-title');
+        if (titleEl) titleEl.innerText = p.title;
+
+        const catEl = document.getElementById('article-category-link');
+        const categoryLabels = {
+          chinta: 'চিন্তা',
+          pathalap: 'পাঠালাপ',
+          itihas: 'ইতিহাস',
+          'boi-alochona': 'বই-আলোচনা',
+          onubad: 'অনুবাদ'
+        };
+        if (catEl) {
+          catEl.innerText = categoryLabels[p.category] || p.category;
+          catEl.href = `/category/${p.category}`;
+        }
+
+        const dateEl = document.getElementById('article-date');
+        if (dateEl) dateEl.innerText = p.formattedDate || p.publishedAt;
+
+        const words = p.wordCount || (p.body ? p.body.trim().split(/\s+/).length : 200);
+        const readMins = Math.max(1, Math.ceil(words / 100));
+        const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        const readMinsBn = readMins.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+        const readEl = document.getElementById('article-read-time');
+        if (readEl) readEl.innerText = `${readMinsBn} মিনিটে পাঠ্য`;
+
+        const bodyEl = document.getElementById('article-body-content');
+        if (bodyEl && p.body) {
+          const paragraphs = p.body.split('\n\n');
+          bodyEl.innerHTML = paragraphs.map((item) => {
+            const trimmed = item.trim();
+            if (!trimmed) return '';
+            if (trimmed.startsWith('### ')) return `<h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-3">${trimmed.slice(4)}</h3>`;
+            if (trimmed.startsWith('## ')) return `<h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mt-10 mb-4">${trimmed.slice(3)}</h2>`;
+            if (trimmed === '---') return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
+            let formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br />');
+            formatted = formatted.replace(/\[(\d+)\]/g, `<button type="button" data-fn-id="$1" class="footnote-btn inline-flex items-center justify-center mx-1 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-colors cursor-pointer select-none align-super"><span>[$1]</span></button>`);
+            return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;
+          }).join('');
+
+          bodyEl.querySelectorAll('.footnote-btn').forEach((btn) => {
+            btn.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const fnId = btn.getAttribute('data-fn-id');
+              const fnItem = (p.footnotes || []).find((f) => f.id == fnId);
+              openFootnote(fnId, fnItem ? fnItem.text : '');
+            });
+          });
+        }
+
+        if (Array.isArray(p.footnotes)) {
+          p.footnotes.forEach((f) => { footnotesMap[f.id] = f.text; });
+        }
+      }
+
+      // 1. Check localStorage first
+      let localFound = null;
+      try {
+        const custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+        localFound = custom.find((p) => p.slug === currentSlug);
+      } catch (e) {}
+
+      if (localFound) {
+        hydrateDynamicPost(localFound);
+      } else {
+        // 2. Fetch from /api/posts
+        fetch('/api/posts', { cache: 'no-store' })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d && Array.isArray(d.posts)) {
+              const sp = d.posts.find((p) => p.slug === currentSlug);
+              if (sp) {
+                hydrateDynamicPost(sp);
+              } else {
+                if (articleEl) {
+                  articleEl.innerHTML = `
+                    <div class="py-20 text-center space-y-4">
+                      <span class="text-4xl block">🍃</span>
+                      <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">এই রচনাটি খুঁজে পাওয়া যায়নি</h2>
+                      <p class="text-sm font-serif text-paper-muted dark:text-night-muted">সম্ভবত লেখাটি এখনো প্রকাশিত হয়নি অথবা লেখক সরিয়ে নিয়েছেন।</p>
+                      <a href="/" class="inline-block px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95">
+                        ← প্রধান পাতায় ফিরে যান
+                      </a>
+                    </div>
+                  `;
+                }
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    }
   })();
 </script>

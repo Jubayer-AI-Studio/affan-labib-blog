@@ -10,8 +10,8 @@ import bookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
-// Global Edge CDN cache with background revalidation (delivers in 30ms)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400');
+// Global Edge CDN cache with background revalidation (delivers in 30ms, revalidates instantly)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=9');
 
 const [posts, categories] = await Promise.all([
   getAllPostsAsync(),
@@ -353,11 +353,11 @@ function toBn(n: number) {
 
 <script is:inline>
   (() => {
-    // 1. Post filtering
+    // 1. Post filtering & Dynamic Client Hydration
     const tabs = document.querySelectorAll('.category-tab');
-    const postItems = document.querySelectorAll('.post-item');
     const emptyNotice = document.getElementById('empty-filter-notice');
     const visibleCount = document.getElementById('visible-count');
+    const grid = document.getElementById('posts-grid');
 
     const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     function toBnNum(num) {
@@ -375,7 +375,8 @@ function toBn(n: number) {
     function filterPosts(filter) {
       const deleted = getDeletedSlugs();
       let visible = 0;
-      postItems.forEach((item) => {
+      const currentItems = document.querySelectorAll('.post-item');
+      currentItems.forEach((item) => {
         const itemCat = item.getAttribute('data-category');
         const itemSlug = item.getAttribute('data-slug');
         if (itemSlug && deleted.includes(itemSlug)) {
@@ -395,6 +396,136 @@ function toBn(n: number) {
         emptyNotice.classList.toggle('hidden', visible > 0);
       }
     }
+
+    function createPostCardElement(post) {
+      const categoryLabels = {
+        chinta: 'চিন্তা',
+        pathalap: 'পাঠালাপ',
+        itihas: 'ইতিহাস',
+        'boi-alochona': 'বই-আলোচনা',
+        onubad: 'অনুবাদ'
+      };
+      const catName = categoryLabels[post.category] || post.category;
+      const words = post.wordCount || (post.body ? post.body.trim().split(/\s+/).length : 200);
+      const readMins = Math.max(1, Math.ceil(words / 100));
+      const readMinsBn = toBnNum(readMins);
+
+      const article = document.createElement('article');
+      article.className = 'post-item group relative flex flex-col justify-between rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs hover:shadow-2xl hover:shadow-paper-accent/10 dark:hover:shadow-night-accent/15 md:hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 overflow-hidden cursor-pointer';
+      article.setAttribute('data-category', post.category);
+      article.setAttribute('data-slug', post.slug);
+
+      const tagsHtml = (post.tags || []).slice(0, 2).map((t) => `
+        <span class="px-2.5 py-0.5 rounded-full bg-paper-border/50 dark:bg-night-border/50 text-paper-muted dark:text-night-muted text-[11px] font-sans">
+          #${t}
+        </span>
+      `).join('');
+
+      article.innerHTML = `
+        <div class="absolute -right-20 -top-20 w-48 h-48 rounded-full bg-paper-accent/5 dark:bg-night-accent/10 blur-2xl group-hover:scale-150 group-hover:bg-paper-accent/12 dark:group-hover:bg-night-accent/20 transition-all duration-700 pointer-events-none"></div>
+        <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-paper-accent/30 dark:via-night-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div class="relative space-y-4">
+          <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted relative z-20">
+            <a href="/#${post.category}" data-category-filter="${post.category}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
+              ${catName}
+            </a>
+            <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
+              <time class="opacity-80">${post.formattedDate || post.publishedAt}</time>
+              <span>·</span>
+              <span class="opacity-80">${readMinsBn} মিনিটে পাঠ্য</span>
+            </div>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-snug">
+            <a href="/${post.slug}" class="hover:underline focus:outline-none z-20 relative block">
+              ${post.title}
+            </a>
+          </h3>
+          <p class="text-sm sm:text-base text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3">
+            ${post.description || ''}
+          </p>
+        </div>
+        <div class="relative mt-6 pt-4 border-t border-paper-border/60 dark:border-night-border/60 flex items-center justify-between text-xs font-sans gap-3">
+          <div class="flex flex-wrap gap-1.5 z-10 relative">
+            ${tagsHtml}
+          </div>
+          <a
+            href="/${post.slug}"
+            class="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-full bg-paper-accent text-white dark:bg-night-accent dark:text-stone-900 font-semibold text-xs font-sans hover:opacity-95 active:scale-95 shadow-xs transition-all duration-200 z-20 relative cursor-pointer"
+            aria-label="${post.title} রচনাটি পড়ুন"
+          >
+            <span class="font-sans font-medium">পড়ুন</span>
+            <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+            </svg>
+          </a>
+        </div>
+      `;
+
+      article.addEventListener('click', (e) => {
+        if (e.target.closest('a')) return;
+        window.location.href = `/${post.slug}`;
+      });
+
+      return article;
+    }
+
+    function syncCustomPosts() {
+      if (!grid) return;
+      const deleted = getDeletedSlugs();
+      let custom = [];
+      try {
+        custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+      } catch (e) {}
+
+      custom.forEach((post) => {
+        if (deleted.includes(post.slug)) return;
+        const exists = document.querySelector(`[data-slug="${post.slug}"]`);
+        if (!exists) {
+          const card = createPostCardElement(post);
+          grid.prepend(card);
+        }
+      });
+
+      filterPosts('all');
+    }
+
+    async function fetchServerPosts() {
+      try {
+        const res = await fetch('/api/posts', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && Array.isArray(data.posts) && grid) {
+          const deleted = getDeletedSlugs();
+          let custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+
+          data.posts.forEach((post) => {
+            if (deleted.includes(post.slug)) return;
+            const exists = document.querySelector(`[data-slug="${post.slug}"]`);
+            if (!exists) {
+              const card = createPostCardElement(post);
+              grid.prepend(card);
+              if (!custom.some((p) => p.slug === post.slug)) {
+                custom.unshift(post);
+              }
+            }
+          });
+          localStorage.setItem('kherokhata_custom_posts', JSON.stringify(custom));
+          filterPosts('all');
+        }
+      } catch (e) {}
+    }
+
+    // Hydrate local posts immediately
+    syncCustomPosts();
+    setTimeout(() => fetchServerPosts(), 600);
+
+    window.addEventListener('kherokhata-posts-sync', () => syncCustomPosts());
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'kherokhata_custom_posts' || e.key === 'kherokhata_deleted_posts') {
+        syncCustomPosts();
+      }
+    });
 
     function activateTab(filter, shouldScroll = false) {
       const targetTab = document.querySelector(`.category-tab[data-filter="${filter}"]`) || document.querySelector('.category-tab[data-filter="all"]');
