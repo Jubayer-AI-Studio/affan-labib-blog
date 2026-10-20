@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v24 (Instant 0ms PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v24';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v25 (Instant 0ms PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v25';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -23,6 +23,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
+      // 1. Precache Core Shell
       for (const url of PRECACHE_URLS) {
         try {
           await cache.add(url);
@@ -30,6 +31,21 @@ self.addEventListener('install', (event) => {
           console.warn('[PWA SW] Precache item skipped:', url, err);
         }
       }
+
+      // 2. Precache all published articles dynamically for 100% full offline reading
+      try {
+        const postsRes = await fetch('/api/posts');
+        if (postsRes && postsRes.ok) {
+          const postsData = await postsRes.json();
+          if (postsData && Array.isArray(postsData.posts)) {
+            for (const p of postsData.posts) {
+              if (p && p.slug) {
+                cache.add('/' + p.slug).catch(() => {});
+              }
+            }
+          }
+        }
+      } catch (e) {}
     })
   );
 });
@@ -102,32 +118,50 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Network-First when online for instant new post visibility on refresh, Cache Fallback when offline
+  // 1. Navigation requests (HTML pages): Stale-While-Revalidate with Fast-Timeout Race (Prevents 1-minute mobile ISP hang)
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        // Step A: Attempt network fetch first when online so refreshed pages immediately reflect new posts
-        try {
-          const networkResponse = await fetch(request);
-          if (networkResponse) {
-            if (networkResponse.status === 200) {
-              const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
-            return networkResponse;
-          }
-        } catch (err) {
-          // Offline or network error: gracefully fall through to cache
-        }
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(request, { ignoreSearch: true }) ||
+          (url.pathname === '/' ? await cache.match('/', { ignoreSearch: true }) : null);
 
-        // Step B: Instant local cache lookup for offline mode or network failure
-        const cachedResponse = await caches.match(request, { ignoreSearch: true });
+        // Fast network fetch with hard 2.5s abort to defeat mobile ISP connect timeouts
+        const controller = new AbortController();
+        const networkFetchPromise = (async () => {
+          try {
+            const res = await fetch(request, { signal: controller.signal });
+            if (res && res.status === 200) {
+              const clone = res.clone();
+              cache.put(request, clone).catch(() => {});
+            }
+            return res;
+          } catch (e) {
+            return null;
+          }
+        })();
+
+        // If we already have a cached copy, race network with a 1.2s deadline
+        // This ensures the app opens in under 1.2s on mobile connections, and 0ms when offline!
         if (cachedResponse) {
+          const deadlinePromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
+          const fastNetwork = await Promise.race([networkFetchPromise, deadlinePromise]);
+          if (fastNetwork) return fastNetwork;
           return cachedResponse;
         }
 
-        // Fallback to offline page
-        const offline = await caches.match('/offline', { ignoreSearch: true });
+        // If not in cache, wait up to 3.5s for network
+        const timer = setTimeout(() => controller.abort(), 3500);
+        const networkResponse = await networkFetchPromise;
+        clearTimeout(timer);
+        if (networkResponse) return networkResponse;
+
+        // Fallback to cached homepage if available
+        const homeFallback = await cache.match('/', { ignoreSearch: true });
+        if (homeFallback) return homeFallback;
+
+        // Final fallback to offline page
+        const offline = await cache.match('/offline', { ignoreSearch: true });
         return (
           offline ||
           new Response(

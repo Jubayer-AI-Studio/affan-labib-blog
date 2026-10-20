@@ -517,6 +517,10 @@ function toBn(n: number) {
         if (data && Array.isArray(data.posts) && grid) {
           const deleted = getDeletedSlugs();
           let custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          const serverSlugs = data.posts.map((p) => p.slug);
+          // Purge any local deleted flags that the server actually contains
+          deleted = deleted.filter((s) => !serverSlugs.includes(s));
+          localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(deleted));
           const validPosts = data.posts.filter((p) => !deleted.includes(p.slug));
 
           // 1. Update top spotlight hero dynamically if a newer post exists
@@ -712,7 +716,9 @@ function toBn(n: number) {
       const warmOfflineCache = async () => {
         try {
           if (!navigator.onLine) return;
-          const cache = await caches.open('kherokhata-cache-v22');
+          const cacheKeys = await caches.keys();
+          const activeKey = cacheKeys.find((k) => k.startsWith('kherokhata-cache')) || 'kherokhata-cache-v25';
+          const cache = await caches.open(activeKey);
           const slugs = Array.from(document.querySelectorAll('[data-slug]'))
             .map((el) => el.getAttribute('data-slug'))
             .filter(Boolean);
