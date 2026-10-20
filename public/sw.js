@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v28 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v28';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v29 (True 0ms Instant PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v29';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -7,15 +7,9 @@ const PRECACHE_URLS = [
   '/bookshelf',
   '/search',
   '/admin',
-  '/manifest.webmanifest?v=3',
-  '/admin-manifest.webmanifest?v=3',
   '/manifest.webmanifest',
   '/admin-manifest.webmanifest',
   '/favicon.svg',
-  '/favicon.svg?v=3',
-  '/icons/icon-192.png?v=3',
-  '/icons/icon-512.png?v=3',
-  '/icons/icon-maskable.png?v=3',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable.png',
@@ -207,6 +201,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/_astro/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/images/') ||
+    url.pathname.endsWith('.webmanifest') ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.svg') ||
