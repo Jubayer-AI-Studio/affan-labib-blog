@@ -1228,6 +1228,8 @@ const [posts, categories] = await Promise.all([
       }
 
       attachFolderClickListeners();
+      updateFolderBadges();
+      renderFileList();
 
       // 6. Live Writer's Desk & Markdown Preview Engine
       const editorTitle = document.getElementById('editor-title');
@@ -1768,6 +1770,8 @@ const [posts, categories] = await Promise.all([
           }).join('')}
         `;
         attachFolderClickListeners();
+      updateFolderBadges();
+      renderFileList();
       }
 
       function attachDeleteCategoryListeners() {

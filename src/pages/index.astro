@@ -324,7 +324,7 @@ function toBn(n: number) {
         </h2>
       </div>
 
-      <div class="text-xs font-sans text-paper-muted dark:text-night-muted">
+      <div id="visible-count-container" class="text-xs font-sans text-paper-muted dark:text-night-muted">
         মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">{toBn(gridPosts.length)}</span> টি রচনা প্রদর্শিত হচ্ছে
       </div>
     </div>
@@ -332,7 +332,7 @@ function toBn(n: number) {
     <!-- Filter Tabs (Pills) -->
     <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar text-xs font-sans">
       <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs" data-filter="all">
-        <span>সব রচনা</span> <span class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
+        <span>সব রচনা</span> <span id="all-tab-count" class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
       </button>
       {categoryCounts.map((cat) => (
         <button
@@ -340,7 +340,7 @@ function toBn(n: number) {
           class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs"
           data-filter={cat.id}
         >
-          <span>{cat.title}</span> <span class="ml-1 text-[11px] opacity-75">({toBn(cat.gridCount)})</span>
+          <span>{cat.title}</span> <span class="category-tab-count ml-1 text-[11px] opacity-75" data-cat-id={cat.id}>({toBn(cat.gridCount)})</span>
         </button>
       ))}
     </div>
@@ -380,9 +380,20 @@ function toBn(n: number) {
       }
     }
 
+    let currentFilter = 'all';
+
     function filterPosts(filter) {
+      if (typeof filter === 'string') {
+        currentFilter = filter;
+      } else {
+        filter = currentFilter;
+      }
+
       const deleted = getDeletedSlugs();
+      let totalActive = 0;
       let visible = 0;
+      const catCounts = {};
+
       const currentItems = document.querySelectorAll('.post-item');
       currentItems.forEach((item) => {
         const itemCat = item.getAttribute('data-category');
@@ -391,6 +402,12 @@ function toBn(n: number) {
           item.classList.add('hidden');
           return;
         }
+
+        totalActive++;
+        if (itemCat) {
+          catCounts[itemCat] = (catCounts[itemCat] || 0) + 1;
+        }
+
         if (filter === 'all' || itemCat === filter) {
           item.classList.remove('hidden');
           visible++;
@@ -399,7 +416,34 @@ function toBn(n: number) {
         }
       });
 
-      if (visibleCount) visibleCount.innerText = toBnNum(visible);
+      // Synchronize "সব রচনা" tab badge count dynamically
+      const allTabBadge = document.getElementById('all-tab-count');
+      if (allTabBadge) {
+        allTabBadge.innerText = `(${toBnNum(totalActive)})`;
+      }
+
+      // Synchronize each category tab badge count dynamically
+      document.querySelectorAll('.category-tab-count').forEach((badge) => {
+        const catId = badge.getAttribute('data-cat-id');
+        if (catId) {
+          badge.innerText = `(${toBnNum(catCounts[catId] || 0)})`;
+        }
+      });
+
+      // Synchronize header count text
+      const visibleCountContainer = document.getElementById('visible-count-container');
+      if (visibleCountContainer) {
+        if (filter === 'all') {
+          visibleCountContainer.innerHTML = `মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">${toBnNum(totalActive)}</span> টি রচনা প্রদর্শিত হচ্ছে`;
+        } else {
+          const catTab = document.querySelector(`.category-tab[data-filter="${filter}"] span:first-child`);
+          const catName = catTab ? catTab.innerText.trim() : filter;
+          visibleCountContainer.innerHTML = `মোট <span class="font-bold text-paper-accent dark:text-night-accent">${toBnNum(visible)}</span> টি রচনা প্রদর্শিত হচ্ছে <span class="opacity-75">(${catName} বিভাগ · সর্বমোট ${toBnNum(totalActive)} টির মধ্যে)</span>`;
+        }
+      } else if (visibleCount) {
+        visibleCount.innerText = toBnNum(visible);
+      }
+
       if (emptyNotice) {
         emptyNotice.classList.toggle('hidden', visible > 0);
       }
@@ -506,7 +550,7 @@ function toBn(n: number) {
         }
       });
 
-      filterPosts('all');
+      filterPosts(currentFilter);
     }
 
     async function fetchServerPosts() {
@@ -518,37 +562,46 @@ function toBn(n: number) {
           const deleted = getDeletedSlugs();
           let custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
           const serverSlugs = data.posts.map((p) => p.slug);
-          // Purge any local deleted flags that the server actually contains
-          deleted = deleted.filter((s) => !serverSlugs.includes(s));
-          localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(deleted));
+
+          // 1. Remove cards that were deleted on the server or in deleted list
+          document.querySelectorAll('.post-item').forEach((card) => {
+            const slug = card.getAttribute('data-slug');
+            if (slug && (!serverSlugs.includes(slug) || deleted.includes(slug))) {
+              card.remove();
+            }
+          });
+
           const validPosts = data.posts.filter((p) => !deleted.includes(p.slug));
 
-          // 1. Update top spotlight hero dynamically if a newer post exists
+          // 2. Update top spotlight hero dynamically if latest post changed
           if (validPosts.length > 0) {
             const latest = validPosts[0];
             const spotSection = document.getElementById('spotlight-section');
-            if (spotSection && spotSection.getAttribute('data-slug') !== latest.slug) {
-              spotSection.setAttribute('data-slug', latest.slug);
-              const titleLink = spotSection.querySelector('h2 a');
-              if (titleLink) {
-                titleLink.textContent = latest.title;
-                titleLink.setAttribute('href', '/' + latest.slug);
-              }
-              const descP = spotSection.querySelector('p.text-base');
-              if (descP) descP.textContent = latest.description || '';
-              const readBtn = spotSection.querySelector('a.min-h-\\[48px\\]');
-              if (readBtn) readBtn.setAttribute('href', '/' + latest.slug);
-              const dateEl = document.getElementById('spotlight-date');
-              if (dateEl) dateEl.textContent = latest.formattedDate || latest.publishedAt;
-              const catLink = document.getElementById('spotlight-cat-name');
-              if (catLink) {
-                catLink.textContent = latest.category;
-                catLink.setAttribute('href', '/#' + latest.category);
+            if (spotSection) {
+              const currentSpotSlug = spotSection.getAttribute('data-slug');
+              if (currentSpotSlug !== latest.slug || !serverSlugs.includes(currentSpotSlug) || deleted.includes(currentSpotSlug)) {
+                spotSection.setAttribute('data-slug', latest.slug);
+                const titleLink = spotSection.querySelector('h2 a');
+                if (titleLink) {
+                  titleLink.textContent = latest.title;
+                  titleLink.setAttribute('href', '/' + latest.slug);
+                }
+                const descP = spotSection.querySelector('p.text-base');
+                if (descP) descP.textContent = latest.description || '';
+                const readBtn = spotSection.querySelector('a.min-h-\\[48px\\]');
+                if (readBtn) readBtn.setAttribute('href', '/' + latest.slug);
+                const dateEl = document.getElementById('spotlight-date');
+                if (dateEl) dateEl.textContent = latest.formattedDate || latest.publishedAt;
+                const catLink = document.getElementById('spotlight-cat-name');
+                if (catLink) {
+                  catLink.textContent = latest.category;
+                  catLink.setAttribute('href', '/#' + latest.category);
+                }
               }
             }
           }
 
-          // 2. Ensure every post has a card in the grid
+          // 3. Ensure every active post has a card in the grid
           validPosts.forEach((post) => {
             const exists = grid.querySelector(`[data-slug="${post.slug}"]`);
             if (!exists) {
@@ -560,7 +613,7 @@ function toBn(n: number) {
             }
           });
           localStorage.setItem('kherokhata_custom_posts', JSON.stringify(custom));
-          filterPosts('all');
+          filterPosts(currentFilter);
         }
       } catch (e) {}
     }
@@ -618,7 +671,7 @@ function toBn(n: number) {
 
     // Run filter immediately to hide any deleted posts on page boot
     filterPosts('all');
-    window.addEventListener('kherokhata-posts-sync', () => filterPosts('all'));
+    window.addEventListener('kherokhata-posts-sync', () => filterPosts(currentFilter));
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {

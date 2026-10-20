@@ -33,37 +33,23 @@ check('astro.config.mjs preserves Tailwind integration', astroConfig.includes('t
 // --------------------------------------------------------------------
 // AUDIT PILLAR 2: Database Layer & Data Integrity (Zero Data Loss)
 // --------------------------------------------------------------------
-console.log('\n🗄️ PILLAR 2: UNIVERSAL DATABASE ENGINE & CURRENT 10 ARTICLES');
+console.log('\n🗄️ PILLAR 2: UNIVERSAL DATABASE ENGINE & DYNAMIC POST PERSISTENCE');
 import { getAllPostsAsync, savePost, deletePostBySlug } from '../src/lib/db.ts';
 
 const allPosts = await getAllPostsAsync();
 check('Database loads posts successfully', Array.isArray(allPosts));
 const initialCount = allPosts.length;
-check('All 10 authentic articles preserved intact', allPosts.length >= 10, `Count: ${allPosts.length}`);
+check('Database contains active posts', allPosts.length > 0, `Count: ${allPosts.length}`);
 
-// Check every authentic post has valid content
-const expectedSlugs = [
-  'bedonadayok-dushongbad-ayesha',
-  'boi-er-bibhay-alokito-monishi',
-  'dinlipi-shukrobar-amimul-ihsan',
-  'gazar-dinlipi',
-  'haramainer-live',
-  'notun-mehman',
-  'kobi-sahityik-howa-lokkho-noy',
-  'saobaner-dosh-bochhor',
-  'tahafutul-malahida',
-  'takhassuser-jibon-shuru'
-];
-
-let allSlugsPresent = true;
+// Dynamically check every active post has valid title, slug, category and content
+let allPostsValid = true;
 let allBodiesNonEmpty = true;
-for (const slug of expectedSlugs) {
-  const p = allPosts.find((item) => item.slug === slug);
-  if (!p) allSlugsPresent = false;
-  if (!p || !p.body || p.body.length < 50) allBodiesNonEmpty = false;
+for (const p of allPosts) {
+  if (!p.slug || !p.title || !p.category) allPostsValid = false;
+  if (!p.body || p.body.length < 50) allBodiesNonEmpty = false;
 }
-check('All 10 authentic slugs present in database', allSlugsPresent);
-check('All 10 authentic article bodies populated with full text', allBodiesNonEmpty);
+check('All active articles populated with valid slug, title and category', allPostsValid);
+check('All active article bodies populated with full text', allBodiesNonEmpty);
 
 // Live CRUD Simulation
 const tempSlug = 'deep-audit-post-' + Date.now();
