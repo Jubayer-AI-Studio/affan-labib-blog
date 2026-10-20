@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v26 (Instant 0ms PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v26';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v27 (True 0ms Instant PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v27';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -18,19 +18,21 @@ const PRECACHE_URLS = [
   '/images/affan-labib.jpg'
 ];
 
-// Install: Pre-cache core shell safely without aborting on single failure
+// Install: Pre-cache core shell in parallel without blocking on single failure
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // 1. Precache Core Shell
-      for (const url of PRECACHE_URLS) {
-        try {
-          await cache.add(url);
-        } catch (err) {
-          console.warn('[PWA SW] Precache item skipped:', url, err);
-        }
-      }
+      // 1. Precache Core Shell in parallel
+      await Promise.allSettled(
+        PRECACHE_URLS.map(async (url) => {
+          try {
+            await cache.add(url);
+          } catch (err) {
+            console.warn('[PWA SW] Precache item skipped:', url, err);
+          }
+        })
+      );
 
       // 2. Precache all published articles dynamically for 100% full offline reading
       try {
@@ -38,11 +40,13 @@ self.addEventListener('install', (event) => {
         if (postsRes && postsRes.ok) {
           const postsData = await postsRes.json();
           if (postsData && Array.isArray(postsData.posts)) {
-            for (const p of postsData.posts) {
-              if (p && p.slug) {
-                cache.add('/' + p.slug).catch(() => {});
-              }
-            }
+            await Promise.allSettled(
+              postsData.posts.map(async (p) => {
+                if (p && p.slug) {
+                  return cache.add('/' + p.slug).catch(() => {});
+                }
+              })
+            );
           }
         }
       } catch (e) {}
@@ -50,11 +54,17 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: Clean up old caches and claim clients immediately
+// Activate: Enable Navigation Preload, clean up old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
+    (async () => {
+      if ('navigationPreload' in self.registration) {
+        try {
+          await self.registration.navigationPreload.enable();
+        } catch (e) {}
+      }
+      const keys = await caches.keys();
+      await Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
             console.log('[PWA SW] Purging old cache:', key);
@@ -62,7 +72,8 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+      await self.clients.claim();
+    })()
   );
 });
 
@@ -118,50 +129,56 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Stale-While-Revalidate with Fast-Timeout Race (Prevents 1-minute mobile ISP hang)
+  // 1. Navigation requests (HTML pages): True 0ms Instant Cache-First with Background Revalidation
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(request, { ignoreSearch: true }) ||
-          (url.pathname === '/' ? await cache.match('/', { ignoreSearch: true }) : null);
+        // Step A: Instant 0ms Cache Resolution
+        let cachedResponse = await caches.match(request, { ignoreSearch: true });
+        if (!cachedResponse && (url.pathname === '/' || url.pathname === '')) {
+          cachedResponse = await caches.match('/', { ignoreSearch: true });
+        }
 
-        // Fast network fetch with hard 2.5s abort to defeat mobile ISP connect timeouts
-        const controller = new AbortController();
-        const networkFetchPromise = (async () => {
+        // Step B: Background revalidation fetch (non-blocking, updates cache silently)
+        const backgroundFetchPromise = (async () => {
           try {
-            const res = await fetch(request, { signal: controller.signal });
-            if (res && res.status === 200) {
-              const clone = res.clone();
-              cache.put(request, clone).catch(() => {});
+            let networkResponse = null;
+            if (event.preloadResponse) {
+              networkResponse = await event.preloadResponse;
             }
-            return res;
+            if (!networkResponse) {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 3500);
+              networkResponse = await fetch(request, { signal: controller.signal });
+              clearTimeout(timeoutId);
+            }
+            if (networkResponse && networkResponse.status === 200) {
+              const cache = await caches.open(CACHE_NAME);
+              await cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
           } catch (e) {
             return null;
           }
         })();
 
-        // If we already have a cached copy, race network with a 1.2s deadline
-        // This ensures the app opens in under 1.2s on mobile connections, and 0ms when offline!
+        // CRITICAL 0ms INSTANT PWA LAUNCH:
+        // If cached copy exists, RETURN IT IMMEDIATELY in 0ms!
         if (cachedResponse) {
-          const deadlinePromise = new Promise((resolve) => setTimeout(() => resolve(null), 1200));
-          const fastNetwork = await Promise.race([networkFetchPromise, deadlinePromise]);
-          if (fastNetwork) return fastNetwork;
+          event.waitUntil(backgroundFetchPromise);
           return cachedResponse;
         }
 
-        // If not in cache, wait up to 3.5s for network
-        const timer = setTimeout(() => controller.abort(), 3500);
-        const networkResponse = await networkFetchPromise;
-        clearTimeout(timer);
+        // If not in cache (cold first visit), wait for network
+        const networkResponse = await backgroundFetchPromise;
         if (networkResponse) return networkResponse;
 
         // Fallback to cached homepage if available
-        const homeFallback = await cache.match('/', { ignoreSearch: true });
+        const homeFallback = await caches.match('/', { ignoreSearch: true });
         if (homeFallback) return homeFallback;
 
         // Final fallback to offline page
-        const offline = await cache.match('/offline', { ignoreSearch: true });
+        const offline = await caches.match('/offline', { ignoreSearch: true });
         return (
           offline ||
           new Response(

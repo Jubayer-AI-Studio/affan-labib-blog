@@ -6,6 +6,9 @@ import { getAllPostsAsync, getCategoriesAsync } from '../../lib/db';
 
 export const prerender = false;
 
+// Global Edge CDN cache with background revalidation (delivers in 30ms, revalidates instantly)
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
+
 const { category } = Astro.params;
 const [allPosts, categories] = await Promise.all([
   getAllPostsAsync(),

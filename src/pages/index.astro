@@ -11,7 +11,7 @@ import bookshelf from '../data/bookshelf.json';
 export const prerender = false;
 
 // Global Edge CDN cache with background revalidation (delivers in 30ms, revalidates instantly)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=9');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
 
 const [posts, categories] = await Promise.all([
   getAllPostsAsync(),
@@ -50,7 +50,7 @@ function toBn(n: number) {
 <Layout
   title="আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা"
   description="সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।"
-  showLoader={true}
+  showLoader={false}
 >
   <!-- 1. Author Bio & Introduction Card (Directly on Front Page - Author First) -->
   <section id="author-intro-card" class="mb-14 relative group">

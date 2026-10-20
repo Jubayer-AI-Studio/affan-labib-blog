@@ -7,7 +7,7 @@ import { getAllPostsAsync } from '../lib/db';
 export const prerender = false;
 
 // Global Edge CDN cache with background revalidation (delivers article in 30ms, revalidates instantly)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=9');
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
 
 const { slug } = Astro.params;
 const allPosts = await getAllPostsAsync();

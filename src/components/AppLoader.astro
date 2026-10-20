@@ -134,13 +134,14 @@
     const loader = document.getElementById('app-loader-screen');
     if (!loader) return;
 
-    // Instant Bypass on /admin to ensure 0ms buffer-free login & studio access
+    // Instant Bypass on /admin and standalone PWA launch to ensure 0ms buffer-free launch
     try {
-      if (window.location.pathname.startsWith('/admin')) {
-        loader.remove();
-        return;
-      }
-      if (sessionStorage.getItem('kherokhata_session_active')) {
+      if (
+        window.location.pathname.startsWith('/admin') ||
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        sessionStorage.getItem('kherokhata_session_active')
+      ) {
         loader.remove();
         return;
       }
