@@ -19,15 +19,15 @@ export interface Props {
 const {
   title = 'আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা',
   description = 'সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।',
-  image = '/images/og-default.jpg',
+  image = '/images/og-affan-labib-v4.jpg?v=4',
   showLoader = false,
   article
 } = Astro.props;
 
 const siteUrl = 'https://affan-labib-blog.vercel.app';
 const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
-const cleanImage = image === '/images/og-default.jpg' ? '/images/og-default-v2.jpg' : image;
-const absoluteImageURL = new URL(cleanImage, siteUrl).href;
+const cleanImage = (image === '/images/og-default.jpg' || image === '/images/og-default-v2.jpg') ? '/images/og-affan-labib-v4.jpg?v=4' : image;
+const absoluteImageURL = cleanImage.startsWith('http') ? cleanImage : new URL(cleanImage, siteUrl).href;
 
 // JSON-LD Schema
 const schemaData = article

@@ -61,6 +61,16 @@
         </ol>
       </div>
 
+      <div id="inapp-guide-box" class="hidden text-left text-xs bg-amber-500/15 border border-amber-500/30 p-3.5 rounded-xl space-y-1.5 text-paper-text dark:text-night-text">
+        <div class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+          <span>⚠️</span>
+          <span>হোয়াটসঅ্যাপ/মেসেঞ্জারে আছেন?</span>
+        </div>
+        <p class="text-[11px] leading-relaxed text-paper-muted dark:text-night-muted">
+          অ্যাপ সরাসরি ইনস্টল করতে উপরের ৩-ডটে (⋮) চাপ দিয়ে <strong>"Open in Chrome" (ক্রোমে খুলুন)</strong> বেছে নিন। এরপর ইনস্টল বাটনে ট্যাপ করলেই অ্যাপ নেমে যাবে।
+        </p>
+      </div>
+
       <div id="android-guide-box" class="text-left text-xs bg-paper-border/30 dark:bg-night-border/40 p-3.5 rounded-xl space-y-1.5 text-paper-muted dark:text-night-muted">
         <div class="font-semibold text-paper-text dark:text-night-text flex items-center gap-1.5">
           <span>💡</span>
@@ -100,6 +110,8 @@
     const copyText = document.getElementById('copy-btn-text');
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isInApp = /FB_IAB|FBAV|WhatsApp|Instagram|Line|Messenger/i.test(navigator.userAgent);
+    const inappBox = document.getElementById('inapp-guide-box');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
     function updateState() {
@@ -108,12 +120,17 @@
         if (installedBox) installedBox.classList.remove('hidden');
         if (androidBox) androidBox.classList.add('hidden');
         if (iosBox) iosBox.classList.add('hidden');
+        if (inappBox) inappBox.classList.add('hidden');
         return;
+      }
+      if (isInApp) {
+        if (inappBox) inappBox.classList.remove('hidden');
+        if (btnText) btnText.innerText = 'ক্রোম ব্রাউজারে খুলুন';
       }
       if (isIOS) {
         if (iosBox) iosBox.classList.remove('hidden');
         if (androidBox) androidBox.classList.add('hidden');
-        if (btnText) btnText.innerText = 'আইফোনে ইনস্টল নির্দেশিকা';
+        if (btnText && !isInApp) btnText.innerText = 'আইফোনে ইনস্টল নির্দেশিকা';
       }
     }
 
@@ -134,6 +151,10 @@
     });
 
     installBtn?.addEventListener('click', async () => {
+      if (isInApp) {
+        alert('হোয়াটসঅ্যাপ বা মেসেঞ্জারে সরাসরি অ্যাপ ইনস্টল করা যায় না।\n\nঅনুগ্রহ করে স্ক্রিনের উপরে ডানদিকের ৩-ডট (⋮) চাপ দিয়ে "Open in Chrome" (ক্রোমে খুলুন) সিলেক্ট করুন, এরপর অ্যাপটি ইনস্টল করুন।');
+        return;
+      }
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;

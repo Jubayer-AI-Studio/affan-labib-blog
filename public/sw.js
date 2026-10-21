@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v29 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v29';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v30 (True 0ms Instant PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v30';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -15,6 +15,7 @@ const PRECACHE_URLS = [
   '/icons/icon-maskable.png',
   '/icons/apple-touch-icon.png',
   '/images/affan-labib.jpg',
+  '/images/og-affan-labib-v4.jpg',
   '/images/meshk-logo-day.png',
   '/images/meshk-logo-sepia.png',
   '/images/meshk-logo-dark.png'
