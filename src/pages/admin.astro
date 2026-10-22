@@ -122,6 +122,14 @@ const [posts, categories] = await Promise.all([
         👤 লেখক প্রোফাইল ও বায়ো
       </button>
       <button
+        id="tab-btn-interactions"
+        type="button"
+        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
+        data-tab="tab-interactions"
+      >
+        💬 পাঠকদের প্রতিক্রিয়া ও মন্তব্য
+      </button>
+      <button
         id="tab-btn-settings"
         type="button"
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
@@ -2121,5 +2129,255 @@ const [posts, categories] = await Promise.all([
       });
 
     })();
+
+      // ========================================================
+      // 💬 TAB: Interactions & Comments Moderation Engine
+      // ========================================================
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      function toBn(n) {
+        return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+      }
+
+      const adminTotalViews = document.getElementById('admin-total-views');
+      const adminTotalLikes = document.getElementById('admin-total-likes');
+      const adminTotalComments = document.getElementById('admin-total-comments');
+      const adminArticlesStatsList = document.getElementById('admin-articles-stats-list');
+      const adminCommentsFeedList = document.getElementById('admin-comments-feed-list');
+      const adminCommentsFeedBadge = document.getElementById('admin-comments-feed-badge');
+      const refreshInteractionsBtn = document.getElementById('refresh-interactions-btn');
+
+      let currentInteractionsData = { stats: {}, comments: [] };
+
+      async function loadInteractionsData() {
+        try {
+          const res = await fetch('/api/interactions?admin=true');
+          const json = await res.json();
+          if (json && json.success && json.data) {
+            currentInteractionsData = json.data;
+            renderAdminInteractions();
+          }
+        } catch (e) {
+          console.error('[Admin] Interactions load error:', e);
+        }
+      }
+
+      function renderAdminInteractions() {
+        const stats = currentInteractionsData.stats || {};
+        const comments = currentInteractionsData.comments || [];
+
+        // Calculate totals
+        let totalViews = 0;
+        let totalLikes = 0;
+        Object.values(stats).forEach((s) => {
+          totalViews += (s.views || 0);
+          totalLikes += (s.likes || 0);
+        });
+
+        if (adminTotalViews) adminTotalViews.textContent = toBn(totalViews);
+        if (adminTotalLikes) adminTotalLikes.textContent = toBn(totalLikes);
+        if (adminTotalComments) adminTotalComments.textContent = toBn(comments.length);
+        if (adminCommentsFeedBadge) adminCommentsFeedBadge.textContent = `${toBn(comments.length)}টি মন্তব্য`;
+
+        // Render Articles Stats List
+        if (adminArticlesStatsList) {
+          const allPosts = serializedPosts || [];
+          if (allPosts.length === 0) {
+            adminArticlesStatsList.innerHTML = '<div class="py-6 text-center text-xs text-paper-muted">কোনো রচনা নেই</div>';
+          } else {
+            adminArticlesStatsList.innerHTML = allPosts.map((p) => {
+              const st = stats[p.slug] || { views: 0, likes: 0 };
+              const postComments = comments.filter((c) => c.slug === p.slug).length;
+              return `
+                <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs">
+                  <div class="min-w-0 flex-grow">
+                    <a href="/${p.slug}" target="_blank" class="font-serif font-bold text-paper-text dark:text-night-text truncate block hover:text-paper-accent transition-colors">
+                      ${p.title}
+                    </a>
+                    <span class="text-[11px] text-paper-muted font-sans">${p.formattedDate || p.publishedAt}</span>
+                  </div>
+                  <div class="flex items-center gap-2.5 font-mono text-xs shrink-0 select-none">
+                    <span class="inline-flex items-center gap-1 text-paper-muted" title="ভিউ">
+                      <span>👁️</span>
+                      <span>${toBn(st.views)}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-rose-500 font-bold" title="লাইক">
+                      <span>❤️</span>
+                      <span>${toBn(st.likes)}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1 text-paper-muted" title="মন্তব্য">
+                      <span>💬</span>
+                      <span>${toBn(postComments)}</span>
+                    </span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+
+        // Render Comments Moderation Feed
+        if (adminCommentsFeedList) {
+          if (comments.length === 0) {
+            adminCommentsFeedList.innerHTML = `
+              <div class="py-12 text-center rounded-2xl border border-dashed border-paper-border dark:border-night-border text-xs font-serif text-paper-muted">
+                🍃 পাঠকদের কোনো মন্তব্য এখনো আসেনি।
+              </div>
+            `;
+          } else {
+            adminCommentsFeedList.innerHTML = comments.map((c) => {
+              const postMatch = (serializedPosts || []).find((p) => p.slug === c.slug);
+              const postTitle = postMatch ? postMatch.title : c.slug;
+
+              return `
+                <div class="p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all" data-comment-id="${c.id}">
+                  <div class="flex items-start justify-between gap-3 text-xs">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold font-serif text-paper-text dark:text-night-text">${c.authorName}</span>
+                        ${c.isAuthor ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300">লেখক</span>' : ''}
+                      </div>
+                      <a href="/${c.slug}" target="_blank" class="text-[11px] font-sans text-paper-accent dark:text-night-accent hover:underline block truncate max-w-sm mt-0.5">
+                        লেখা: ${postTitle}
+                      </a>
+                    </div>
+                    <time class="text-[10px] font-mono text-paper-muted dark:text-night-muted shrink-0">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('bn-BD') : ''}</time>
+                  </div>
+
+                  <p class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/50 dark:bg-night-surface/50 p-2.5 rounded-xl border border-paper-border/40 whitespace-pre-wrap">
+                    ${c.content}
+                  </p>
+
+                  <div class="flex items-center justify-between pt-1 text-xs">
+                    <button
+                      type="button"
+                      class="admin-reply-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-sans text-xs cursor-pointer"
+                      data-slug="${c.slug}"
+                      data-id="${c.id}"
+                      data-author="${c.authorName}"
+                    >
+                      <span>✍️</span>
+                      <span>লেখক হিসেবে উত্তর দিন</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="admin-delete-cmt-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-sans text-xs cursor-pointer"
+                      data-id="${c.id}"
+                    >
+                      <span>🗑️</span>
+                      <span>মুছে ফেলুন</span>
+                    </button>
+                  </div>
+
+                  <!-- Inline Author Reply Form (Hidden by default) -->
+                  <div id="reply-form-${c.id}" class="hidden pt-3 border-t border-paper-border/60 space-y-2">
+                    <textarea
+                      id="reply-input-${c.id}"
+                      rows="2"
+                      placeholder="আফফান লাবীব হিসেবে উত্তর লিখুন..."
+                      class="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-paper-bg dark:bg-night-bg text-xs font-serif focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    ></textarea>
+                    <div class="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        class="cancel-reply-btn px-3 py-1 rounded-lg text-xs font-sans text-paper-muted hover:text-paper-text cursor-pointer"
+                        data-id="${c.id}"
+                      >
+                        বাতিল
+                      </button>
+                      <button
+                        type="button"
+                        class="submit-reply-btn px-3.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-sans font-semibold cursor-pointer"
+                        data-slug="${c.slug}"
+                        data-id="${c.id}"
+                      >
+                        উত্তর প্রকাশ করুন
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+
+            // Attach event listeners for delete & reply
+            adminCommentsFeedList.querySelectorAll('.admin-delete-cmt-btn').forEach((btn) => {
+              btn.addEventListener('click', async () => {
+                const commentId = btn.getAttribute('data-id');
+                if (!confirm('আপনি কি এই মন্তব্যটি সত্যি মুছে ফেলতে চান?')) return;
+                try {
+                  const res = await fetch('/api/interactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_comment', commentId })
+                  });
+                  const json = await res.json();
+                  if (json && json.success) {
+                    currentInteractionsData.comments = currentInteractionsData.comments.filter((x) => x.id !== commentId);
+                    renderAdminInteractions();
+                    showToast('✓ মন্তব্যটি সফলভাবে মুছে ফেলা হয়েছে।');
+                  }
+                } catch (e) {
+                  alert('মুছে ফেলতে সমস্যা হয়েছে।');
+                }
+              });
+            });
+
+            adminCommentsFeedList.querySelectorAll('.admin-reply-btn').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const commentId = btn.getAttribute('data-id');
+                const formEl = document.getElementById(`reply-form-${commentId}`);
+                if (formEl) formEl.classList.toggle('hidden');
+              });
+            });
+
+            adminCommentsFeedList.querySelectorAll('.cancel-reply-btn').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const commentId = btn.getAttribute('data-id');
+                document.getElementById(`reply-form-${commentId}`)?.classList.add('hidden');
+              });
+            });
+
+            adminCommentsFeedList.querySelectorAll('.submit-reply-btn').forEach((btn) => {
+              btn.addEventListener('click', async () => {
+                const commentId = btn.getAttribute('data-id');
+                const slug = btn.getAttribute('data-slug');
+                const text = document.getElementById(`reply-input-${commentId}`)?.value.trim();
+                if (!text) return alert('উত্তরের বিষয় খালি রাখা যাবে না।');
+
+                try {
+                  const res = await fetch('/api/interactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      action: 'reply',
+                      slug,
+                      parentId: commentId,
+                      content: text,
+                      authorName: 'আফফান লাবীব (লেখক)'
+                    })
+                  });
+                  const json = await res.json();
+                  if (json && json.success) {
+                    showToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
+                    loadInteractionsData();
+                  }
+                } catch (e) {
+                  alert('উত্তর প্রকাশে সমস্যা হয়েছে।');
+                }
+              });
+            });
+          }
+        }
+      }
+
+      refreshInteractionsBtn?.addEventListener('click', () => {
+        loadInteractionsData();
+        showToast('✓ পাঠকদের প্রতিক্রিয়া রিফ্রেশ করা হয়েছে।');
+      });
+
+      // Load when tab is opened
+      document.getElementById('tab-btn-interactions')?.addEventListener('click', () => {
+        loadInteractionsData();
+      });
   </script>
 </AdminLayout>
