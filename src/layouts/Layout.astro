@@ -17,8 +17,8 @@ export interface Props {
 }
 
 const {
-  title = 'আফফান লাবীব | চিন্তা ও পাঠের নিভৃত আঙিনা',
-  description = 'সরল চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।',
+  title = 'লাবীবের খেরোখাতা | আফফান লাবীব - Affan Labib',
+  description = 'Affan Labib (আফফান লাবীব)-এর অফিসিয়াল ওয়েবসাইট ও সাহিত্য সাময়িকী লাবীবের খেরোখাতা (Labib er Kherokhata)। চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার ব্যক্তিগত ঘর।',
   image = '/images/og-affan-labib-v4.jpg?v=4',
   showLoader = false,
   article
@@ -29,42 +29,95 @@ const canonicalURL = new URL(Astro.url.pathname, siteUrl).href;
 const cleanImage = (image === '/images/og-default.jpg' || image === '/images/og-default-v2.jpg') ? '/images/og-affan-labib-v4.jpg?v=4' : image;
 const absoluteImageURL = cleanImage.startsWith('http') ? cleanImage : new URL(cleanImage, siteUrl).href;
 
-// JSON-LD Schema
-const schemaData = article
+// Multi-Entity Schema.org Knowledge Graph (Person + WebSite + Article/WebPage)
+const personEntity = {
+  '@type': 'Person',
+  '@id': `${siteUrl}/#person`,
+  name: 'আফফান লাবীব',
+  alternateName: ['Affan Labib', 'Labib', 'আফফান', 'লাবীব'],
+  url: `${siteUrl}/about`,
+  image: {
+    '@type': 'ImageObject',
+    '@id': `${siteUrl}/#authorImage`,
+    url: `${siteUrl}/images/og-affan-labib-v4.jpg`,
+    caption: 'Affan Labib (আফফান লাবীব)'
+  },
+  jobTitle: 'লেখক, গবেষক ও চিন্তক (Author, Researcher & Essayist)',
+  description: "আফফান লাবীব (Affan Labib) একজন বাংলাদেশি লেখক, গবেষক ও চিন্তক। তিনি সাহিত্য সাময়িকী 'লাবীবের খেরোখাতা' (Labib er Kherokhata)-র প্রতিষ্ঠাতা ও লেখক।",
+  sameAs: [
+    'https://www.facebook.com/share/19tT1QFjef/',
+    siteUrl
+  ],
+  knowsAbout: [
+    'Islamic Studies',
+    'Bengali Literature',
+    'History',
+    'Philosophy',
+    'Book Reviews',
+    'চিন্তা',
+    'ইতিহাস',
+    'সাহিত্য'
+  ]
+};
+
+const websiteEntity = {
+  '@type': 'WebSite',
+  '@id': `${siteUrl}/#website`,
+  url: siteUrl,
+  name: 'লাবীবের খেরোখাতা | Affan Labib',
+  alternateName: [
+    'Labib er Kherokhata',
+    'Affan Labib',
+    'আফফান লাবীব',
+    'Affan Labib Blog',
+    'Labiber Kherokhata',
+    'লাবীবের খেরোখাতা'
+  ],
+  description: "Affan Labib's official website & literary web magazine: Labib er Kherokhata (লাবীবের খেরোখাতা - চিন্তা ও পাঠের নিভৃত আঙিনা)।",
+  publisher: { '@id': `${siteUrl}/#person` },
+  author: { '@id': `${siteUrl}/#person` },
+  inLanguage: ['bn-BD', 'en'],
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${siteUrl}/search?q={search_term_string}`
+    },
+    'query-input': 'required name=search_term_string'
+  }
+};
+
+const pageEntity = article
   ? {
-      '@context': 'https://schema.org',
       '@type': 'BlogPosting',
+      '@id': `${canonicalURL}#article`,
+      isPartOf: { '@id': `${siteUrl}/#website` },
       headline: title,
       description: description,
       image: absoluteImageURL,
       datePublished: article.publishedTime,
-      author: {
-        '@type': 'Person',
-        name: 'আফফান লাবীব',
-        url: `${siteUrl}/about`
-      },
-      publisher: {
-        '@type': 'Person',
-        name: 'আফফান লাবীব'
-      },
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': canonicalURL
-      }
+      dateModified: article.publishedTime,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalURL },
+      author: { '@id': `${siteUrl}/#person` },
+      publisher: { '@id': `${siteUrl}/#person` },
+      inLanguage: 'bn-BD',
+      keywords: article.tags && article.tags.length > 0 ? article.tags.join(', ') : 'Affan Labib, Labib er Kherokhata'
     }
   : {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'আফফান লাবীব - খেরোখাতা',
-      url: siteUrl,
+      '@type': Astro.url.pathname === '/about' ? 'ProfilePage' : 'WebPage',
+      '@id': `${canonicalURL}#webpage`,
+      url: canonicalURL,
+      name: title,
       description: description,
-      author: {
-        '@type': 'Person',
-        name: 'আফফান লাবীব',
-        jobTitle: 'লেখক ও গবেষক',
-        url: `${siteUrl}/about`
-      }
+      isPartOf: { '@id': `${siteUrl}/#website` },
+      about: { '@id': `${siteUrl}/#person` },
+      inLanguage: 'bn-BD'
     };
+
+const schemaData = {
+  '@context': 'https://schema.org',
+  '@graph': [personEntity, websiteEntity, pageEntity]
+};
 ---
 
 <!DOCTYPE html>
@@ -76,22 +129,29 @@ const schemaData = article
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Canonical URL -->
+    <!-- Canonical URL & Sitemap Declaration -->
     <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+    <link rel="author" href={`${siteUrl}/about`} />
 
-    <!-- SEO Meta Tags -->
+    <!-- Core SEO & Search Indexing Directives (Google, Bing, AI Bots) -->
     <title>{title}</title>
     <meta name="title" content={title} />
     <meta name="description" content={description} />
-    <meta name="author" content="আফফান লাবীব" />
+    <meta name="author" content="Affan Labib (আফফান লাবীব)" />
+    <meta name="keywords" content="Affan Labib, Labib er Kherokhata, লাবীবের খেরোখাতা, আফফান লাবীব, Labiber Kherokhata, affan labib blog, affan labib website, bangla essays, bengali literature, বই আলোচনা, ইসলামি ইতিহাস, চিন্তাশীল গদ্য, সাহিত্য সাময়িকী" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Telegram -->
     <link rel="image_src" href={absoluteImageURL} />
     <meta name="thumbnail" content={absoluteImageURL} />
     <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:url" content={canonicalURL} />
-    <meta property="og:site_name" content="আফফান লাবীব - খেরোখাতা" />
+    <meta property="og:site_name" content="লাবীবের খেরোখাতা | Affan Labib" />
     <meta property="og:locale" content="bn_BD" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={absoluteImageURL} />
