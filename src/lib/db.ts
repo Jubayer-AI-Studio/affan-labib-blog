@@ -42,7 +42,8 @@ export function getLocalPosts(): Post[] {
   try {
     if (fs.existsSync(POSTS_PATH)) {
       const data = fs.readFileSync(POSTS_PATH, 'utf-8');
-      return JSON.parse(data);
+      const list = JSON.parse(data);
+      return Array.isArray(list) ? list.filter((p: any) => !p.slug?.startsWith('__')) : [];
     }
   } catch (err) {
     console.error('[DB] Error reading local posts:', err);
@@ -80,7 +81,8 @@ export async function getAllPostsAsync(): Promise<Post[]> {
       const { data, error } = await withTimeout(query, 4000);
 
       if (!error && data && data.length > 0) {
-        const mapped = data.map((row: any) => ({
+        const filteredRows = data.filter((row: any) => !row.slug?.startsWith('__'));
+        const mapped = filteredRows.map((row: any) => ({
           slug: row.slug,
           title: row.title,
           category: row.category,
@@ -276,7 +278,8 @@ export async function getCategoriesAsync(): Promise<Category[]> {
       const { data, error } = await withTimeout(query, 4000);
 
       if (!error && data && data.length > 0) {
-        const mapped = data.map((row: any) => ({
+        const filteredRows = data.filter((row: any) => !row.slug?.startsWith('__'));
+        const mapped = filteredRows.map((row: any) => ({
           id: row.id,
           title: row.title,
           desc: row.desc || '',
