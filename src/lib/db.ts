@@ -5,6 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import { supabase, isSupabaseConfigured } from './supabase.ts';
 import { syncPostsToGitHub } from './githubSync.ts';
+import staticPosts from '../data/posts.json';
+import staticAuthor from '../data/author.json';
+import staticBookshelf from '../data/bookshelf.json';
+import staticCategories from '../data/categories.json';
 
 const POSTS_PATH = path.resolve(process.cwd(), 'src/data/posts.json');
 const AUTHOR_PATH = path.resolve(process.cwd(), 'src/data/author.json');
@@ -40,15 +44,15 @@ const CACHE_TTL_MS = 60 * 1000;
 
 export function getLocalPosts(): Post[] {
   try {
-    if (fs.existsSync(POSTS_PATH)) {
+    if (POSTS_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(POSTS_PATH)) {
       const data = fs.readFileSync(POSTS_PATH, 'utf-8');
       const list = JSON.parse(data);
       return Array.isArray(list) ? list.filter((p: any) => !p.slug?.startsWith('__')) : [];
     }
   } catch (err) {
-    console.error('[DB] Error reading local posts:', err);
+    // Cloudflare Edge runtime fallback
   }
-  return [];
+  return Array.isArray(staticPosts) ? (staticPosts as any[]).filter((p: any) => !p.slug?.startsWith('__')) : [];
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms = 4000): Promise<T> {
@@ -219,18 +223,18 @@ export async function deletePostBySlug(slug: string): Promise<boolean> {
 
 export function getAuthor(): any {
   try {
-    if (fs.existsSync(AUTHOR_PATH)) {
+    if (AUTHOR_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(AUTHOR_PATH)) {
       return JSON.parse(fs.readFileSync(AUTHOR_PATH, 'utf-8'));
     }
   } catch (err) {
-    console.error('[DB] Error reading author:', err);
+    // Cloudflare Edge runtime fallback
   }
-  return null;
+  return staticAuthor;
 }
 
 export function updateAuthorAvatar(avatarDataUrl: string): boolean {
   try {
-    if (fs.existsSync(AUTHOR_PATH)) {
+    if (AUTHOR_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(AUTHOR_PATH)) {
       const data = JSON.parse(fs.readFileSync(AUTHOR_PATH, 'utf-8'));
       data.avatar = avatarDataUrl;
       fs.writeFileSync(AUTHOR_PATH, JSON.stringify(data, null, 2), 'utf-8');
@@ -252,15 +256,15 @@ const DEFAULT_CATEGORIES: Category[] = [
 
 export function getLocalCategories(): Category[] {
   try {
-    if (fs.existsSync(CATEGORIES_PATH)) {
+    if (CATEGORIES_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(CATEGORIES_PATH)) {
       const data = fs.readFileSync(CATEGORIES_PATH, 'utf-8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (err) {
-    console.error('[DB] Error reading local categories:', err);
+    // Cloudflare Edge runtime fallback
   }
-  return DEFAULT_CATEGORIES;
+  return Array.isArray(staticCategories) && staticCategories.length > 0 ? (staticCategories as Category[]) : DEFAULT_CATEGORIES;
 }
 
 export async function getCategoriesAsync(): Promise<Category[]> {

@@ -42,7 +42,15 @@ export async function syncPostsToGitHub(posts: any[]): Promise<boolean> {
 
     // 2. Encode updated JSON to base64 UTF-8
     const jsonStr = JSON.stringify(posts, null, 2);
-    const base64Content = Buffer.from(jsonStr, 'utf-8').toString('base64');
+    let base64Content: string;
+    if (typeof Buffer !== 'undefined') {
+      base64Content = Buffer.from(jsonStr, 'utf-8').toString('base64');
+    } else {
+      const bytes = new TextEncoder().encode(jsonStr);
+      let binary = '';
+      for (let i = 0; i < bytes.byteLength; i++) { binary += String.fromCharCode(bytes[i]); }
+      base64Content = btoa(binary);
+    }
 
     // 3. Commit update
     const putRes = await fetch(url, {

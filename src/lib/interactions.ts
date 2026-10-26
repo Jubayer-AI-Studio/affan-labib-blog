@@ -5,8 +5,10 @@
 import fs from 'fs';
 import path from 'path';
 import { supabase, isSupabaseConfigured } from './supabase.ts';
+import staticInteractions from '../data/interactions.json';
 
-const INTERACTIONS_PATH = path.resolve(process.cwd(), 'src/data/interactions.json');
+const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '';
+const INTERACTIONS_PATH = cwd && path?.resolve ? path.resolve(cwd, 'src/data/interactions.json') : '';
 const CLOUD_STORE_SLUG = '__interactions_store__';
 
 export interface ArticleStat {
@@ -27,15 +29,15 @@ export function toBnDigits(n: number | string): string {
 
 function loadLocalStore(): StatsMap {
   try {
-    if (fs.existsSync(INTERACTIONS_PATH)) {
+    if (INTERACTIONS_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(INTERACTIONS_PATH)) {
       const data = fs.readFileSync(INTERACTIONS_PATH, 'utf-8');
       const parsed = JSON.parse(data);
       return parsed.stats || parsed || {};
     }
   } catch (err) {
-    console.error('[Interactions] Error reading local interactions:', err);
+    // Cloudflare Edge runtime fallback
   }
-  return {};
+  return (staticInteractions as any)?.stats || {};
 }
 
 function saveLocalStore(stats: StatsMap): void {

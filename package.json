@@ -10,6 +10,7 @@
     "preview": "astro preview"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
     "@astrojs/tailwind": "^5.1.5",
     "@astrojs/vercel": "^8.2.11",
     "@supabase/supabase-js": "^2.118.0",
