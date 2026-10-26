@@ -2,13 +2,30 @@
 // Universal Cloud Interactions Engine (Views & Likes Only)
 // Direct Supabase Cloud Sync with In-Memory and Local Resilience
 
-import fs from 'fs';
-import path from 'path';
 import { supabase, isSupabaseConfigured } from './supabase.ts';
 import staticInteractions from '../data/interactions.json';
 
-const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function' ? process.cwd() : '';
-const INTERACTIONS_PATH = cwd && path?.resolve ? path.resolve(cwd, 'src/data/interactions.json') : '';
+let _fs: any = null;
+function getFs(): any {
+  if (typeof process === 'undefined' || (process.env && process.env.CF_PAGES)) return null;
+  if (_fs) return _fs;
+  try {
+    const r = (globalThis as any).require;
+    if (typeof r === 'function') _fs = r('fs');
+  } catch {}
+  return _fs;
+}
+
+function getLocalPath(rel: string): string {
+  try {
+    if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
+      const r = (globalThis as any).require;
+      const p = typeof r === 'function' ? r('path') : null;
+      if (p && p.resolve) return p.resolve(process.cwd(), rel);
+    }
+  } catch {}
+  return '';
+}
 const CLOUD_STORE_SLUG = '__interactions_store__';
 
 export interface ArticleStat {
@@ -29,8 +46,9 @@ export function toBnDigits(n: number | string): string {
 
 function loadLocalStore(): StatsMap {
   try {
-    if (INTERACTIONS_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(INTERACTIONS_PATH)) {
-      const data = fs.readFileSync(INTERACTIONS_PATH, 'utf-8');
+    const fs = getFs(); const p = getLocalPath('src/data/interactions.json');
+    if (fs && p && fs.existsSync(p)) {
+      const data = fs.readFileSync(p, 'utf-8');
       const parsed = JSON.parse(data);
       return parsed.stats || parsed || {};
     }
@@ -42,7 +60,7 @@ function loadLocalStore(): StatsMap {
 
 function saveLocalStore(stats: StatsMap): void {
   try {
-    fs.writeFileSync(INTERACTIONS_PATH, JSON.stringify({ stats }, null, 2), 'utf-8');
+    const fs = getFs(); const p = getLocalPath('src/data/interactions.json'); if (fs && p) { fs.writeFileSync(p, JSON.stringify({ stats }, null, 2), 'utf-8'); }
   } catch {
     // In serverless, filesystem is read-only which is expected
   }

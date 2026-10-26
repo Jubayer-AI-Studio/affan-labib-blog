@@ -1,4 +1,8 @@
-name = "affan-labib-blog"
+name = "affan-labib"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "79409cf348274d4fa835408144e905a8"

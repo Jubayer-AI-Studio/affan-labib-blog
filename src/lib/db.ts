@@ -1,8 +1,6 @@
 // src/lib/db.ts
 // Universal Cloud Database Engine with Supabase & GitHub Sync
 
-import fs from 'fs';
-import path from 'path';
 import { supabase, isSupabaseConfigured } from './supabase.ts';
 import { syncPostsToGitHub } from './githubSync.ts';
 import staticPosts from '../data/posts.json';
@@ -10,10 +8,27 @@ import staticAuthor from '../data/author.json';
 import staticBookshelf from '../data/bookshelf.json';
 import staticCategories from '../data/categories.json';
 
-const POSTS_PATH = path.resolve(process.cwd(), 'src/data/posts.json');
-const AUTHOR_PATH = path.resolve(process.cwd(), 'src/data/author.json');
-const BOOKSHELF_PATH = path.resolve(process.cwd(), 'src/data/bookshelf.json');
-const CATEGORIES_PATH = path.resolve(process.cwd(), 'src/data/categories.json');
+let _fs: any = null;
+function getFs(): any {
+  if (typeof process === 'undefined' || (process.env && process.env.CF_PAGES)) return null;
+  if (_fs) return _fs;
+  try {
+    const r = (globalThis as any).require;
+    if (typeof r === 'function') _fs = r('fs');
+  } catch {}
+  return _fs;
+}
+
+function getLocalPath(rel: string): string {
+  try {
+    if (typeof process !== 'undefined' && typeof process.cwd === 'function') {
+      const r = (globalThis as any).require;
+      const p = typeof r === 'function' ? r('path') : null;
+      if (p && p.resolve) return p.resolve(process.cwd(), rel);
+    }
+  } catch {}
+  return '';
+}
 
 export interface Category {
   id: string;
@@ -44,8 +59,9 @@ const CACHE_TTL_MS = 60 * 1000;
 
 export function getLocalPosts(): Post[] {
   try {
-    if (POSTS_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(POSTS_PATH)) {
-      const data = fs.readFileSync(POSTS_PATH, 'utf-8');
+    const fs = getFs(); const p = getLocalPath('src/data/posts.json');
+    if (fs && p && fs.existsSync(p)) {
+      const data = fs.readFileSync(p, 'utf-8');
       const list = JSON.parse(data);
       return Array.isArray(list) ? list.filter((p: any) => !p.slug?.startsWith('__')) : [];
     }
@@ -223,8 +239,9 @@ export async function deletePostBySlug(slug: string): Promise<boolean> {
 
 export function getAuthor(): any {
   try {
-    if (AUTHOR_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(AUTHOR_PATH)) {
-      return JSON.parse(fs.readFileSync(AUTHOR_PATH, 'utf-8'));
+    const fs = getFs(); const p = getLocalPath('src/data/author.json');
+    if (fs && p && fs.existsSync(p)) {
+      return JSON.parse(fs.readFileSync(p, 'utf-8'));
     }
   } catch (err) {
     // Cloudflare Edge runtime fallback
@@ -234,10 +251,11 @@ export function getAuthor(): any {
 
 export function updateAuthorAvatar(avatarDataUrl: string): boolean {
   try {
-    if (AUTHOR_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(AUTHOR_PATH)) {
-      const data = JSON.parse(fs.readFileSync(AUTHOR_PATH, 'utf-8'));
+    const fs = getFs(); const p = getLocalPath('src/data/author.json');
+    if (fs && p && fs.existsSync(p)) {
+      const data = JSON.parse(fs.readFileSync(p, 'utf-8'));
       data.avatar = avatarDataUrl;
-      fs.writeFileSync(AUTHOR_PATH, JSON.stringify(data, null, 2), 'utf-8');
+      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf-8');
       return true;
     }
   } catch (err) {
@@ -256,8 +274,9 @@ const DEFAULT_CATEGORIES: Category[] = [
 
 export function getLocalCategories(): Category[] {
   try {
-    if (CATEGORIES_PATH && typeof fs !== 'undefined' && fs?.existsSync && fs.existsSync(CATEGORIES_PATH)) {
-      const data = fs.readFileSync(CATEGORIES_PATH, 'utf-8');
+    const fs = getFs(); const p = getLocalPath('src/data/categories.json');
+    if (fs && p && fs.existsSync(p)) {
+      const data = fs.readFileSync(p, 'utf-8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
