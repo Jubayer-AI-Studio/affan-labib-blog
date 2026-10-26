@@ -8,3 +8,5 @@ Thumbs.db
 .vercel
 .env*
 scratch/
+
+!.env.example
