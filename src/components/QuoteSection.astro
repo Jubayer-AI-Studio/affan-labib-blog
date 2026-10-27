@@ -1,74 +1,166 @@
 ---
 // src/components/QuoteSection.astro
+// কথা অমৃত - Elite Literary Quote Carousel (UI/UX Pro Max)
 import quotes from '../data/quotes.json';
+
+const initialQuote = quotes[0] || {
+  quote: "হয় মন্ত্রসাধন না হয় জীবনপতন",
+  author: "মুহাম্মদ ইসহাক ফরিদী রহ.",
+  category: "সংকল্প ও সাধনা"
+};
 ---
 
-<section class="mt-14 mb-16 relative">
-  <div class="relative overflow-hidden rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-8 sm:p-12 shadow-sm text-center">
-    <!-- Top Action Bar -->
-    <div class="flex items-center justify-between gap-4 mb-6 text-xs font-sans text-paper-muted dark:text-night-muted">
-      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 dark:bg-amber-400/10 text-amber-900 dark:text-amber-200 border border-amber-500/20 font-medium">
-        <span>✨</span>
-        <span>সাহিত্যিক বাণী</span>
-      </span>
+<section
+  id="kotha-omrito-section"
+  class="mt-16 mb-20 relative group max-w-4xl mx-auto px-2 sm:px-0"
+  aria-label="কথা অমৃত"
+>
+  <!-- Ambient Atmospheric Backlight Glow -->
+  <div
+    class="absolute -inset-2 rounded-[2.5rem] bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-orange-500/20 dark:from-amber-400/15 dark:via-orange-500/10 dark:to-rose-500/15 blur-2xl opacity-50 group-hover:opacity-80 transition-all duration-700 pointer-events-none"
+  ></div>
 
-      <div class="flex items-center gap-3">
-        <!-- Like / Heart Button -->
+  <!-- Main Quote Showcase Card -->
+  <div
+    id="quote-card-container"
+    class="relative overflow-hidden rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-6 sm:p-10 md:p-12 shadow-sm hover:shadow-xl transition-all duration-500 select-none"
+  >
+    <!-- Subtle Top Edge Light Reflection -->
+    <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 dark:via-night-accent/40 to-transparent"></div>
+
+    <!-- Header Navigation & Meta Toolbar -->
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-paper-border/60 dark:border-night-border/60">
+      <!-- Title Badge -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-xs font-sans font-semibold tracking-wide shadow-2xs">
+        <span class="text-amber-500 dark:text-amber-400 animate-pulse">✨</span>
+        <span class="tracking-normal">কথা অমৃত</span>
+      </div>
+
+      <!-- Center Category Badge -->
+      <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-border/40 dark:bg-night-border/40 text-[11px] font-sans font-medium text-paper-muted dark:text-night-muted">
+        <span class="w-1.5 h-1.5 rounded-full bg-paper-accent/60 dark:bg-night-accent/60"></span>
+        <span id="quote-category">{initialQuote.category}</span>
+      </div>
+
+      <!-- Action Tools (Copy, Counter, Nav) -->
+      <div class="flex items-center gap-2 sm:gap-3 text-xs font-sans">
+        <!-- Counter Badge -->
+        <div class="px-2.5 py-1 rounded-full border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted font-mono text-[11px]">
+          <span id="quote-current-idx">০১</span> / <span id="quote-total-idx">০৮</span>
+        </div>
+
+        <!-- Copy Quote Button -->
         <button
-          id="quote-like-btn"
+          id="copy-quote-btn"
           type="button"
-          class="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-paper-border dark:border-night-border hover:border-rose-400 dark:hover:border-rose-500 hover:text-rose-500 transition-colors cursor-pointer relative"
-          title="বাণীটি পছন্দ হয়েছে"
+          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:text-paper-accent dark:hover:text-night-accent transition-all cursor-pointer bg-paper-surface/40 dark:bg-night-surface/40 hover:scale-105 active:scale-95 text-paper-muted dark:text-night-muted"
+          title="বাণীটি কপি করুন"
         >
-          <span>❤️</span>
-          <span id="heart-count">৪২</span>
-          <span id="heart-burst" class="absolute left-1/2 -top-2 pointer-events-none opacity-0 transition-all duration-500 text-rose-500">❤️</span>
+          <span id="copy-icon">📋</span>
+          <span id="copy-text" class="hidden sm:inline text-[11px] font-medium">কপি</span>
         </button>
 
-        <!-- Refresh Quote Button -->
+        <!-- Previous Button -->
+        <button
+          id="prev-quote-btn"
+          type="button"
+          class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:bg-paper-accent/10 dark:hover:bg-night-accent/15 text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent transition-all flex items-center justify-center cursor-pointer hover:scale-105 active:scale-90"
+          title="পূর্ববর্তী বাণী"
+          aria-label="পূর্ববর্তী বাণী"
+        >
+          <span class="text-xs">❮</span>
+        </button>
+
+        <!-- Next / Refresh Button -->
         <button
           id="next-quote-btn"
           type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:text-paper-accent dark:hover:text-night-accent transition-colors cursor-pointer"
+          class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:bg-paper-accent/10 dark:hover:bg-night-accent/15 text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent transition-all flex items-center justify-center cursor-pointer hover:scale-105 active:scale-90"
           title="পরবর্তী বাণী"
+          aria-label="পরবর্তী বাণী"
         >
-          <span id="refresh-icon" class="transition-transform duration-500">🔄</span>
-          <span class="hidden sm:inline">বাণী বদলান</span>
+          <span class="text-xs">❯</span>
         </button>
       </div>
     </div>
 
-    <!-- Quote Body -->
-    <div class="space-y-4 my-4">
-      <span class="text-4xl sm:text-5xl font-serif text-paper-accent/30 dark:text-night-accent/30 leading-none block select-none">
+    <!-- Main Quote Area -->
+    <div class="relative py-8 sm:py-12 text-center min-h-[180px] sm:min-h-[220px] flex flex-col justify-center items-center">
+      <!-- Decorative Big Quotation Watermark -->
+      <span
+        class="absolute -top-2 sm:top-2 left-1/2 -translate-x-1/2 text-7xl sm:text-8xl md:text-9xl font-serif text-paper-accent/10 dark:text-night-accent/10 select-none pointer-events-none leading-none -z-0 transition-opacity duration-300"
+      >
         ❝
       </span>
-      <blockquote
-        id="quote-text"
-        class="text-lg sm:text-xl md:text-2xl font-serif font-medium text-paper-text dark:text-night-text leading-relaxed max-w-2xl mx-auto italic transition-all duration-300"
-      >
-        "{quotes[0]}"
-      </blockquote>
 
-      <!-- Progress Line -->
-      <div class="w-24 h-1 bg-paper-border/60 dark:bg-night-border/60 rounded-full mx-auto mt-4 overflow-hidden">
-        <div id="quote-progress" class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-teal-500 w-0 transition-all duration-100 ease-linear rounded-full"></div>
+      <!-- Animated Quote Content Container -->
+      <div
+        id="quote-content-wrapper"
+        class="relative z-10 max-w-2xl mx-auto px-4 transition-all duration-300 transform opacity-100 translate-y-0"
+      >
+        <blockquote
+          id="quote-text"
+          class="text-xl sm:text-2xl md:text-3xl font-serif font-semibold text-paper-text dark:text-night-text leading-relaxed tracking-normal italic"
+        >
+          "{initialQuote.quote}"
+        </blockquote>
+
+        <!-- Speaker / Author Section -->
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <div class="w-8 sm:w-12 h-px bg-gradient-to-r from-transparent to-paper-accent/40 dark:to-night-accent/40"></div>
+
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-paper-accent/5 dark:bg-night-accent/10 border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs">
+            <span class="text-xs text-paper-accent dark:text-night-accent">✒️</span>
+            <cite
+              id="quote-author"
+              class="text-sm sm:text-base font-sans font-bold text-paper-accent dark:text-night-accent not-italic tracking-wide"
+            >
+              {initialQuote.author}
+            </cite>
+          </div>
+
+          <div class="w-8 sm:w-12 h-px bg-gradient-to-l from-transparent to-paper-accent/40 dark:to-night-accent/40"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Author Citation -->
-    <div class="pt-4 flex items-center justify-center gap-3">
-      <div class="w-8 h-0.5 bg-paper-accent/40 dark:bg-night-accent/40 rounded-full"></div>
-      <div class="flex items-center gap-2">
-        <img src="/images/affan-labib.jpg" alt="আফফান লাবীব" class="author-avatar-img w-6 h-6 rounded-full object-cover ring-1 ring-paper-accent/40 shadow-xs" />
-        <cite class="text-sm font-sans font-bold text-paper-accent dark:text-night-accent not-italic">
-          — <span class="author-name-text">আফফান লাবীব</span>
-        </cite>
-        <span class="text-xs text-paper-muted dark:text-night-muted font-sans font-normal">
-          (<span class="author-edu-text">তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ</span>)
+    <!-- Bottom Controls & Interactive Dot Pagination -->
+    <div class="pt-4 border-t border-paper-border/50 dark:border-night-border/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <!-- Progress Bar with Status Tooltip -->
+      <div class="w-full sm:w-48 flex items-center gap-2">
+        <span class="text-[10px] text-paper-muted dark:text-night-muted font-sans font-medium whitespace-nowrap">
+          অটো-স্লাইড:
         </span>
+        <div class="flex-1 h-1.5 bg-paper-border/60 dark:bg-night-border/60 rounded-full overflow-hidden">
+          <div
+            id="quote-progress"
+            class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-amber-600 rounded-full w-0 transition-all duration-100 ease-linear"
+          ></div>
+        </div>
       </div>
-      <div class="w-8 h-0.5 bg-paper-accent/40 dark:bg-night-accent/40 rounded-full"></div>
+
+      <!-- 8 Clickable Dots Pagination -->
+      <div id="quote-dots-container" class="flex items-center gap-1.5">
+        {quotes.map((_, i) => (
+          <button
+            type="button"
+            class={`quote-dot-btn h-2 rounded-full transition-all duration-300 cursor-pointer ${
+              i === 0
+                ? 'w-6 bg-paper-accent dark:bg-night-accent'
+                : 'w-2 bg-paper-border dark:bg-night-border hover:bg-paper-accent/50 dark:hover:bg-night-accent/50'
+            }`}
+            data-index={i}
+            aria-label={`বাণী ${i + 1}`}
+            title={`বাণী ${i + 1}`}
+          />
+        ))}
+      </div>
+
+      <!-- Quick Hint -->
+      <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-1">
+        <span>💡</span>
+        <span>কার্ডে মাউস রাখলে থামবে</span>
+      </div>
     </div>
   </div>
 </section>
@@ -76,67 +168,176 @@ import quotes from '../data/quotes.json';
 <script is:inline define:vars={{ quotes }}>
   (() => {
     let currentIndex = 0;
-    const quoteEl = document.getElementById('quote-text');
-    const nextBtn = document.getElementById('next-quote-btn');
-    const refreshIcon = document.getElementById('refresh-icon');
+    let isPaused = false;
+    const DURATION = 8000; // 8 seconds per quote
+    let startTime = Date.now();
+    let animationFrameId = null;
+
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    function toBn(num) {
+      const s = (num < 10 ? '0' : '') + num;
+      return s.replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+    }
+
+    // DOM Elements
+    const wrapper = document.getElementById('quote-content-wrapper');
+    const quoteText = document.getElementById('quote-text');
+    const quoteAuthor = document.getElementById('quote-author');
+    const quoteCategory = document.getElementById('quote-category');
+    const currentIdxEl = document.getElementById('quote-current-idx');
+    const totalIdxEl = document.getElementById('quote-total-idx');
     const progressBar = document.getElementById('quote-progress');
-    const likeBtn = document.getElementById('quote-like-btn');
-    const heartCountEl = document.getElementById('heart-count');
-    const heartBurstEl = document.getElementById('heart-burst');
+    const container = document.getElementById('quote-card-container');
+    const prevBtn = document.getElementById('prev-quote-btn');
+    const nextBtn = document.getElementById('next-quote-btn');
+    const copyBtn = document.getElementById('copy-quote-btn');
+    const copyText = document.getElementById('copy-text');
+    const copyIcon = document.getElementById('copy-icon');
+    const dotButtons = document.querySelectorAll('.quote-dot-btn');
 
-    let heartCount = parseInt(localStorage.getItem('kherokhata_quote_hearts') || '42', 10);
-    if (heartCountEl) heartCountEl.textContent = heartCount.toLocaleString('bn-BD');
+    if (totalIdxEl) {
+      totalIdxEl.textContent = toBn(quotes.length);
+    }
 
-    likeBtn?.addEventListener('click', () => {
-      heartCount += 1;
-      localStorage.setItem('kherokhata_quote_hearts', heartCount.toString());
-      if (heartCountEl) heartCountEl.textContent = heartCount.toLocaleString('bn-BD');
+    function renderQuote(index, direction = 'next') {
+      if (!wrapper || !quoteText || !quoteAuthor) return;
 
-      if (heartBurstEl) {
-        heartBurstEl.style.opacity = '1';
-        heartBurstEl.style.transform = 'translate(-50%, -18px) scale(1.3)';
+      currentIndex = index;
+      startTime = Date.now();
+
+      // Exit animation
+      wrapper.style.opacity = '0';
+      wrapper.style.transform = direction === 'next' ? 'translateY(10px) scale(0.98)' : 'translateY(-10px) scale(0.98)';
+
+      setTimeout(() => {
+        const item = quotes[currentIndex];
+        quoteText.textContent = `"${item.quote}"`;
+        quoteAuthor.textContent = item.author;
+        if (quoteCategory) quoteCategory.textContent = item.category || 'কথা অমৃত';
+        if (currentIdxEl) currentIdxEl.textContent = toBn(currentIndex + 1);
+
+        // Update Dots
+        dotButtons.forEach((btn, i) => {
+          if (i === currentIndex) {
+            btn.className = 'quote-dot-btn h-2 w-6 bg-paper-accent dark:bg-night-accent rounded-full transition-all duration-300 cursor-pointer';
+          } else {
+            btn.className = 'quote-dot-btn h-2 w-2 bg-paper-border dark:bg-night-border hover:bg-paper-accent/50 dark:hover:bg-night-accent/50 rounded-full transition-all duration-300 cursor-pointer';
+          }
+        });
+
+        // Entrance animation
+        wrapper.style.opacity = '1';
+        wrapper.style.transform = 'translateY(0) scale(1)';
+      }, 220);
+    }
+
+    function nextQuote() {
+      const nextIdx = (currentIndex + 1) % quotes.length;
+      renderQuote(nextIdx, 'next');
+    }
+
+    function prevQuote() {
+      const prevIdx = (currentIndex - 1 + quotes.length) % quotes.length;
+      renderQuote(prevIdx, 'prev');
+    }
+
+    // Auto-rotation with pause on hover
+    function tick() {
+      if (!isPaused) {
+        const elapsed = Date.now() - startTime;
+        const pct = Math.min(100, (elapsed / DURATION) * 100);
+        if (progressBar) {
+          progressBar.style.width = pct + '%';
+        }
+        if (pct >= 100) {
+          nextQuote();
+        }
+      }
+      animationFrameId = requestAnimationFrame(tick);
+    }
+
+    // Hover & touch pause events
+    container?.addEventListener('mouseenter', () => { isPaused = true; });
+    container?.addEventListener('mouseleave', () => {
+      isPaused = false;
+      startTime = Date.now() - (parseFloat(progressBar?.style.width || '0') / 100) * DURATION;
+    });
+
+    // Touch Swipe Support for Mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    container?.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      isPaused = true;
+    }, { passive: true });
+
+    container?.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      isPaused = false;
+      startTime = Date.now();
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff < 0) {
+          nextQuote(); // Swipe left
+        } else {
+          prevQuote(); // Swipe right
+        }
+      }
+    }, { passive: true });
+
+    // Buttons Listeners
+    nextBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nextQuote();
+    });
+
+    prevBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      prevQuote();
+    });
+
+    // Dot navigation
+    dotButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetIdx = parseInt(btn.getAttribute('data-index') || '0', 10);
+        if (targetIdx !== currentIndex) {
+          renderQuote(targetIdx, targetIdx > currentIndex ? 'next' : 'prev');
+        }
+      });
+    });
+
+    // Copy Quote to Clipboard
+    copyBtn?.addEventListener('click', async () => {
+      const item = quotes[currentIndex];
+      const textToCopy = `"${item.quote}"\n— ${item.author}\n(লাবীবের খেরোখাতা - কথা অমৃত)`;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        if (copyText) copyText.textContent = 'কপি হয়েছে!';
+        if (copyIcon) copyIcon.textContent = '✅';
+        copyBtn.classList.add('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+
         setTimeout(() => {
-          heartBurstEl.style.opacity = '0';
-          heartBurstEl.style.transform = 'translate(-50%, 0) scale(1)';
-        }, 600);
+          if (copyText) copyText.textContent = 'কপি';
+          if (copyIcon) copyIcon.textContent = '📋';
+          copyBtn.classList.remove('border-emerald-500', 'text-emerald-600', 'dark:text-emerald-400');
+        }, 2000);
+      } catch (err) {
+        console.warn('Clipboard write failed:', err);
       }
     });
 
-    const DURATION = 10000;
-    let startTime = Date.now();
-
-    function updateProgress() {
-      if (!progressBar) return;
-      const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, (elapsed / DURATION) * 100);
-      progressBar.style.width = pct + '%';
-      if (pct >= 100) {
-        switchQuote();
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      const rect = container?.getBoundingClientRect();
+      const isInViewport = rect && rect.top < window.innerHeight && rect.bottom > 0;
+      if (isInViewport) {
+        if (e.key === 'ArrowRight') nextQuote();
+        if (e.key === 'ArrowLeft') prevQuote();
       }
-    }
+    });
 
-    setInterval(updateProgress, 100);
-
-    function switchQuote() {
-      if (!quoteEl) return;
-      startTime = Date.now();
-
-      if (refreshIcon) {
-        refreshIcon.style.transform = 'rotate(360deg)';
-        setTimeout(() => { refreshIcon.style.transform = 'rotate(0deg)'; }, 500);
-      }
-
-      quoteEl.style.opacity = '0';
-      quoteEl.style.transform = 'translateY(8px)';
-
-      setTimeout(() => {
-        currentIndex = (currentIndex + 1) % quotes.length;
-        quoteEl.innerText = `"${quotes[currentIndex]}"`;
-        quoteEl.style.opacity = '1';
-        quoteEl.style.transform = 'translateY(0)';
-      }, 250);
-    }
-
-    nextBtn?.addEventListener('click', switchQuote);
+    // Start rotation
+    animationFrameId = requestAnimationFrame(tick);
   })();
 </script>
