@@ -3,20 +3,25 @@
 import Layout from '../layouts/Layout.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
 import { getAllPostsAsync, CATEGORY_LABELS_MAP } from '../lib/db';
-import { getArticleStats, toBnDigits } from '../lib/interactions';
+import { getArticleStatsAndComments, toBnDigits } from '../lib/interactions';
 
 export const prerender = false;
 
 // Direct Dynamic Response (prevents stale CDN caching of views and likes)
 Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
 
-const { slug } = Astro.params;
+const rawSlug = Astro.params.slug || '';
+let decodedSlug = rawSlug;
+try {
+  decodedSlug = decodeURIComponent(rawSlug);
+} catch {}
+
 const allPosts = await getAllPostsAsync();
-const post = allPosts.find((p) => p.slug === slug);
+const post = allPosts.find((p) => p.slug === rawSlug || p.slug === decodedSlug || decodeURIComponent(p.slug) === decodedSlug);
 const isFallback = !post;
 
 const displayPost = post || {
-  slug: slug || '',
+  slug: decodedSlug || rawSlug,
   title: 'লেখা লোড হচ্ছে...',
   category: 'chinta',
   description: 'লেখা লোড হচ্ছে...',
@@ -28,10 +33,11 @@ const displayPost = post || {
   footnotes: []
 };
 
-// Server-side pre-fetch of live views and likes for instant 0ms flicker-free display
-const articleStats = await getArticleStats(displayPost.slug);
-const initialViewsBn = toBnDigits(articleStats.views || 0);
-const initialLikesBn = toBnDigits(articleStats.likes || 0);
+// Server-side pre-fetch of live views, likes and comments for instant 0ms flicker-free display
+const { views: initialViews, likes: initialLikes, comments: initialComments } = await getArticleStatsAndComments(displayPost.slug);
+const initialViewsBn = toBnDigits(initialViews || 0);
+const initialLikesBn = toBnDigits(initialLikes || 0);
+const initialCommentsCountBn = toBnDigits(initialComments.length || 0);
 
 const categoryName = CATEGORY_LABELS_MAP[displayPost.category] || displayPost.category;
 const readTime = Math.max(1, Math.ceil((displayPost.wordCount || 200) / 100));
@@ -263,7 +269,7 @@ const renderedContent = renderBody(displayPost.body);
         title="ভালো লাগলে ভালোবাসা দিন"
       >
         <span id="main-like-icon" class="text-xl transition-transform duration-200 group-hover:scale-125">🤍</span>
-        <span id="main-like-count" data-likes={articleStats.likes || 0} class="font-mono text-base font-bold">{initialLikesBn}</span>
+        <span id="main-like-count" data-likes={initialLikes || 0} class="font-mono text-base font-bold">{initialLikesBn}</span>
       </button>
     </div>
     <!-- Reader Comments (মন্তব্যঘর) Section -->
@@ -279,7 +285,7 @@ const renderedContent = renderBody(displayPost.body);
           </p>
         </div>
         <span id="comments-total-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent border border-paper-accent/20">
-          ০টি মন্তব্য
+          {initialCommentsCountBn}টি মন্তব্য
         </span>
       </div>
 
@@ -332,13 +338,40 @@ const renderedContent = renderBody(displayPost.body);
 
       <!-- Live Comments Stream Container -->
       <div id="comments-stream-container" class="space-y-4">
-        <div id="comments-loading" class="py-6 text-center text-xs font-sans text-paper-muted animate-pulse">
+        <div id="comments-loading" class="hidden py-6 text-center text-xs font-sans text-paper-muted animate-pulse">
           মন্তব্য লোড হচ্ছে...
         </div>
-        <div id="comments-empty" class="hidden py-8 text-center rounded-2xl border border-dashed border-paper-border/80 dark:border-night-border/80 text-sm font-serif text-paper-muted">
+        <div id="comments-empty" class={initialComments.length === 0 ? "py-8 text-center rounded-2xl border border-dashed border-paper-border/80 dark:border-night-border/80 text-sm font-serif text-paper-muted" : "hidden py-8 text-center rounded-2xl border border-dashed border-paper-border/80 dark:border-night-border/80 text-sm font-serif text-paper-muted"}>
           🍃 এখনো কোনো মন্তব্য আসেনি। লেখাটি সম্পর্কে প্রথম মন্তব্যটি আপনিই করুন!
         </div>
-        <div id="comments-list" class="space-y-4"></div>
+        <div id="comments-list" class="space-y-4">
+          {initialComments.map((c) => (
+            <div class={`p-4 sm:p-5 rounded-2xl border ${c.isAuthor ? 'border-amber-500/40 dark:border-amber-400/40 bg-amber-500/5 dark:bg-amber-400/5' : 'border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80'} backdrop-blur-xl transition-all shadow-2xs space-y-2`}>
+              <div class="flex items-center justify-between gap-2 text-xs font-sans">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">{c.authorName}</span>
+                  {c.isAuthor && (
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">✍️ লেখক</span>
+                  )}
+                </div>
+              </div>
+              <p class="text-sm sm:text-base font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed whitespace-pre-wrap">{c.content}</p>
+              {c.replies && c.replies.length > 0 && (
+                <div class="mt-3 pl-4 sm:pl-6 border-l-2 border-amber-500/30 space-y-3">
+                  {c.replies.map((r) => (
+                    <div class="p-3 sm:p-4 rounded-xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/25 space-y-1.5">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold font-serif text-paper-text dark:text-night-text text-xs">{r.authorName}</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-500/25 text-amber-800 dark:text-amber-200">✍️ লেখক</span>
+                      </div>
+                      <p class="text-xs sm:text-sm font-serif text-paper-text/95 dark:text-night-text/95 leading-relaxed whitespace-pre-wrap">{r.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   </article>
@@ -356,7 +389,7 @@ const renderedContent = renderBody(displayPost.body);
       title="ভালো লাগলে ভালোবাসা দিন"
     >
       <span id="floating-like-icon" class="text-lg transition-transform duration-200 group-hover:scale-125">🤍</span>
-      <span id="floating-like-count" data-likes={articleStats.likes || 0} class="font-mono text-sm font-bold">{initialLikesBn}</span>
+      <span id="floating-like-count" data-likes={initialLikes || 0} class="font-mono text-sm font-bold">{initialLikesBn}</span>
     </button>
   </aside>
 

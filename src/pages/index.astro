@@ -5,7 +5,6 @@ import PostCard from '../components/PostCard.astro';
 import QuoteSection from '../components/QuoteSection.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
 import { getAllPostsAsync, getCategoriesAsync, getAuthorAsync } from '../lib/db';
-import bookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
@@ -183,134 +182,6 @@ function toBn(n: number) {
     </div>
   </section>
 
-  <!-- 3. Front-Page Bookshelf Showcase & Live Counters Card -->
-  <section id="home-bookshelf-section" class="mb-14 relative group">
-    <div class="p-6 sm:p-8 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs space-y-6">
-      <!-- Section Header with Counters -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-paper-border/60 dark:border-night-border/60">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 mb-1.5">
-            <span>📚</span>
-            <span>ব্যক্তিগত পাঠাগার ও বুকশেলফ</span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
-            বইয়ের পাতা ও ভাবনার তোশক
-          </h2>
-          <p class="text-xs sm:text-sm text-paper-muted dark:text-night-muted font-sans mt-0.5">
-            পড়া শেষ হওয়া বইয়ের তালিকা এবং পরবর্তীতে পড়ার অপেক্ষায় থাকা উইশলিস্ট
-          </p>
-        </div>
-
-        <!-- Live Interactive Counters -->
-        <div class="flex items-center gap-3">
-          <div class="px-4 py-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-center min-w-[110px]">
-            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">📖 পড়া শেষ বই</span>
-            <span id="home-read-count" class="text-xl sm:text-2xl font-bold font-mono text-amber-700 dark:text-amber-400">
-              {toBn(bookshelf.readBooks.length)}টি
-            </span>
-          </div>
-
-          <div class="px-4 py-2.5 rounded-2xl bg-paper-accent/10 dark:bg-night-accent/15 border border-paper-accent/25 text-center min-w-[110px]">
-            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">🎯 পড়ার উইশলিস্ট</span>
-            <span id="home-wish-count" class="text-xl sm:text-2xl font-bold font-mono text-paper-accent dark:text-night-accent">
-              {toBn(bookshelf.wishlistBooks.length)}টি
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preview Columns: Read vs Wishlist -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Col 1: Finished Books Preview -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
-            <span class="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-              <span>📖</span>
-              <span>সম্প্রতি পড়া শেষ হওয়া বই:</span>
-            </span>
-            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
-              সব দেখুন ({toBn(bookshelf.readBooks.length)}) →
-            </a>
-          </div>
-
-          <div id="home-read-books-list" class="space-y-2.5">
-            {bookshelf.readBooks.slice(0, 2).map((book) => (
-              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-amber-500/40 transition-colors">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
-                      {book.title}
-                    </h4>
-                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
-                      — {book.author} ({book.readYear})
-                    </p>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold shrink-0">
-                    ★ {book.rating}
-                  </span>
-                </div>
-                {book.review && (
-                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-amber-500/40">
-                    "{book.review}"
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <!-- Col 2: Wishlist Preview -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
-            <span class="flex items-center gap-1.5 text-paper-accent dark:text-night-accent">
-              <span>🎯</span>
-              <span>পড়ার অপেক্ষায় থাকা কিতাবমালা:</span>
-            </span>
-            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
-              সব দেখুন ({toBn(bookshelf.wishlistBooks.length)}) →
-            </a>
-          </div>
-
-          <div id="home-wish-books-list" class="space-y-2.5">
-            {bookshelf.wishlistBooks.slice(0, 2).map((wish) => (
-              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-paper-accent/40 transition-colors">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
-                      {wish.title}
-                    </h4>
-                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
-                      — {wish.author}
-                    </p>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-md bg-paper-accent/15 text-paper-accent dark:text-night-accent font-sans text-[10px] font-semibold shrink-0">
-                    {wish.priority} অগ্রাধিকার
-                  </span>
-                </div>
-                {wish.note && (
-                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-paper-accent/40">
-                    "{wish.note}"
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Button to Full Bookshelf -->
-      <div class="pt-2 text-center">
-        <a
-          href="/bookshelf"
-          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border hover:border-paper-accent text-paper-text dark:text-night-text font-sans text-xs sm:text-sm font-semibold hover:shadow-md transition-all cursor-pointer"
-        >
-          <span>📚 সম্পূর্ণ পাঠাগার ও দুই-রুম বুকশেলফে প্রবেশ করুন</span>
-          <span>↗</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
   <!-- 4. Category Filter & All Posts Grid -->
   <section id="categories" class="mt-14 mb-16 scroll-mt-24">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -357,6 +228,18 @@ function toBn(n: number) {
 
   <!-- 5. Interactive Literary Quote Carousel -->
   <QuoteSection />
+
+  <!-- 6. Discreet Author Studio Access Entry (Small Lock System Entry) -->
+  <div class="mt-14 mb-4 flex justify-center">
+    <a
+      href="/admin"
+      class="group inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/60 dark:bg-night-surface/60 hover:border-paper-accent/50 dark:hover:border-night-accent/50 text-xs font-serif text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text transition-all duration-300 shadow-2xs hover:shadow-sm"
+      title="লেখক স্টুডিও (লক সুরক্ষিত প্রবেশপথ)"
+    >
+      <span class="text-sm transition-transform group-hover:scale-110">🔒</span>
+      <span>লেখক স্টুডিও (লক সুরক্ষিত)</span>
+    </a>
+  </div>
 </Layout>
 
 <script is:inline>

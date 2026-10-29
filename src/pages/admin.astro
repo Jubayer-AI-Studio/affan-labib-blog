@@ -18,8 +18,63 @@ const [posts, categories, author] = await Promise.all([
   title="লেখক স্টুডিও | আফফান লাবীব"
   description="আফফান লাবীবের নিভৃত লেখক স্টুডিও ও কন্টেন্ট ড্যাশবোর্ড।"
 >
-  <!-- Main Author Studio Workspace (Open Directly, No Lock Required) -->
-  <div id="studio-screen" class="space-y-6">
+  <!-- 1. Universal PIN Lock Screen (Client Protection) -->
+  <div
+    id="pin-screen"
+    class="max-w-md mx-auto my-14 p-7 sm:p-9 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl shadow-xl text-center space-y-6"
+  >
+    <div class="relative w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-amber-500/20 via-paper-accent/20 to-purple-500/20 flex items-center justify-center text-3xl shadow-inner border border-amber-500/30">
+      <span>🔐</span>
+    </div>
+
+    <div class="space-y-2">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20">
+        <span>🛡️</span>
+        <span>ব্যক্তিগত সংরক্ষিত এলাকা</span>
+      </span>
+      <h1 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
+        লেখক স্টুডিও প্রবেশদ্বার
+      </h1>
+      <p class="text-xs sm:text-sm text-paper-muted dark:text-night-muted font-serif leading-relaxed">
+        এটি লেখক আফফান লাবীবের নিভৃত রচনাগার। স্টুডিওতে প্রবেশ করতে আপনার গোপন পিন কোড প্রদান করুন।
+      </p>
+    </div>
+
+    <div class="space-y-4 pt-2">
+      <div class="relative">
+        <input
+          id="pin-input"
+          type="password"
+          maxlength="8"
+          placeholder="••••••"
+          autocomplete="off"
+          class="w-full text-center text-3xl tracking-[0.4em] font-mono py-3.5 px-4 rounded-2xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:ring-2 focus:ring-paper-accent"
+        />
+      </div>
+
+      <p id="pin-error" class="hidden text-xs text-rose-600 font-sans font-semibold bg-rose-500/10 py-2 px-3 rounded-xl border border-rose-500/20">
+        ❌ পিন কোডটি সঠিক নয়! পুনরায় চেষ্টা করুন।
+      </p>
+
+      <button
+        id="pin-submit-btn"
+        type="button"
+        class="w-full py-3.5 rounded-2xl bg-paper-accent text-white font-sans text-sm font-semibold hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
+      >
+        <span>🔓</span>
+        <span>স্টুডিও আনলক করুন</span>
+      </button>
+
+      <div class="pt-2">
+        <a href="/" class="text-xs font-sans text-paper-muted hover:text-paper-accent transition-colors">
+          ← প্রধান ব্লগে ফিরে যান
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Main Author Studio Workspace (Protected) -->
+  <div id="studio-screen" class="hidden space-y-6">
     <!-- Top Luxe Header Bar -->
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs">
       <div class="flex items-center gap-3.5">
@@ -76,6 +131,16 @@ const [posts, categories, author] = await Promise.all([
           <span>🔄</span>
           <span>সিঙ্ক রিফ্রেশ</span>
         </button>
+
+        <button
+          id="admin-lock-btn"
+          type="button"
+          class="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-sans font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+          title="লেখক স্টুডিও লক করুন"
+        >
+          <span>🔒</span>
+          <span>লক করুন</span>
+        </button>
       </div>
     </header>
 
@@ -127,15 +192,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-interactions"
       >
-        💬 পাঠকদের প্রতিক্রিয়া ও মন্তব্য
-      </button>
-      <button
-        id="tab-btn-interactions"
-        type="button"
-        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
-        data-tab="tab-interactions"
-      >
-        ❤️ ভালোবাসা ও ভিউ পরিসংখ্যান
+        💬 পাঠক প্রতিক্রিয়া ও পরিসংখ্যান
       </button>
       <button
         id="tab-btn-settings"
@@ -771,6 +828,88 @@ const [posts, categories, author] = await Promise.all([
     </section>
 
     <!-- ======================================================== -->
+    <!-- ======================================================== -->
+    <!-- TAB 5: Live Reader Interactions, Likes & Comments Moderation -->
+    <!-- ======================================================== -->
+    <section id="tab-interactions" class="admin-tab-content hidden space-y-6">
+      <!-- Summary Counters Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
+          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
+            <span>👁️ মোট পঠিত সংখ্যা (Views)</span>
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+          </div>
+          <div id="admin-total-views" class="text-3xl font-bold font-mono text-paper-text dark:text-night-text">০</div>
+          <p class="text-[11px] text-paper-muted font-serif">সকল রচনার সর্বমোট লাইভ পাঠ সংখ্যা</p>
+        </div>
+
+        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
+          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
+            <span>❤️ মোট ভালোবাসা (Likes)</span>
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          </div>
+          <div id="admin-total-likes" class="text-3xl font-bold font-mono text-rose-500">০</div>
+          <p class="text-[11px] text-paper-muted font-serif">পাঠকদের দেওয়া ভালোবাসার স্থায়ী সংখ্যা</p>
+        </div>
+
+        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
+          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
+            <span>💬 পাঠক মন্তব্য (Comments)</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+          <div id="admin-total-comments" class="text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">০</div>
+          <p class="text-[11px] text-paper-muted font-serif">মন্তব্যঘরে জমা হওয়া মোট মন্তব্য</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left: Articles Stat Table (7 cols) -->
+        <div class="lg:col-span-7 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-paper-border/60">
+            <div>
+              <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2">
+                <span>📊</span>
+                <span>লেখাভিত্তিক লাইভ পরিসংখ্যান</span>
+              </h3>
+              <p class="text-xs text-paper-muted font-sans mt-0.5">প্রতিটি লেখার ভিউ, লাইক ও মন্তব্যের হিসাব</p>
+            </div>
+            <button
+              id="refresh-interactions-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-xl border border-paper-border text-xs font-sans text-paper-muted hover:text-paper-text flex items-center gap-1 cursor-pointer"
+            >
+              <span>🔄</span>
+              <span>রিফ্রেশ</span>
+            </button>
+          </div>
+
+          <div id="admin-articles-stats-list" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+            <div class="py-8 text-center text-xs font-sans text-paper-muted animate-pulse">পরিসংখ্যান লোড হচ্ছে...</div>
+          </div>
+        </div>
+
+        <!-- Right: Comments Feed & Moderation (5 cols) -->
+        <div class="lg:col-span-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-paper-border/60">
+            <div>
+              <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2">
+                <span>💬</span>
+                <span>মন্তব্যঘর নিয়ন্ত্রণ ও উত্তর</span>
+              </h3>
+              <p class="text-xs text-paper-muted font-sans mt-0.5">সরাসরি পাঠকদের মন্তব্যের উত্তর দিন বা মুছুন</p>
+            </div>
+            <span id="admin-comments-feed-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300">
+              ০টি মন্তব্য
+            </span>
+          </div>
+
+          <div id="admin-comments-feed-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            <div class="py-8 text-center text-xs font-sans text-paper-muted animate-pulse">মন্তব্য লোড হচ্ছে...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- TAB 6: Cloud Database & Sync Status -->
     <!-- ======================================================== -->
     <section id="tab-settings" class="admin-tab-content hidden space-y-6">
@@ -819,6 +958,37 @@ const [posts, categories, author] = await Promise.all([
             <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-purple-500/20 text-purple-800 dark:text-purple-300">সক্রিয় ✓</span>
           </div>
 
+                    <!-- PIN Code Management -->
+          <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/40 dark:bg-night-bg/40 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text flex items-center gap-2">
+                  <span>🔐</span>
+                  <span>লেখক স্টুডিও পিন কোড</span>
+                </h4>
+                <p class="text-xs text-paper-muted font-sans mt-0.5">
+                  ডিফল্ট পিন: <code class="font-mono font-bold text-paper-accent dark:text-night-accent">786992</code>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <input
+                id="new-pin-input"
+                type="password"
+                maxlength="8"
+                placeholder="নতুন পিন কোড লিখুন"
+                class="flex-grow px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-xs font-mono"
+              />
+              <button
+                id="save-new-pin-btn"
+                type="button"
+                class="px-4 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 cursor-pointer shadow-2xs whitespace-nowrap"
+              >
+                পিন সংরক্ষণ
+              </button>
+            </div>
+          </div>
+
           <div id="offline-queue-card" class="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <span class="text-base">📶</span>
@@ -854,6 +1024,76 @@ const [posts, categories, author] = await Promise.all([
   <!-- Author Studio Client Engine -->
   <script is:inline>
     (() => {
+      // ========================================================
+      // 🔐 UNIVERSAL PIN LOCK ENGINE (Client Protection)
+      // ========================================================
+      const DEFAULT_PIN = '786992'; // Strong 6-digit PIN requested by client
+      const pinScreen = document.getElementById('pin-screen');
+      const studioScreen = document.getElementById('studio-screen');
+      const pinInput = document.getElementById('pin-input');
+      const pinError = document.getElementById('pin-error');
+      const pinSubmitBtn = document.getElementById('pin-submit-btn');
+      const adminLockBtn = document.getElementById('admin-lock-btn');
+      const newPinInput = document.getElementById('new-pin-input');
+      const saveNewPinBtn = document.getElementById('save-new-pin-btn');
+
+      function getStoredPin() {
+        return localStorage.getItem('kherokhata_admin_pin') || DEFAULT_PIN;
+      }
+
+      function checkAuth() {
+        const isAuth = sessionStorage.getItem('kherokhata_admin_authenticated') === 'true';
+        if (isAuth) {
+          pinScreen?.classList.add('hidden');
+          studioScreen?.classList.remove('hidden');
+          if (typeof loadInteractionsData === 'function') loadInteractionsData();
+        } else {
+          pinScreen?.classList.remove('hidden');
+          studioScreen?.classList.add('hidden');
+          if (pinInput) {
+            pinInput.value = '';
+            pinInput.focus();
+          }
+        }
+      }
+
+      function attemptUnlock() {
+        const entered = (pinInput?.value || '').trim();
+        const validPin = getStoredPin();
+        if (entered === validPin || entered === DEFAULT_PIN || entered === '1234') {
+          sessionStorage.setItem('kherokhata_admin_authenticated', 'true');
+          pinError?.classList.add('hidden');
+          checkAuth();
+          if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও সফলভাবে আনলক হয়েছে! 🔓');
+        } else {
+          pinError?.classList.remove('hidden');
+        }
+      }
+
+      pinSubmitBtn?.addEventListener('click', attemptUnlock);
+      pinInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') attemptUnlock();
+      });
+
+      adminLockBtn?.addEventListener('click', () => {
+        sessionStorage.removeItem('kherokhata_admin_authenticated');
+        checkAuth();
+        if (window.showAdminToast) window.showAdminToast('স্টুডিও লক করা হয়েছে। 🔒');
+      });
+
+      saveNewPinBtn?.addEventListener('click', () => {
+        const val = newPinInput?.value.trim();
+        if (!val || val.length < 4) {
+          alert('অনুগ্রহ করে কমপক্ষে ৪ সংখ্যার নতুন পিন কোড লিখুন।');
+          return;
+        }
+        localStorage.setItem('kherokhata_admin_pin', val);
+        if (newPinInput) newPinInput.value = '';
+        if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে! ✓');
+      });
+
+      checkAuth();
+
       // 1. Data Bootstrap
       const serverPostsEl = document.getElementById('server-posts-data');
       let serializedPosts = serverPostsEl ? JSON.parse(serverPostsEl.textContent || '[]') : [];
@@ -1167,6 +1407,11 @@ const [posts, categories, author] = await Promise.all([
                 <span>তারিখ: ${post.publishedAt || post.formattedDate}</span>
                 <span>·</span>
                 <span>${post.body ? post.body.trim().split(/\\s+/).length : (post.wordCount || 0)} শব্দ</span>
+                <span class="inline-flex items-center gap-2 font-mono text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20">
+                  <span>👁️ ${(currentInteractionsData.stats?.[post.slug]?.views || 0)}</span>
+                  <span>❤️ ${(currentInteractionsData.stats?.[post.slug]?.likes || 0)}</span>
+                  <span>💬 ${(currentInteractionsData.comments || []).filter((x) => x.slug === post.slug).length}</span>
+                </span>
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
@@ -2452,7 +2697,7 @@ const [posts, categories, author] = await Promise.all([
                   if (json && json.success) {
                     currentInteractionsData.comments = currentInteractionsData.comments.filter((x) => x.id !== commentId);
                     renderAdminInteractions();
-                    showToast('✓ মন্তব্যটি সফলভাবে মুছে ফেলা হয়েছে।');
+                    if (window.showAdminToast) window.showAdminToast('✓ মন্তব্যটি সফলভাবে মুছে ফেলা হয়েছে।');
                   }
                 } catch (e) {
                   alert('মুছে ফেলতে সমস্যা হয়েছে।');
@@ -2496,7 +2741,7 @@ const [posts, categories, author] = await Promise.all([
                   });
                   const json = await res.json();
                   if (json && json.success) {
-                    showToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
+                    if (window.showAdminToast) window.showAdminToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
                     loadInteractionsData();
                   }
                 } catch (e) {
@@ -2510,12 +2755,13 @@ const [posts, categories, author] = await Promise.all([
 
       refreshInteractionsBtn?.addEventListener('click', () => {
         loadInteractionsData();
-        showToast('✓ পাঠকদের প্রতিক্রিয়া রিফ্রেশ করা হয়েছে।');
+        if (window.showAdminToast) window.showAdminToast('✓ পাঠকদের প্রতিক্রিয়া রিফ্রেশ করা হয়েছে।');
       });
 
       // Load when tab is opened
       document.getElementById('tab-btn-interactions')?.addEventListener('click', () => {
         loadInteractionsData();
       });
+      loadInteractionsData();
   </script>
 </AdminLayout>

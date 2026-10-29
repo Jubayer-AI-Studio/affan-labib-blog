@@ -1,5 +1,5 @@
 // public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v34 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v34';
+const CACHE_NAME = 'kherokhata-cache-v35';
 const PRECACHE_URLS = [
   '/',
   '/offline',

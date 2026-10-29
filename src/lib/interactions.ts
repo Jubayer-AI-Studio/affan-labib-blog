@@ -59,6 +59,22 @@ export function toBnDigits(n: number | string): string {
   return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
 }
 
+export function normalizeSlug(s: string): string {
+  if (!s) return '';
+  try {
+    return decodeURIComponent(s).trim();
+  } catch {
+    return s.trim();
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms = 4000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Interactions request timed out')), ms))
+  ]);
+}
+
 function normalizeStore(raw: any): InteractionsStore {
   if (!raw || typeof raw !== 'object') {
     return { stats: {}, comments: [] };
@@ -67,11 +83,36 @@ function normalizeStore(raw: any): InteractionsStore {
   let comments: CommentItem[] = [];
 
   if (raw.stats && typeof raw.stats === 'object') {
-    stats = raw.stats;
-    comments = Array.isArray(raw.comments) ? raw.comments : [];
+    // Normalize keys in stats
+    for (const [key, val] of Object.entries(raw.stats)) {
+      const normKey = normalizeSlug(key);
+      const s = val as any;
+      stats[normKey] = {
+        views: typeof s?.views === 'number' ? s.views : 0,
+        likes: typeof s?.likes === 'number' ? s.likes : 0
+      };
+    }
+    const rawComments = Array.isArray(raw.comments) ? raw.comments : [];
+    comments = rawComments.map((c: any) => ({
+      id: String(c.id || ''),
+      slug: normalizeSlug(c.slug || ''),
+      parentId: c.parentId ? String(c.parentId) : null,
+      authorName: String(c.authorName || 'মুগ্ধ পাঠক'),
+      content: String(c.content || ''),
+      createdAt: String(c.createdAt || new Date().toISOString()),
+      isAuthor: Boolean(c.isAuthor),
+      replies: []
+    }));
   } else {
     // Legacy flat stats map format
-    stats = raw;
+    for (const [key, val] of Object.entries(raw)) {
+      const normKey = normalizeSlug(key);
+      const s = val as any;
+      stats[normKey] = {
+        views: typeof s?.views === 'number' ? s.views : 0,
+        likes: typeof s?.likes === 'number' ? s.likes : 0
+      };
+    }
     comments = [];
   }
 
@@ -108,18 +149,21 @@ function saveLocalStore(store: InteractionsStore): void {
 async function fetchFromSupabase(): Promise<InteractionsStore | null> {
   if (!isSupabaseConfigured || !supabase) return null;
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('body')
-      .eq('slug', CLOUD_STORE_SLUG)
-      .maybeSingle();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('posts')
+        .select('body')
+        .eq('slug', CLOUD_STORE_SLUG)
+        .maybeSingle(),
+      3500
+    );
 
     if (!error && data && data.body) {
       const parsed = JSON.parse(data.body);
       return normalizeStore(parsed);
     }
-  } catch (err) {
-    console.warn('[Interactions] Supabase fetch warning:', err);
+  } catch (err: any) {
+    console.warn('[Interactions] Supabase fetch warning:', err.message);
   }
   return null;
 }
@@ -127,21 +171,24 @@ async function fetchFromSupabase(): Promise<InteractionsStore | null> {
 async function saveToSupabase(store: InteractionsStore): Promise<boolean> {
   if (!isSupabaseConfigured || !supabase) return false;
   try {
-    const { error } = await supabase.from('posts').upsert(
-      {
-        slug: CLOUD_STORE_SLUG,
-        title: 'System Cloud Interactions Store',
-        category: 'chinta',
-        description: 'Auto-synced reactions, views & comments',
-        published_at: '2026-01-01T00:00:00Z',
-        formatted_date: '১ জানুয়ারি, ২০২৬',
-        tags: [],
-        body: JSON.stringify(store),
-        word_count: 0,
-        footnotes: [],
-        updated_at: new Date().toISOString()
-      },
-      { onConflict: 'slug' }
+    const { error } = await withTimeout(
+      supabase.from('posts').upsert(
+        {
+          slug: CLOUD_STORE_SLUG,
+          title: 'System Cloud Interactions Store',
+          category: 'chinta',
+          description: 'Auto-synced reactions, views & comments',
+          published_at: '2026-01-01T00:00:00Z',
+          formatted_date: '১ জানুয়ারি, ২০২৬',
+          tags: [],
+          body: JSON.stringify(store),
+          word_count: 0,
+          footnotes: [],
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'slug' }
+      ),
+      4000
     );
     if (error) {
       console.error('[Interactions] Supabase upsert error:', error);
@@ -176,16 +223,18 @@ async function getStore(): Promise<InteractionsStore> {
   return inMemoryStore;
 }
 
-export async function getArticleStats(slug: string): Promise<ArticleStat> {
+export async function getArticleStats(rawSlug: string): Promise<ArticleStat> {
+  const slug = normalizeSlug(rawSlug);
   const store = await getStore();
   return store.stats[slug] || { views: 0, likes: 0 };
 }
 
-export async function getArticleStatsAndComments(slug: string): Promise<{
+export async function getArticleStatsAndComments(rawSlug: string): Promise<{
   views: number;
   likes: number;
   comments: CommentItem[];
 }> {
+  const slug = normalizeSlug(rawSlug);
   const store = await getStore();
   const stat = store.stats[slug] || { views: 0, likes: 0 };
   const allComments = (store.comments || []).filter((c) => c.slug === slug);
@@ -215,7 +264,8 @@ export async function getArticleStatsAndComments(slug: string): Promise<{
   };
 }
 
-export async function incrementView(slug: string): Promise<number> {
+export async function incrementView(rawSlug: string): Promise<number> {
+  const slug = normalizeSlug(rawSlug);
   const store = await getStore();
   if (!store.stats[slug]) {
     store.stats[slug] = { views: 0, likes: 0 };
@@ -226,12 +276,13 @@ export async function incrementView(slug: string): Promise<number> {
   inMemoryStore = store;
   lastCacheTime = Date.now();
   saveLocalStore(store);
-  await saveToSupabase(store);
+  saveToSupabase(store).catch(() => {});
 
   return newViews;
 }
 
-export async function toggleLike(slug: string, isLike: boolean): Promise<number> {
+export async function toggleLike(rawSlug: string, isLike: boolean): Promise<number> {
+  const slug = normalizeSlug(rawSlug);
   const store = await getStore();
   if (!store.stats[slug]) {
     store.stats[slug] = { views: 0, likes: 0 };
@@ -246,18 +297,19 @@ export async function toggleLike(slug: string, isLike: boolean): Promise<number>
   inMemoryStore = store;
   lastCacheTime = Date.now();
   saveLocalStore(store);
-  await saveToSupabase(store);
+  saveToSupabase(store).catch(() => {});
 
   return newLikes;
 }
 
 export async function addComment(
-  slug: string,
+  rawSlug: string,
   content: string,
   authorName?: string,
   isAuthor = false,
   parentId: string | null = null
 ): Promise<CommentItem> {
+  const slug = normalizeSlug(rawSlug);
   const store = await getStore();
   const id = `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const cleanName = (authorName || '').trim() || (isAuthor ? 'আফফান লাবীব (লেখক)' : 'মুগ্ধ পাঠক');
