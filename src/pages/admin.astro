@@ -2,18 +2,20 @@
 // src/pages/admin.astro
 // Standalone, Jitter-Free Author Studio for Affan Labib
 import AdminLayout from '../layouts/AdminLayout.astro';
-import { getAllPostsAsync, getCategoriesAsync, getAuthorAsync } from '../lib/db';
-import defaultBookshelf from '../data/bookshelf.json';
+import { getAllPostsAsync, getCategoriesAsync, getAuthorAsync, getAdminPinAsync, getBookshelfAsync } from '../lib/db';
+// dynamic bookshelf loaded via getBookshelfAsync
 
 export const prerender = false;
 
 import { getAllInteractionsForAdmin, toBnDigits } from '../lib/interactions';
 
-const [posts, categories, author, interactions] = await Promise.all([
+const [posts, categories, author, interactions, defaultBookshelf, currentAdminPin] = await Promise.all([
   getAllPostsAsync(),
   getCategoriesAsync(),
   getAuthorAsync(),
-  getAllInteractionsForAdmin()
+  getAllInteractionsForAdmin(),
+  getBookshelfAsync(),
+  getAdminPinAsync()
 ]);
 
 let ssrTotalViews = 0;
@@ -59,7 +61,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         <input
           id="pin-input"
           type="password"
-          maxlength="8"
+          maxlength="12"
           placeholder="••••••"
           autocomplete="off"
           class="w-full text-center text-3xl tracking-[0.4em] font-mono py-3.5 px-4 rounded-2xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text focus:outline-none focus:ring-2 focus:ring-paper-accent"
@@ -67,7 +69,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       </div>
 
       <p id="pin-error" class="hidden text-xs text-rose-600 font-sans font-semibold bg-rose-500/10 py-2 px-3 rounded-xl border border-rose-500/20">
-        ❌ পিন কোডটি সঠিক নয়! পুনরায় চেষ্টা করুন।
+        ❌ পিন কোডটি সঠিক নয়! শুধুমাত্র লেখকের নির্ধারিত পিন কোড দিয়েই খোলা যাবে।
       </p>
 
       <button
@@ -772,10 +774,10 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           <div>
             <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
               <span>👤</span>
-              <span>লেখক পরিচিতি ও প্রোফাইল এডিটর</span>
+              <span>লেখক পরিচিতি ও প্রোফাইল এডিটর (১০টি চ্যাপ্টার)</span>
             </h3>
             <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-              এখানে তথ্য পরিবর্তন করে সংরক্ষণ করলে ব্লগে স্বয়ংক্রিয়ভাবে আপডেট হয়ে যাবে।
+              এখানে তথ্য পরিবর্তন করে সংরক্ষণ করলে ব্লগে ও হোমপেজে স্বয়ংক্রিয়ভাবে আপডেট হয়ে যাবে।
             </p>
           </div>
           <button id="reset-profile-btn" type="button" class="text-xs font-sans text-red-600 dark:text-red-400 hover:underline cursor-pointer">
@@ -783,46 +785,66 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           </button>
         </div>
 
-        <form id="author-profile-form" class="space-y-4 font-sans text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="space-y-1">
-              <label class="block font-semibold text-paper-text dark:text-night-text">লেখকের পূর্ণ নাম:</label>
-              <input id="edit-author-name" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="আফফান লাবীব" />
-            </div>
-            <div class="space-y-1">
-              <label class="block font-semibold text-paper-text dark:text-night-text">শিক্ষাগত পটভূমি / উপাধি:</label>
-              <input id="edit-author-edu" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="মুতাখাসসিস ফিল ফিকহিল ইসলামী" />
-            </div>
-          </div>
-
-          <div class="space-y-1">
-            <label class="block font-semibold text-paper-text dark:text-night-text">ট্যাগলাইন:</label>
-            <input id="edit-author-tagline" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="চিন্তা ও পাঠের নিভৃত আঙিনা" />
-          </div>
-
-          <div class="space-y-1">
-            <label class="block font-semibold text-paper-text dark:text-night-text">হোমপেজের সংক্ষিপ্ত বায়ো:</label>
-            <textarea id="edit-author-shortbio" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="আমার পড়ার ঘর, চিন্তার খাতা..."></textarea>
-          </div>
-
-          <div class="space-y-1">
-            <label class="block font-semibold text-paper-text dark:text-night-text">বিস্তারিত পরিচিতি (About Bio):</label>
-            <textarea id="edit-author-fullbio" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="নাম আফফান লাবীব..."></textarea>
+        <form id="author-profile-form" onsubmit="return false;" class="space-y-4 font-sans text-xs">
+          <!-- Status Banner -->
+          <div id="profile-save-status" class="hidden p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-sans text-xs font-semibold flex items-center gap-2">
+            <span>✓</span>
+            <span>লেখক পরিচিতি সফলভাবে ক্লাউড ও ব্লগে সংরক্ষিত হয়েছে!</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-1">
-              <label class="block font-semibold text-paper-text dark:text-night-text">ফেসবুক প্রোফাইল URL:</label>
-              <input id="edit-author-fb" type="url" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://www.facebook.com/..." />
+              <label class="block font-semibold text-paper-text dark:text-night-text">১. লেখকের পূর্ণ নাম:</label>
+              <input id="edit-author-name" type="text" value={author.name} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="আফফান লাবীব" />
             </div>
             <div class="space-y-1">
-              <label class="block font-semibold text-paper-text dark:text-night-text">হোয়াটসঅ্যাপ নম্বর / লিংক:</label>
-              <input id="edit-author-wa" type="text" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://wa.me/..." />
+              <label class="block font-semibold text-paper-text dark:text-night-text">২. শিক্ষাগত পটভূমি / উপাধি:</label>
+              <input id="edit-author-edu" type="text" value={author.education} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="মুতাখাসসিস ফিল ফিকহিল ইসলামী" />
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">৩. মূল ট্যাগলাইন:</label>
+            <input id="edit-author-tagline" type="text" value={author.tagline} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="চিন্তা ও পাঠের নিভৃত আঙিনা" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">৪. হোমপেজের সংক্ষিপ্ত বায়ো (Short Bio):</label>
+            <textarea id="edit-author-shortbio" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="আমার পড়ার ঘর, চিন্তার খাতা...">{author.bioShort}</textarea>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">৫. বিস্তারিত পরিচিতি / আত্মকথন (About Bio):</label>
+            <textarea id="edit-author-fullbio" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="নাম আফফান লাবীব...">{author.bioFull}</textarea>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">৬. পরিচিতি পেজের ম্যানিফেস্টো শিরোনাম:</label>
+            <input id="edit-author-manifesto-title" type="text" value={author.aboutManifestoTitle || 'কেন এই পড়ার ঘর?'} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif" placeholder="কেন এই পড়ার ঘর?" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block font-semibold text-paper-text dark:text-night-text">৭. পাঠ ও চিন্তার দর্শন / ম্যানিফেস্টো বক্তব্য:</label>
+            <textarea id="edit-author-manifesto" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-sm font-serif leading-relaxed" placeholder="এই ওয়েবসাইটটি কোনো বাণিজ্যিক পোর্টাল বা একাডেমিক গবেষণাপত্র প্রকাশের জায়গা নয়...">{author.aboutManifesto || ''}</textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">৮. ফেসবুক প্রোফাইল URL:</label>
+              <input id="edit-author-fb" type="url" value={author.social?.facebook || ''} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://www.facebook.com/..." />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">৯. হোয়াটসঅ্যাপ নম্বর / লিংক:</label>
+              <input id="edit-author-wa" type="text" value={author.social?.whatsapp || ''} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="https://wa.me/..." />
+            </div>
+            <div class="space-y-1">
+              <label class="block font-semibold text-paper-text dark:text-night-text">১০. যোগাযোগের ইমেইল:</label>
+              <input id="edit-author-email" type="email" value={author.social?.email || ''} class="w-full px-3.5 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text font-mono" placeholder="contact@affanlabib.me" />
             </div>
           </div>
 
           <div class="pt-4 flex items-center justify-end">
-            <button id="save-profile-btn" type="button" class="px-6 py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-xs hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
+            <button id="save-profile-btn" type="button" class="px-7 py-3.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-sm hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
               <span>💾</span>
               <span>প্রোফাইল সংরক্ষণ করুন</span>
             </button>
@@ -978,14 +1000,15 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
   <script id="server-author-data" type="application/json" set:html={JSON.stringify(author)} />
   <script id="server-bookshelf-data" type="application/json" set:html={JSON.stringify(defaultBookshelf)} />
   <script id="server-interactions-data" type="application/json" set:html={JSON.stringify(interactions)} />
+  <script id="server-admin-pin" type="application/json" set:html={JSON.stringify(currentAdminPin)} />
 
   <!-- Author Studio Client Engine -->
   <script is:inline>
     (() => {
       // ========================================================
-      // 🔐 UNIVERSAL PIN LOCK ENGINE (Client Protection)
+      // 🔐 UNIVERSAL CLOUD PIN LOCK ENGINE (Client Protection)
       // ========================================================
-      const DEFAULT_PIN = '786992'; // Strong 6-digit PIN requested by client
+      const DEFAULT_PIN = '786992';
       const pinScreen = document.getElementById('pin-screen');
       const studioScreen = document.getElementById('studio-screen');
       const pinInput = document.getElementById('pin-input');
@@ -995,8 +1018,20 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       const newPinInput = document.getElementById('new-pin-input');
       const saveNewPinBtn = document.getElementById('save-new-pin-btn');
 
+      const serverPinEl = document.getElementById('server-admin-pin');
+      const initialServerPin = serverPinEl ? JSON.parse(serverPinEl.textContent || '""') : DEFAULT_PIN;
+
+      const BN_DIGIT_MAP = {
+        '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+        '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+      };
+      function cleanPinString(s) {
+        if (!s) return '';
+        return s.toString().replace(/[০-৯]/g, (d) => BN_DIGIT_MAP[d] || d).trim();
+      }
+
       function getStoredPin() {
-        return localStorage.getItem('kherokhata_admin_pin') || DEFAULT_PIN;
+        return localStorage.getItem('kherokhata_admin_pin') || initialServerPin || DEFAULT_PIN;
       }
 
       function checkAuth() {
@@ -1015,16 +1050,57 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         }
       }
 
-      function attemptUnlock() {
-        const entered = (pinInput?.value || '').trim();
-        const validPin = getStoredPin();
-        if (entered === validPin || entered === DEFAULT_PIN || entered === '1234') {
-          sessionStorage.setItem('kherokhata_admin_authenticated', 'true');
-          pinError?.classList.add('hidden');
-          checkAuth();
-          if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও সফলভাবে আনলক হয়েছে! 🔓');
-        } else {
-          pinError?.classList.remove('hidden');
+      async function attemptUnlock() {
+        const raw = pinInput?.value || '';
+        const entered = cleanPinString(raw);
+
+        if (!entered) {
+          if (pinError) {
+            pinError.textContent = 'অনুগ্রহ করে পিন কোড লিখুন।';
+            pinError.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (pinSubmitBtn) pinSubmitBtn.disabled = true;
+
+        try {
+          // Cloud Database PIN Verification
+          const res = await fetch('/api/admin-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verify', pin: entered })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            sessionStorage.setItem('kherokhata_admin_authenticated', 'true');
+            localStorage.setItem('kherokhata_admin_pin', entered);
+            pinError?.classList.add('hidden');
+            checkAuth();
+            if (window.showAdminToast) window.showAdminToast('লেখক স্টুডিও সফলভাবে আনলক হয়েছে! 🔓');
+          } else {
+            if (pinError) {
+              pinError.textContent = data.message || 'ভুল পিন কোড! শুধুমাত্র লেখকের নির্ধারিত পিন কোড দিয়েই খোলা যাবে।';
+              pinError.classList.remove('hidden');
+            }
+          }
+        } catch (e) {
+          // Offline fallback: check local cached pin if network down
+          const localPin = getStoredPin();
+          if (entered === localPin) {
+            sessionStorage.setItem('kherokhata_admin_authenticated', 'true');
+            pinError?.classList.add('hidden');
+            checkAuth();
+            if (window.showAdminToast) window.showAdminToast('অফলাইন মোডে স্টুডিও আনলক হয়েছে। 🔓');
+          } else {
+            if (pinError) {
+              pinError.textContent = 'ভুল পিন কোড! শুধুমাত্র লেখকের নির্ধারিত পিন কোড দিয়েই খোলা যাবে।';
+              pinError.classList.remove('hidden');
+            }
+          }
+        } finally {
+          if (pinSubmitBtn) pinSubmitBtn.disabled = false;
         }
       }
 
@@ -1042,18 +1118,47 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       adminLockBtn?.addEventListener('click', lockStudio);
       document.getElementById('settings-lock-now-btn')?.addEventListener('click', lockStudio);
 
-      saveNewPinBtn?.addEventListener('click', () => {
-        const val = newPinInput?.value.trim();
+      saveNewPinBtn?.addEventListener('click', async () => {
+        const rawVal = newPinInput?.value || '';
+        const val = cleanPinString(rawVal);
         if (!val || val.length < 4) {
           alert('অনুগ্রহ করে কমপক্ষে ৪ সংখ্যার নতুন পিন কোড লিখুন।');
           return;
         }
-        localStorage.setItem('kherokhata_admin_pin', val);
-        if (newPinInput) newPinInput.value = '';
-        if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড সফলভাবে সংরক্ষিত হয়েছে! ✓');
+
+        saveNewPinBtn.disabled = true;
+        const origText = saveNewPinBtn.innerText;
+        saveNewPinBtn.innerText = 'সেভ হচ্ছে...';
+
+        try {
+          const res = await fetch('/api/admin-pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'change', newPin: val })
+          });
+          const json = await res.json();
+          if (res.ok && json.success) {
+            localStorage.setItem('kherokhata_admin_pin', val);
+            const statusEl = document.getElementById('pin-change-status');
+            if (statusEl) {
+              statusEl.textContent = '✓ নতুন পিন কোড ক্লাউড ডেটাবেসে সফলভাবে সংরক্ষিত হয়েছে! সকল ডিভাইসে এই পিন দিয়ে লগইন করতে হবে।';
+              statusEl.classList.remove('hidden');
+            }
+            if (newPinInput) newPinInput.value = '';
+            if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড ক্লাউডে সংরক্ষিত হয়েছে! ✓');
+          } else {
+            alert(json.message || 'পিন সংরক্ষণ ব্যর্থ হয়েছে।');
+          }
+        } catch (e) {
+          alert('নেটওয়ার্ক সমস্যা: ' + e.message);
+        } finally {
+          saveNewPinBtn.disabled = false;
+          saveNewPinBtn.innerText = origText;
+        }
       });
 
       checkAuth();
+
 
       // 1. Data Bootstrap
       const serverPostsEl = document.getElementById('server-posts-data');
@@ -2202,10 +2307,20 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         return JSON.parse(JSON.stringify(initialBookshelf));
       }
 
-      function saveBookshelfData(data) {
+      async function saveBookshelfData(data) {
         localStorage.setItem('kherokhata_bookshelf_custom', JSON.stringify(data));
         renderAdminBooks();
         if (window.showAdminToast) window.showAdminToast('বুকশেলফ হালনাগাদ করা হয়েছে! ✓');
+
+        try {
+          await fetch('/api/bookshelf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {
+          console.warn('[Admin] Bookshelf cloud sync error:', e);
+        }
       }
 
       function renderAdminBooks() {
@@ -2382,19 +2497,23 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 
       renderAdminBooks();
 
-      // 13. Profile & Bio Editor
+      // 13. Profile & Bio Editor (10-Chapter Master Engine)
       const nameInp = document.getElementById('edit-author-name');
       const eduInp = document.getElementById('edit-author-edu');
       const tagInp = document.getElementById('edit-author-tagline');
       const shortbioInp = document.getElementById('edit-author-shortbio');
       const fullbioInp = document.getElementById('edit-author-fullbio');
+      const manifestoTitleInp = document.getElementById('edit-author-manifesto-title');
+      const manifestoInp = document.getElementById('edit-author-manifesto');
       const fbInp = document.getElementById('edit-author-fb');
       const waInp = document.getElementById('edit-author-wa');
+      const emailInp = document.getElementById('edit-author-email');
       const saveProfileBtn = document.getElementById('save-profile-btn');
+      const resetProfileBtn = document.getElementById('reset-profile-btn');
 
       async function loadProfileIntoForm() {
         try {
-          const res = await fetch('/api/author');
+          const res = await fetch('/api/author?_t=' + Date.now());
           if (res.ok) {
             const data = await res.json();
             if (data.success && data.author) {
@@ -2404,8 +2523,11 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               if (tagInp) tagInp.value = current.tagline || '';
               if (shortbioInp) shortbioInp.value = current.bioShort || '';
               if (fullbioInp) fullbioInp.value = current.bioFull || '';
+              if (manifestoTitleInp) manifestoTitleInp.value = current.aboutManifestoTitle || 'কেন এই পড়ার ঘর?';
+              if (manifestoInp) manifestoInp.value = current.aboutManifesto || '';
               if (fbInp) fbInp.value = current.social?.facebook || '';
               if (waInp) waInp.value = current.social?.whatsapp || '';
+              if (emailInp) emailInp.value = current.social?.email || '';
               localStorage.setItem('kherokhata_author_custom', JSON.stringify(current));
               return;
             }
@@ -2415,31 +2537,55 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         const custom = localStorage.getItem('kherokhata_author_custom');
         const current = custom ? { ...author, ...JSON.parse(custom) } : author;
 
-        if (nameInp) nameInp.value = current.name || '';
-        if (eduInp) eduInp.value = current.education || '';
-        if (tagInp) tagInp.value = current.tagline || '';
-        if (shortbioInp) shortbioInp.value = current.bioShort || '';
-        if (fullbioInp) fullbioInp.value = current.bioFull || '';
-        if (fbInp) fbInp.value = current.social?.facebook || '';
-        if (waInp) waInp.value = current.social?.whatsapp || '';
+        if (nameInp && !nameInp.value) nameInp.value = current.name || '';
+        if (eduInp && !eduInp.value) eduInp.value = current.education || '';
+        if (tagInp && !tagInp.value) tagInp.value = current.tagline || '';
+        if (shortbioInp && !shortbioInp.value) shortbioInp.value = current.bioShort || '';
+        if (fullbioInp && !fullbioInp.value) fullbioInp.value = current.bioFull || '';
+        if (manifestoTitleInp && !manifestoTitleInp.value) manifestoTitleInp.value = current.aboutManifestoTitle || 'কেন এই পড়ার ঘর?';
+        if (manifestoInp && !manifestoInp.value) manifestoInp.value = current.aboutManifesto || '';
+        if (fbInp && !fbInp.value) fbInp.value = current.social?.facebook || '';
+        if (waInp && !waInp.value) waInp.value = current.social?.whatsapp || '';
+        if (emailInp && !emailInp.value) emailInp.value = current.social?.email || '';
       }
 
       loadProfileIntoForm();
 
-      saveProfileBtn?.addEventListener('click', async () => {
+      document.getElementById('tab-btn-profile')?.addEventListener('click', loadProfileIntoForm);
+
+      resetProfileBtn?.addEventListener('click', () => {
+        if (!confirm('আপনি কি লেখক পরিচিতির সমস্ত তথ্য মূল ডিফল্ট সংস্করণে ফিরিয়ে নিতে চান?')) return;
+        if (nameInp) nameInp.value = author.name || 'আফফান লাবীব';
+        if (eduInp) eduInp.value = author.education || '';
+        if (tagInp) tagInp.value = author.tagline || '';
+        if (shortbioInp) shortbioInp.value = author.bioShort || '';
+        if (fullbioInp) fullbioInp.value = author.bioFull || '';
+        if (manifestoTitleInp) manifestoTitleInp.value = author.aboutManifestoTitle || 'কেন এই পড়ার ঘর?';
+        if (manifestoInp) manifestoInp.value = author.aboutManifesto || '';
+        if (fbInp) fbInp.value = author.social?.facebook || '';
+        if (waInp) waInp.value = author.social?.whatsapp || '';
+        if (emailInp) emailInp.value = author.social?.email || '';
+        if (window.showAdminToast) window.showAdminToast('ডিফল্ট তথ্যে ফিরিয়ে নেওয়া হয়েছে। সংরক্ষণ বাটনে চাপ দিন।');
+      });
+
+      saveProfileBtn?.addEventListener('click', async (e) => {
+        e?.preventDefault();
         saveProfileBtn.disabled = true;
         const origHtml = saveProfileBtn.innerHTML;
         saveProfileBtn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
 
         const updated = {
           name: nameInp?.value.trim() || author.name,
-          education: eduInp?.value.trim() || author.education,
-          tagline: tagInp?.value.trim() || author.tagline,
-          bioShort: shortbioInp?.value.trim() || author.bioShort,
-          bioFull: fullbioInp?.value.trim() || author.bioFull,
+          education: eduInp?.value.trim() || '',
+          tagline: tagInp?.value.trim() || '',
+          bioShort: shortbioInp?.value.trim() || '',
+          bioFull: fullbioInp?.value.trim() || '',
+          aboutManifestoTitle: manifestoTitleInp?.value.trim() || 'কেন এই পড়ার ঘর?',
+          aboutManifesto: manifestoInp?.value.trim() || '',
           social: {
-            facebook: fbInp?.value.trim() || author.social?.facebook,
-            whatsapp: waInp?.value.trim() || author.social?.whatsapp
+            facebook: fbInp?.value.trim() || '',
+            whatsapp: waInp?.value.trim() || '',
+            email: emailInp?.value.trim() || ''
           }
         };
 
@@ -2451,14 +2597,26 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           });
           const result = await res.json();
           if (result.success) {
-            localStorage.setItem('kherokhata_author_custom', JSON.stringify(result.author || updated));
-            document.querySelectorAll('.author-name-text').forEach((el) => { el.innerText = updated.name; });
-            document.querySelectorAll('.author-edu-text').forEach((el) => { el.innerText = updated.education; });
-            document.querySelectorAll('.author-tagline-text').forEach((el) => { el.innerText = updated.tagline; });
-            document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.innerText = updated.bioShort; });
-            document.querySelectorAll('.author-biofull-text').forEach((el) => { el.innerText = updated.bioFull; });
+            const finalAuthor = result.author || updated;
+            localStorage.setItem('kherokhata_author_custom', JSON.stringify(finalAuthor));
+
+            // Sync live DOM elements on page
+            document.querySelectorAll('.author-name-text').forEach((el) => { el.innerText = finalAuthor.name; });
+            document.querySelectorAll('.author-edu-text').forEach((el) => { el.innerText = finalAuthor.education; });
+            document.querySelectorAll('.author-tagline-text').forEach((el) => { el.innerText = finalAuthor.tagline; });
+            document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.innerText = finalAuthor.bioShort; });
+            document.querySelectorAll('.author-biofull-text').forEach((el) => { el.innerText = finalAuthor.bioFull; });
+            document.querySelectorAll('.author-manifesto-title-text').forEach((el) => { el.innerText = finalAuthor.aboutManifestoTitle; });
+            document.querySelectorAll('.author-manifesto-text').forEach((el) => { el.innerText = finalAuthor.aboutManifesto; });
+
+            const statusEl = document.getElementById('profile-save-status');
+            if (statusEl) {
+              statusEl.classList.remove('hidden');
+              setTimeout(() => statusEl.classList.add('hidden'), 5000);
+            }
+
             window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
-            if (window.showAdminToast) window.showAdminToast('ক্লাউড ডেটাবেসে প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে! ✓');
+            if (window.showAdminToast) window.showAdminToast('✓ লেখক পরিচিতি সফলভাবে ক্লাউড ও ব্লগে সংরক্ষিত হয়েছে!');
           } else {
             throw new Error(result.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
           }
@@ -2471,6 +2629,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           saveProfileBtn.innerHTML = origHtml;
         }
       });
+
 
     })();
 

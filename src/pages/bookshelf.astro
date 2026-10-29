@@ -1,7 +1,9 @@
 ---
 // src/pages/bookshelf.astro
 import Layout from '../layouts/Layout.astro';
-import initialBookshelf from '../data/bookshelf.json';
+import { getBookshelfAsync } from '../lib/db';
+export const prerender = false;
+const initialBookshelf = await getBookshelfAsync();
 ---
 
 <Layout
@@ -103,10 +105,26 @@ import initialBookshelf from '../data/bookshelf.json';
         return { readBooks: [], wishlistBooks: [] };
       }
 
-      function saveBookshelfData(data) {
+      async function saveBookshelfData(data) {
         localStorage.setItem('kherokhata_bookshelf_custom', JSON.stringify(data));
         window.dispatchEvent(new CustomEvent('kherokhata-bookshelf-sync'));
         syncAndRender();
+      try {
+        fetch('/api/bookshelf?_t=' + Date.now()).then((r) => r.json()).then((res) => {
+          if (res.success && res.bookshelf) {
+            localStorage.setItem('kherokhata_bookshelf_custom', JSON.stringify(res.bookshelf));
+            syncAndRender();
+          }
+        }).catch(() => {});
+      } catch (e) {}
+
+        try {
+          await fetch('/api/bookshelf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
       }
 
       function isAuthorLoggedIn() {

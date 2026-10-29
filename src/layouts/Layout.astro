@@ -277,7 +277,12 @@ const schemaData = {
               if (data.education) document.querySelectorAll('.author-edu-text').forEach((el) => { el.textContent = data.education; });
               if (data.tagline) document.querySelectorAll('.author-tagline-text').forEach((el) => { el.textContent = data.tagline; });
               if (data.bioShort || data.bio) document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.textContent = data.bioShort || data.bio; });
-              if (data.bioFull) document.querySelectorAll('.author-biofull-text, .author-manifesto-text').forEach((el) => { el.textContent = data.bioFull; });
+              if (data.bioFull) document.querySelectorAll('.author-biofull-text').forEach((el) => { el.textContent = data.bioFull; });
+              if (data.aboutManifestoTitle) document.querySelectorAll('.author-manifesto-title-text').forEach((el) => { el.textContent = data.aboutManifestoTitle; });
+              if (data.aboutManifesto) document.querySelectorAll('.author-manifesto-text').forEach((el) => { el.textContent = data.aboutManifesto; });
+              if (data.social?.facebook) document.querySelectorAll('a.author-fb-link').forEach((el) => { el.setAttribute('href', data.social.facebook); });
+              if (data.social?.whatsapp) document.querySelectorAll('a.author-wa-link').forEach((el) => { el.setAttribute('href', data.social.whatsapp); });
+              if (data.social?.email) document.querySelectorAll('a.author-email-link').forEach((el) => { el.setAttribute('href', 'mailto:' + data.social.email); });
             } catch (e) {}
           }
         }

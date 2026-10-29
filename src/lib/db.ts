@@ -645,3 +645,191 @@ export async function deleteCategory(id: string): Promise<boolean> {
     return false;
   }
 }
+
+
+// ========================================================
+// 🔐 Universal Cloud Admin Security & PIN Store Engine
+// ========================================================
+export const CLOUD_SECURITY_SLUG = '__admin_security_store__';
+export const DEFAULT_ADMIN_PIN = '786992';
+
+const BN_TO_EN_DIGIT_MAP: Record<string, string> = {
+  '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+  '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+};
+
+export function normalizeDigits(str: string): string {
+  if (!str) return '';
+  return str.toString().replace(/[০-৯]/g, (d) => BN_TO_EN_DIGIT_MAP[d] || d).trim();
+}
+
+let inMemoryAdminPin: string | null = null;
+let lastAdminPinCacheTime = 0;
+
+export async function getAdminPinAsync(): Promise<string> {
+  if (inMemoryAdminPin && Date.now() - lastAdminPinCacheTime < CACHE_TTL_MS) {
+    return inMemoryAdminPin;
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('posts')
+          .select('body')
+          .eq('slug', CLOUD_SECURITY_SLUG)
+          .maybeSingle(),
+        3500
+      );
+      if (!error && data && data.body) {
+        const parsed = JSON.parse(data.body);
+        if (parsed && parsed.pin) {
+          const cleanPin = normalizeDigits(parsed.pin);
+          inMemoryAdminPin = cleanPin;
+          lastAdminPinCacheTime = Date.now();
+          return cleanPin;
+        }
+      }
+    } catch (e: any) {
+      console.warn('[DB] Supabase admin pin query failed:', e.message);
+    }
+  }
+
+  if (inMemoryAdminPin) return inMemoryAdminPin;
+  return DEFAULT_ADMIN_PIN;
+}
+
+export async function setAdminPinAsync(rawNewPin: string): Promise<boolean> {
+  const newPin = normalizeDigits(rawNewPin);
+  if (!newPin || newPin.length < 4) {
+    throw new Error('পিন কোড কমপক্ষে ৪ ডিজিটের হতে হবে।');
+  }
+
+  inMemoryAdminPin = newPin;
+  lastAdminPinCacheTime = Date.now();
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await withTimeout(
+        supabase.from('posts').upsert(
+          {
+            slug: CLOUD_SECURITY_SLUG,
+            title: 'System Admin Security Store',
+            category: 'chinta',
+            description: 'Cloud Admin PIN Store',
+            published_at: '2026-01-01T00:00:00Z',
+            formatted_date: '১ জানুয়ারি, ২০২৬',
+            tags: [],
+            body: JSON.stringify({ pin: newPin, updatedAt: new Date().toISOString() }),
+            word_count: 0,
+            footnotes: [],
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'slug' }
+        ),
+        4000
+      );
+      if (error) {
+        console.error('[DB] Error saving PIN to Supabase:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('[DB] Supabase PIN save timeout/error:', err);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export async function verifyAdminPinAsync(rawEnteredPin: string): Promise<boolean> {
+  const entered = normalizeDigits(rawEnteredPin);
+  if (!entered) return false;
+  const currentPin = await getAdminPinAsync();
+  return entered === currentPin;
+}
+
+// ========================================================
+// 📚 Universal Bookshelf Cloud Engine
+// ========================================================
+export const CLOUD_BOOKSHELF_SLUG = '__bookshelf_store__';
+
+let inMemoryBookshelfCache: any = null;
+let lastBookshelfCacheTime = 0;
+
+export async function getBookshelfAsync(): Promise<any> {
+  if (inMemoryBookshelfCache && Date.now() - lastBookshelfCacheTime < CACHE_TTL_MS) {
+    return { ...inMemoryBookshelfCache };
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('posts')
+          .select('body')
+          .eq('slug', CLOUD_BOOKSHELF_SLUG)
+          .maybeSingle(),
+        3500
+      );
+      if (!error && data && data.body) {
+        const parsed = JSON.parse(data.body);
+        if (parsed && (Array.isArray(parsed.readBooks) || Array.isArray(parsed.wishlistBooks))) {
+          inMemoryBookshelfCache = parsed;
+          lastBookshelfCacheTime = Date.now();
+          return { ...parsed };
+        }
+      }
+    } catch (e: any) {
+      console.warn('[DB] Supabase bookshelf query failed:', e.message);
+    }
+  }
+
+  if (inMemoryBookshelfCache) return { ...inMemoryBookshelfCache };
+  return staticBookshelf;
+}
+
+export async function saveBookshelfAsync(data: any): Promise<boolean> {
+  if (!data || typeof data !== 'object') return false;
+
+  inMemoryBookshelfCache = data;
+  lastBookshelfCacheTime = Date.now();
+
+  try {
+    const fs = getFs();
+    const p = getLocalPath('src/data/bookshelf.json');
+    if (fs && p) {
+      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf-8');
+    }
+  } catch {}
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await withTimeout(
+        supabase.from('posts').upsert(
+          {
+            slug: CLOUD_BOOKSHELF_SLUG,
+            title: 'System Cloud Bookshelf Store',
+            category: 'chinta',
+            description: 'Cloud Bookshelf Store',
+            published_at: '2026-01-01T00:00:00Z',
+            formatted_date: '১ জানুয়ারি, ২০২৬',
+            tags: [],
+            body: JSON.stringify(data),
+            word_count: 0,
+            footnotes: [],
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'slug' }
+        ),
+        4000
+      );
+      return true;
+    } catch (err) {
+      console.error('[DB] Supabase bookshelf save error:', err);
+      return false;
+    }
+  }
+  return true;
+}

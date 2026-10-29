@@ -89,7 +89,7 @@ const author = await getAuthorAsync();
           href={author.social.facebook}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-3 py-2 rounded-xl bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
+          class="author-fb-link px-3 py-2 rounded-xl bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
         >
           Facebook প্রোফাইল ↗
         </a>
@@ -97,13 +97,13 @@ const author = await getAuthorAsync();
           href={author.social.whatsapp}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-3 py-2 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
+          class="author-wa-link px-3 py-2 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
         >
           WhatsApp ({author.social.whatsappNumber}) ↗
         </a>
         <a
           href={`mailto:${author.social.email}`}
-          class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border text-paper-text dark:text-night-text hover:border-paper-accent transition-colors"
+          class="author-email-link px-3 py-2 rounded-xl border border-paper-border dark:border-night-border text-paper-text dark:text-night-text hover:border-paper-accent transition-colors"
         >
           ইমেইল: {author.social.email}
         </a>
