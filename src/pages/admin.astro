@@ -843,7 +843,11 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             </div>
           </div>
 
-          <div class="pt-4 flex items-center justify-end">
+          <div class="pt-4 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <div id="profile-save-status-inline" class="hidden px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 font-sans text-xs font-bold flex items-center gap-2 shadow-2xs">
+              <span class="text-emerald-600 dark:text-emerald-400 text-sm">✓</span>
+              <span>লেখক পরিচিতির সকল তথ্য সফলভাবে সংরক্ষিত ও লাইভ হয়েছে!</span>
+            </div>
             <button id="save-profile-btn" type="button" class="px-7 py-3.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-sm hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
               <span>💾</span>
               <span>প্রোফাইল সংরক্ষণ করুন</span>
@@ -858,64 +862,120 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
     <!-- TAB 5: Live Reader Interactions, Likes & Comments Moderation -->
     <!-- ======================================================== -->
     <section id="tab-interactions" class="admin-tab-content hidden space-y-6">
-      <!-- Summary Counters Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
-          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
-            <span>👁️ মোট পঠিত সংখ্যা (Views)</span>
-            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+      <!-- Summary Counters Grid with Luxury Literary Bengali Aesthetics -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <!-- Card 1: Views -->
+        <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-500/20 bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl p-6 shadow-sm group hover:border-amber-500/50 transition-all duration-300">
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600"></div>
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-serif font-bold bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/25">
+              <span>📖</span>
+              <span>মোট পঠন সংখ্যা</span>
+            </span>
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-views" class="text-3xl font-bold font-mono text-paper-text dark:text-night-text">{ssrTotalViewsBn}</div>
-          <p class="text-[11px] text-paper-muted font-serif">সকল রচনার সর্বমোট লাইভ পাঠ সংখ্যা</p>
+          <div id="admin-total-views" class="text-4xl sm:text-5xl font-serif font-black tracking-tight text-paper-text dark:text-night-text mt-3">
+            {ssrTotalViewsBn}
+          </div>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-serif mt-1.5">
+            সকল রচনার সর্বমোট লাইভ পাঠ ও পরিদর্শন
+          </p>
         </div>
 
-        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
-          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
-            <span>❤️ মোট ভালোবাসা (Likes)</span>
+        <!-- Card 2: Likes -->
+        <div class="relative overflow-hidden rounded-3xl border border-rose-500/30 dark:border-rose-500/20 bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl p-6 shadow-sm group hover:border-rose-500/50 transition-all duration-300">
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-600 via-pink-400 to-rose-600"></div>
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-serif font-bold bg-rose-500/15 text-rose-900 dark:text-rose-200 border border-rose-500/25">
+              <span>❤️</span>
+              <span>পাঠক ভালোবাসা</span>
+            </span>
             <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-likes" class="text-3xl font-bold font-mono text-rose-500">{ssrTotalLikesBn}</div>
-          <p class="text-[11px] text-paper-muted font-serif">পাঠকদের দেওয়া ভালোবাসার স্থায়ী সংখ্যা</p>
+          <div id="admin-total-likes" class="text-4xl sm:text-5xl font-serif font-black tracking-tight text-rose-800 dark:text-rose-300 mt-3">
+            {ssrTotalLikesBn}
+          </div>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-serif mt-1.5">
+            পাঠকদের হৃদয়স্পর্শী অনুভূতির স্থায়ী সংখ্যা
+          </p>
         </div>
 
-        <div class="p-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl shadow-xs space-y-1">
-          <div class="flex items-center justify-between text-xs font-sans text-paper-muted">
-            <span>💬 পাঠক মন্তব্য (Comments)</span>
+        <!-- Card 3: Comments -->
+        <div class="relative overflow-hidden rounded-3xl border border-emerald-500/30 dark:border-emerald-500/20 bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl p-6 shadow-sm group hover:border-emerald-500/50 transition-all duration-300">
+          <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-600 via-teal-400 to-emerald-600"></div>
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-serif font-bold bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 border border-emerald-500/25">
+              <span>💬</span>
+              <span>সক্রিয় পাঠক সংলাপ</span>
+            </span>
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-comments" class="text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{ssrTotalCommentsBn}</div>
-          <p class="text-[11px] text-paper-muted font-serif">মন্তব্যঘরে জমা হওয়া মোট মন্তব্য</p>
+          <div id="admin-total-comments" class="text-4xl sm:text-5xl font-serif font-black tracking-tight text-emerald-800 dark:text-emerald-300 mt-3">
+            {ssrTotalCommentsBn}
+          </div>
+          <p class="text-xs text-paper-muted dark:text-night-muted font-serif mt-1.5">
+            মন্তব্যঘরে জমা হওয়া মোট পাঠক প্রতিক্রিয়া
+          </p>
         </div>
       </div>
 
+      <!-- Main Columns: Stats on Left (7 cols), Comments Moderation on Right (5 cols) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <!-- Left: Articles Stat Table (7 cols) -->
-        <div class="lg:col-span-7 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div class="lg:col-span-7 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl p-5 sm:p-6 shadow-sm space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-paper-border/60">
             <div>
               <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2">
                 <span>📊</span>
                 <span>লেখাভিত্তিক লাইভ পরিসংখ্যান</span>
               </h3>
-              <p class="text-xs text-paper-muted font-sans mt-0.5">প্রতিটি লেখার ভিউ, লাইক ও মন্তব্যের হিসাব</p>
+              <p class="text-xs text-paper-muted font-sans mt-0.5">প্রতিটি লেখার পাঠসংখ্যা, লাইক ও মন্তব্যের খতিয়ান</p>
             </div>
             <button
               id="refresh-interactions-btn"
               type="button"
-              class="px-3 py-1.5 rounded-xl border border-paper-border text-xs font-sans text-paper-muted hover:text-paper-text flex items-center gap-1 cursor-pointer"
+              class="px-3.5 py-1.5 rounded-xl border border-paper-border/80 bg-paper-bg/60 text-xs font-serif font-semibold text-paper-muted hover:text-paper-text hover:border-paper-accent transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <span>🔄</span>
               <span>রিফ্রেশ</span>
             </button>
           </div>
 
-          <div id="admin-articles-stats-list" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-            <div class="py-8 text-center text-xs font-sans text-paper-muted animate-pulse">পরিসংখ্যান লোড হচ্ছে...</div>
+          <!-- SSR Pre-rendered Articles Stats List (Zero wait time) -->
+          <div id="admin-articles-stats-list" class="space-y-2.5 max-h-[550px] overflow-y-auto pr-1">
+            {posts.map((p) => {
+              const st = (interactions.stats || {})[p.slug] || { views: 0, likes: 0 };
+              const postComments = (ssrComments || []).filter((c) => c.slug === p.slug || c.slug === p.slug.trim()).length;
+              return (
+                <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs hover:border-amber-500/30 transition-all">
+                  <div class="min-w-0 flex-grow">
+                    <a href={`/${p.slug}`} target="_blank" class="font-serif font-bold text-paper-text dark:text-night-text truncate block hover:text-paper-accent transition-colors">
+                      {p.title}
+                    </a>
+                    <span class="text-[11px] text-paper-muted font-sans">{p.formattedDate || p.publishedAt}</span>
+                  </div>
+                  <div class="flex items-center gap-2.5 font-serif text-xs shrink-0 select-none">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20" title="ভিউ">
+                      <span>👁️</span>
+                      <span class="font-bold">{toBnDigits(st.views)}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-800 dark:text-rose-200 border border-rose-500/20" title="লাইক">
+                      <span>❤️</span>
+                      <span class="font-bold">{toBnDigits(st.likes)}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-500/20" title="মন্তব্য">
+                      <span>💬</span>
+                      <span class="font-bold">{toBnDigits(postComments)}</span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <!-- Right: Comments Feed & Moderation (5 cols) -->
-        <div class="lg:col-span-5 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div class="lg:col-span-5 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl p-5 sm:p-6 shadow-sm space-y-4">
           <div class="flex items-center justify-between pb-3 border-b border-paper-border/60">
             <div>
               <h3 class="font-serif font-bold text-base text-paper-text dark:text-night-text flex items-center gap-2">
@@ -924,13 +984,104 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               </h3>
               <p class="text-xs text-paper-muted font-sans mt-0.5">সরাসরি পাঠকদের মন্তব্যের উত্তর দিন বা মুছুন</p>
             </div>
-            <span id="admin-comments-feed-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300">
+            <span id="admin-comments-feed-badge" class="px-3 py-1 rounded-full text-xs font-serif font-bold bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30">
               {ssrTotalCommentsBn}টি মন্তব্য
             </span>
           </div>
 
-          <div id="admin-comments-feed-list" class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-            <div class="py-8 text-center text-xs font-sans text-paper-muted animate-pulse">মন্তব্য লোড হচ্ছে...</div>
+          <!-- SSR Pre-rendered Comments Moderation Feed (Zero 'লোড হচ্ছে...') -->
+          <div id="admin-comments-feed-list" class="space-y-3.5 max-h-[550px] overflow-y-auto pr-1">
+            {ssrComments.length === 0 ? (
+              <div class="py-12 text-center rounded-2xl border border-dashed border-paper-border dark:border-night-border text-xs font-serif text-paper-muted">
+                🍃 পাঠকদের কোনো মন্তব্য এখনো আসেনি।
+              </div>
+            ) : (
+              ssrComments.map((c) => {
+                const postMatch = posts.find((p) => p.slug === c.slug);
+                const postTitle = postMatch ? postMatch.title : c.slug;
+                const authorInitial = (c.authorName || 'পা')[0] || 'পা';
+
+                return (
+                  <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id={c.id}>
+                    <div class="flex items-start justify-between gap-3 text-xs">
+                      <div class="flex items-start gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                          {c.isAuthor ? '👑' : authorInitial}
+                        </div>
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">{c.authorName}</span>
+                            {c.isAuthor && (
+                              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">লেখক</span>
+                            )}
+                          </div>
+                          <a href={`/${c.slug}`} target="_blank" class="text-xs font-sans text-paper-accent dark:text-night-accent hover:underline block truncate max-w-[200px] sm:max-w-xs mt-0.5">
+                            রচনা: {postTitle}
+                          </a>
+                        </div>
+                      </div>
+                      <time class="text-[10px] font-sans text-paper-muted dark:text-night-muted shrink-0">
+                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                      </time>
+                    </div>
+
+                    <div class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
+                      {c.content}
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1 text-xs">
+                      <button
+                        type="button"
+                        class="admin-reply-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-serif text-xs font-medium cursor-pointer"
+                        data-slug={c.slug}
+                        data-id={c.id}
+                        data-author={c.authorName}
+                      >
+                        <span>✍️</span>
+                        <span>উত্তর দিন</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
+                        data-id={c.id}
+                        title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
+                      >
+                        <span>🗑️</span>
+                        <span>মুছে ফেলুন</span>
+                      </button>
+                    </div>
+
+                    <!-- Inline Author Reply Box (Hidden by default) -->
+                    <div id={`reply-form-${c.id}`} class="hidden pt-3 border-t border-paper-border/60 space-y-2">
+                      <textarea
+                        id={`reply-input-${c.id}`}
+                        rows="2"
+                        placeholder="আফফান লাবীব হিসেবে আপনার উত্তর লিখুন..."
+                        class="w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      ></textarea>
+                      <div class="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          class="cancel-reply-btn px-3 py-1 rounded-lg text-xs font-sans text-paper-muted hover:text-paper-text cursor-pointer"
+                          data-id={c.id}
+                        >
+                          বাতিল
+                        </button>
+                        <button
+                          type="button"
+                          class="submit-reply-btn px-3.5 py-1.5 rounded-lg bg-paper-accent hover:opacity-90 text-white text-xs font-serif font-semibold cursor-pointer shadow-2xs"
+                          data-slug={c.slug}
+                          data-id={c.id}
+                        >
+                          উত্তর প্রকাশ করুন
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -1459,11 +1610,13 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           row.className = 'file-row p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/40 dark:bg-night-bg/40 hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
           row.setAttribute('data-category', post.category);
           row.setAttribute('data-slug', post.slug);
+          const isPinned = Boolean(post.pinned);
           row.innerHTML = `
             <div class="space-y-1 min-w-0 flex-1">
               <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
-                <span class="shrink-0 text-base">📄</span>
-                <span class="truncate block">${post.title}</span>
+                <span class="shrink-0 text-base">${isPinned ? '📌' : '📄'}</span>
+                <span class="truncate block ${isPinned ? 'text-amber-900 dark:text-amber-200 font-black' : ''}">${post.title}</span>
+                ${isPinned ? '<span class="text-[10px] font-sans font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">শীর্ষে পিনকৃত</span>' : ''}
               </div>
               <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
                 <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
@@ -1481,6 +1634,16 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+              <button
+                type="button"
+                class="toggle-pin-btn px-3 py-2 rounded-xl border ${isPinned ? 'border-amber-500/60 bg-amber-500/25 text-amber-950 dark:text-amber-100 font-bold shadow-2xs' : 'border-paper-border hover:border-amber-500/40 bg-paper-surface hover:bg-amber-500/10 text-paper-muted hover:text-amber-800 dark:hover:text-amber-300 font-medium'} text-xs font-sans transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                data-slug="${post.slug}"
+                data-pinned="${isPinned ? 'true' : 'false'}"
+                title="${isPinned ? 'পিন প্রত্যাহার করুন' : 'এই রচনাটি ব্লগের শীর্ষে পিন করুন'}"
+              >
+                <span>${isPinned ? '📌' : '📍'}</span>
+                <span class="pin-status-label">${isPinned ? 'পিনকৃত (শীর্ষে)' : 'শীর্ষে পিন করুন'}</span>
+              </button>
               <button
                 type="button"
                 class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
@@ -1828,6 +1991,11 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               const data = await res.json();
               if (data.success) {
                 const isPinned = Boolean(data.pinned);
+                if (isPinned) {
+                  serializedPosts.forEach((item) => {
+                    if (item.slug !== slug) item.pinned = false;
+                  });
+                }
                 const p = serializedPosts.find((item) => item.slug === slug);
                 if (p) p.pinned = isPinned;
 
@@ -1838,11 +2006,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                   return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
                 });
 
+                localStorage.setItem('kherokhata_custom_posts', JSON.stringify(serializedPosts));
+                window.dispatchEvent(new CustomEvent('kherokhata-posts-sync'));
+
                 renderEntireFileList();
                 renderFileList();
 
                 if (window.showAdminToast) {
-                  window.showAdminToast(isPinned ? 'লেখাটি শীর্ষে পিন করা হয়েছে! 📌' : 'পিন প্রত্যাহার করা হয়েছে।');
+                  window.showAdminToast(isPinned ? `✓ "${p?.title || slug}" রচনাটি ব্লগের শীর্ষে পিন করা হয়েছে! 📌` : 'পিন প্রত্যাহার করা হয়েছে।');
                 }
               } else {
                 throw new Error(data.message || 'Pin toggle failed');
@@ -1852,7 +2023,6 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               if (window.showAdminToast) window.showAdminToast('পিন পরিবর্তন করতে সমস্যা হয়েছে');
             } finally {
               btn.disabled = false;
-              btn.innerHTML = originalHtml;
             }
           });
         });
@@ -2610,13 +2780,31 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             document.querySelectorAll('.author-manifesto-text').forEach((el) => { el.innerText = finalAuthor.aboutManifesto; });
 
             const statusEl = document.getElementById('profile-save-status');
+            const inlineStatusEl = document.getElementById('profile-save-status-inline');
             if (statusEl) {
               statusEl.classList.remove('hidden');
-              setTimeout(() => statusEl.classList.add('hidden'), 5000);
+              setTimeout(() => statusEl.classList.add('hidden'), 6000);
+            }
+            if (inlineStatusEl) {
+              inlineStatusEl.classList.remove('hidden');
+              setTimeout(() => inlineStatusEl.classList.add('hidden'), 6000);
             }
 
+            // High-visibility button feedback
+            saveProfileBtn.classList.remove('bg-paper-accent', 'dark:bg-night-accent');
+            saveProfileBtn.classList.add('bg-emerald-600', 'text-white');
+            saveProfileBtn.innerHTML = '<span>✓</span><span>সফলভাবে সংরক্ষিত!</span>';
+
             window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
-            if (window.showAdminToast) window.showAdminToast('✓ লেখক পরিচিতি সফলভাবে ক্লাউড ও ব্লগে সংরক্ষিত হয়েছে!');
+            if (window.showAdminToast) window.showAdminToast('✓ লেখক পরিচিতি সফলভাবে সংরক্ষিত হয়েছে!');
+            alert('✓ আপনার নতুন লেখক পরিচিতি ও দর্শনের তথ্য সফলভাবে সংরক্ষিত ও ব্লগে লাইভ হয়েছে!');
+
+            setTimeout(() => {
+              saveProfileBtn.disabled = false;
+              saveProfileBtn.classList.remove('bg-emerald-600');
+              saveProfileBtn.classList.add('bg-paper-accent', 'dark:bg-night-accent');
+              saveProfileBtn.innerHTML = origHtml;
+            }, 3500);
           } else {
             throw new Error(result.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
           }
@@ -2624,19 +2812,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           console.error('[Admin] Profile save error:', err);
           localStorage.setItem('kherokhata_author_custom', JSON.stringify(updated));
           if (window.showAdminToast) window.showAdminToast('লোকালে সংরক্ষিত হয়েছে (ক্লাউড সিঙ্ক অপেক্ষা করছে)');
-        } finally {
           saveProfileBtn.disabled = false;
           saveProfileBtn.innerHTML = origHtml;
         }
       });
 
-
-    })();
-
       // ========================================================
-      // 💬 TAB: Interactions & Comments Moderation Engine
+      // 💬 TAB: Interactions & Comments Moderation Engine (Scoped inside main studio)
       // ========================================================
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
       function toBn(n) {
         return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
       }
@@ -2680,6 +2863,125 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         }
       }
 
+      function attachCommentModerationHandlers() {
+        if (!adminCommentsFeedList) return;
+
+        // Delete button
+        adminCommentsFeedList.querySelectorAll('.admin-delete-cmt-btn').forEach((btn) => {
+          if (btn.getAttribute('data-del-bound')) return;
+          btn.setAttribute('data-del-bound', 'true');
+
+          btn.addEventListener('click', async () => {
+            const commentId = btn.getAttribute('data-id');
+            if (!confirm('আপনি কি এই মন্তব্যটি সত্যি স্থায়ীভাবে মুছে ফেলতে চান?')) return;
+            try {
+              btn.disabled = true;
+              btn.innerHTML = '<span>⏳ মুছছে...</span>';
+
+              const res = await fetch('/api/interactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_comment', commentId })
+              });
+              const json = await res.json();
+              if (json && json.success) {
+                // Find card and animate removal
+                const card = adminCommentsFeedList.querySelector(`[data-comment-id="${commentId}"]`);
+                if (card) {
+                  card.style.opacity = '0';
+                  card.style.transform = 'scale(0.95)';
+                  setTimeout(() => card.remove(), 200);
+                }
+                currentInteractionsData.comments = (currentInteractionsData.comments || []).filter((x) => x.id !== commentId);
+                const newCount = currentInteractionsData.comments.length;
+                if (adminTotalComments) adminTotalComments.textContent = toBn(newCount);
+                if (adminCommentsFeedBadge) adminCommentsFeedBadge.textContent = `${toBn(newCount)}টি মন্তব্য`;
+                if (window.showAdminToast) window.showAdminToast('✓ মন্তব্যটি স্থায়ীভাবে মুছে ফেলা হয়েছে।');
+              } else {
+                throw new Error('মুছে ফেলা সম্ভব হয়নি');
+              }
+            } catch (e) {
+              alert('মুছে ফেলতে সমস্যা হয়েছে: ' + (e.message || e));
+              btn.disabled = false;
+              btn.innerHTML = '<span>🗑️</span><span>মুছে ফেলুন</span>';
+            }
+          });
+        });
+
+        // Reply toggle
+        adminCommentsFeedList.querySelectorAll('.admin-reply-btn').forEach((btn) => {
+          if (btn.getAttribute('data-rep-bound')) return;
+          btn.setAttribute('data-rep-bound', 'true');
+
+          btn.addEventListener('click', () => {
+            const commentId = btn.getAttribute('data-id');
+            const formEl = document.getElementById(`reply-form-${commentId}`);
+            if (formEl) {
+              formEl.classList.toggle('hidden');
+              if (!formEl.classList.contains('hidden')) {
+                document.getElementById(`reply-input-${commentId}`)?.focus();
+              }
+            }
+          });
+        });
+
+        // Cancel reply
+        adminCommentsFeedList.querySelectorAll('.cancel-reply-btn').forEach((btn) => {
+          if (btn.getAttribute('data-ccl-bound')) return;
+          btn.setAttribute('data-ccl-bound', 'true');
+
+          btn.addEventListener('click', () => {
+            const commentId = btn.getAttribute('data-id');
+            document.getElementById(`reply-form-${commentId}`)?.classList.add('hidden');
+          });
+        });
+
+        // Submit reply
+        adminCommentsFeedList.querySelectorAll('.submit-reply-btn').forEach((btn) => {
+          if (btn.getAttribute('data-sub-bound')) return;
+          btn.setAttribute('data-sub-bound', 'true');
+
+          btn.addEventListener('click', async () => {
+            const commentId = btn.getAttribute('data-id');
+            const slug = btn.getAttribute('data-slug');
+            const text = document.getElementById(`reply-input-${commentId}`)?.value.trim();
+            if (!text) return alert('উত্তরের বিবরণ খালি রাখা যাবে না।');
+
+            try {
+              btn.disabled = true;
+              btn.innerHTML = '<span>⏳ প্রকাশ হচ্ছে...</span>';
+
+              const res = await fetch('/api/interactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'reply',
+                  slug,
+                  parentId: commentId,
+                  content: text,
+                  authorName: 'আফফান লাবীব (লেখক)'
+                })
+              });
+              const json = await res.json();
+              if (json && json.success) {
+                if (window.showAdminToast) window.showAdminToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
+                // Hide reply form
+                const formEl = document.getElementById(`reply-form-${commentId}`);
+                if (formEl) formEl.classList.add('hidden');
+                loadInteractionsData();
+              } else {
+                throw new Error('উত্তর প্রকাশ ব্যর্থ হয়েছে');
+              }
+            } catch (e) {
+              alert('উত্তর প্রকাশে সমস্যা হয়েছে: ' + (e.message || e));
+            } finally {
+              btn.disabled = false;
+              btn.innerHTML = 'উত্তর প্রকাশ করুন';
+            }
+          });
+        });
+      }
+
       function renderAdminInteractions() {
         const stats = currentInteractionsData.stats || {};
         const comments = currentInteractionsData.comments || [];
@@ -2701,31 +3003,31 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         if (adminArticlesStatsList) {
           const allPosts = serializedPosts || [];
           if (allPosts.length === 0) {
-            adminArticlesStatsList.innerHTML = '<div class="py-6 text-center text-xs text-paper-muted">কোনো রচনা নেই</div>';
+            adminArticlesStatsList.innerHTML = '<div class="py-6 text-center text-xs font-serif text-paper-muted">কোনো রচনা নেই</div>';
           } else {
             adminArticlesStatsList.innerHTML = allPosts.map((p) => {
               const st = stats[p.slug] || { views: 0, likes: 0 };
               const postComments = comments.filter((c) => isSameArticleSlug(c.slug, p.slug)).length;
               return `
-                <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs">
+                <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs hover:border-amber-500/30 transition-all">
                   <div class="min-w-0 flex-grow">
                     <a href="/${p.slug}" target="_blank" class="font-serif font-bold text-paper-text dark:text-night-text truncate block hover:text-paper-accent transition-colors">
                       ${p.title}
                     </a>
                     <span class="text-[11px] text-paper-muted font-sans">${p.formattedDate || p.publishedAt}</span>
                   </div>
-                  <div class="flex items-center gap-2.5 font-mono text-xs shrink-0 select-none">
-                    <span class="inline-flex items-center gap-1 text-paper-muted" title="ভিউ">
+                  <div class="flex items-center gap-2.5 font-serif text-xs shrink-0 select-none">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20" title="ভিউ">
                       <span>👁️</span>
-                      <span>${toBn(st.views)}</span>
+                      <span class="font-bold">${toBn(st.views)}</span>
                     </span>
-                    <span class="inline-flex items-center gap-1 text-rose-500 font-bold" title="লাইক">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-800 dark:text-rose-200 border border-rose-500/20" title="লাইক">
                       <span>❤️</span>
-                      <span>${toBn(st.likes)}</span>
+                      <span class="font-bold">${toBn(st.likes)}</span>
                     </span>
-                    <span class="inline-flex items-center gap-1 text-paper-muted" title="মন্তব্য">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-500/20" title="মন্তব্য">
                       <span>💬</span>
-                      <span>${toBn(postComments)}</span>
+                      <span class="font-bold">${toBn(postComments)}</span>
                     </span>
                   </div>
                 </div>
@@ -2746,42 +3048,49 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             adminCommentsFeedList.innerHTML = comments.map((c) => {
               const postMatch = (serializedPosts || []).find((p) => isSameArticleSlug(p.slug, c.slug));
               const postTitle = postMatch ? postMatch.title : c.slug;
+              const authorInitial = (c.authorName || 'পা')[0] || 'পা';
 
               return `
-                <div class="p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all" data-comment-id="${c.id}">
+                <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id="${c.id}">
                   <div class="flex items-start justify-between gap-3 text-xs">
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span class="font-bold font-serif text-paper-text dark:text-night-text">${c.authorName}</span>
-                        ${c.isAuthor ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300">লেখক</span>' : ''}
+                    <div class="flex items-start gap-2.5">
+                      <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
+                        ${c.isAuthor ? '👑' : authorInitial}
                       </div>
-                      <a href="/${c.slug}" target="_blank" class="text-[11px] font-sans text-paper-accent dark:text-night-accent hover:underline block truncate max-w-sm mt-0.5">
-                        লেখা: ${postTitle}
-                      </a>
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">${c.authorName}</span>
+                          ${c.isAuthor ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">লেখক</span>' : ''}
+                        </div>
+                        <a href="/${c.slug}" target="_blank" class="text-xs font-sans text-paper-accent dark:text-night-accent hover:underline block truncate max-w-[200px] sm:max-w-xs mt-0.5">
+                          রচনা: ${postTitle}
+                        </a>
+                      </div>
                     </div>
-                    <time class="text-[10px] font-mono text-paper-muted dark:text-night-muted shrink-0">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('bn-BD') : ''}</time>
+                    <time class="text-[10px] font-sans text-paper-muted dark:text-night-muted shrink-0">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</time>
                   </div>
 
-                  <p class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/50 dark:bg-night-surface/50 p-2.5 rounded-xl border border-paper-border/40 whitespace-pre-wrap">
+                  <p class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
                     ${c.content}
                   </p>
 
                   <div class="flex items-center justify-between pt-1 text-xs">
                     <button
                       type="button"
-                      class="admin-reply-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-sans text-xs cursor-pointer"
+                      class="admin-reply-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-serif text-xs font-medium cursor-pointer"
                       data-slug="${c.slug}"
                       data-id="${c.id}"
                       data-author="${c.authorName}"
                     >
                       <span>✍️</span>
-                      <span>লেখক হিসেবে উত্তর দিন</span>
+                      <span>উত্তর দিন</span>
                     </button>
 
                     <button
                       type="button"
-                      class="admin-delete-cmt-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-sans text-xs cursor-pointer"
+                      class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
                       data-id="${c.id}"
+                      title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
                     >
                       <span>🗑️</span>
                       <span>মুছে ফেলুন</span>
@@ -2793,8 +3102,8 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                     <textarea
                       id="reply-input-${c.id}"
                       rows="2"
-                      placeholder="আফফান লাবীব হিসেবে উত্তর লিখুন..."
-                      class="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-paper-bg dark:bg-night-bg text-xs font-serif focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      placeholder="আফফান লাবীব হিসেবে আপনার উত্তর লিখুন..."
+                      class="w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
                     ></textarea>
                     <div class="flex items-center justify-end gap-2">
                       <button
@@ -2806,7 +3115,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                       </button>
                       <button
                         type="button"
-                        class="submit-reply-btn px-3.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-sans font-semibold cursor-pointer"
+                        class="submit-reply-btn px-3.5 py-1.5 rounded-lg bg-paper-accent hover:opacity-90 text-white text-xs font-serif font-semibold cursor-pointer shadow-2xs"
                         data-slug="${c.slug}"
                         data-id="${c.id}"
                       >
@@ -2817,77 +3126,13 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 </div>
               `;
             }).join('');
-
-            // Attach event listeners for delete & reply
-            adminCommentsFeedList.querySelectorAll('.admin-delete-cmt-btn').forEach((btn) => {
-              btn.addEventListener('click', async () => {
-                const commentId = btn.getAttribute('data-id');
-                if (!confirm('আপনি কি এই মন্তব্যটি সত্যি মুছে ফেলতে চান?')) return;
-                try {
-                  const res = await fetch('/api/interactions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'delete_comment', commentId })
-                  });
-                  const json = await res.json();
-                  if (json && json.success) {
-                    currentInteractionsData.comments = currentInteractionsData.comments.filter((x) => x.id !== commentId);
-                    renderAdminInteractions();
-                    if (window.showAdminToast) window.showAdminToast('✓ মন্তব্যটি সফলভাবে মুছে ফেলা হয়েছে।');
-                  }
-                } catch (e) {
-                  alert('মুছে ফেলতে সমস্যা হয়েছে।');
-                }
-              });
-            });
-
-            adminCommentsFeedList.querySelectorAll('.admin-reply-btn').forEach((btn) => {
-              btn.addEventListener('click', () => {
-                const commentId = btn.getAttribute('data-id');
-                const formEl = document.getElementById(`reply-form-${commentId}`);
-                if (formEl) formEl.classList.toggle('hidden');
-              });
-            });
-
-            adminCommentsFeedList.querySelectorAll('.cancel-reply-btn').forEach((btn) => {
-              btn.addEventListener('click', () => {
-                const commentId = btn.getAttribute('data-id');
-                document.getElementById(`reply-form-${commentId}`)?.classList.add('hidden');
-              });
-            });
-
-            adminCommentsFeedList.querySelectorAll('.submit-reply-btn').forEach((btn) => {
-              btn.addEventListener('click', async () => {
-                const commentId = btn.getAttribute('data-id');
-                const slug = btn.getAttribute('data-slug');
-                const text = document.getElementById(`reply-input-${commentId}`)?.value.trim();
-                if (!text) return alert('উত্তরের বিষয় খালি রাখা যাবে না।');
-
-                try {
-                  const res = await fetch('/api/interactions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      action: 'reply',
-                      slug,
-                      parentId: commentId,
-                      content: text,
-                      authorName: 'আফফান লাবীব (লেখক)'
-                    })
-                  });
-                  const json = await res.json();
-                  if (json && json.success) {
-                    if (window.showAdminToast) window.showAdminToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
-                    loadInteractionsData();
-                  }
-                } catch (e) {
-                  alert('উত্তর প্রকাশে সমস্যা হয়েছে।');
-                }
-              });
-            });
           }
+          attachCommentModerationHandlers();
         }
       }
+
+      // Attach initial comment handlers to pre-rendered SSR comments
+      attachCommentModerationHandlers();
 
       refreshInteractionsBtn?.addEventListener('click', () => {
         loadInteractionsData();
@@ -2898,6 +3143,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       document.getElementById('tab-btn-interactions')?.addEventListener('click', () => {
         loadInteractionsData();
       });
-      loadInteractionsData();
+
+    })();
   </script>
 </AdminLayout>

@@ -274,7 +274,16 @@ export async function togglePostPin(slug: string): Promise<boolean> {
   const current = await getAllPostsAsync();
   const post = current.find((p) => p.slug === slug);
   if (!post) return false;
-  post.pinned = !post.pinned;
+  const willBePinned = !post.pinned;
+  if (willBePinned) {
+    for (const p of current) {
+      if (p.slug !== slug && p.pinned) {
+        p.pinned = false;
+        await savePost(p);
+      }
+    }
+  }
+  post.pinned = willBePinned;
   await savePost(post);
   return post.pinned;
 }
