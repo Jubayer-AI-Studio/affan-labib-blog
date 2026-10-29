@@ -52,7 +52,7 @@ export interface InteractionsStore {
 
 let inMemoryStore: InteractionsStore | null = null;
 let lastCacheTime = 0;
-const CACHE_TTL_MS = 2000; // 2s cache for instant cross-edge synchronicity
+const CACHE_TTL_MS = 1500; // 1.5s cache for instant cross-edge synchronicity
 
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 export function toBnDigits(n: number | string): string {
@@ -66,6 +66,30 @@ export function normalizeSlug(s: string): string {
   } catch {
     return s.trim();
   }
+}
+
+// Canonical Aliases (Bidirectional: English slug and Bengali slug share exact same comments & reactions)
+const CANONICAL_SLUG_MAP: Record<string, string> = {
+  'takhassuser-jibon-shuru': 'তাখাসসুসের-জীবন-শুরু',
+  'তাখাসসুসের-জীবন-শুরু': 'তাখাসসুসের-জীবন-শুরু',
+  'dinlipi-shukrobar-amimul-ihsan': 'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত',
+  'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত': 'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত',
+  'notun-mehman': 'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর',
+  'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর': 'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর'
+};
+
+export function getCanonicalSlug(rawSlug: string): string {
+  const norm = normalizeSlug(rawSlug);
+  return CANONICAL_SLUG_MAP[norm] || norm;
+}
+
+export function isSameArticleSlug(slugA: string, slugB: string): boolean {
+  const normA = normalizeSlug(slugA);
+  const normB = normalizeSlug(slugB);
+  if (normA === normB) return true;
+  const canA = CANONICAL_SLUG_MAP[normA] || normA;
+  const canB = CANONICAL_SLUG_MAP[normB] || normB;
+  return canA === canB;
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms = 4000): Promise<T> {
@@ -226,7 +250,18 @@ async function getStore(): Promise<InteractionsStore> {
 export async function getArticleStats(rawSlug: string): Promise<ArticleStat> {
   const slug = normalizeSlug(rawSlug);
   const store = await getStore();
-  return store.stats[slug] || { views: 0, likes: 0 };
+  let views = store.stats[slug]?.views || 0;
+  let likes = store.stats[slug]?.likes || 0;
+
+  // Add stats from aliased slug if separate
+  for (const [k, v] of Object.entries(store.stats)) {
+    if (k !== slug && isSameArticleSlug(k, slug)) {
+      views = Math.max(views, v?.views || 0);
+      likes = Math.max(likes, v?.likes || 0);
+    }
+  }
+
+  return { views, likes };
 }
 
 export async function getArticleStatsAndComments(rawSlug: string): Promise<{
@@ -236,8 +271,10 @@ export async function getArticleStatsAndComments(rawSlug: string): Promise<{
 }> {
   const slug = normalizeSlug(rawSlug);
   const store = await getStore();
-  const stat = store.stats[slug] || { views: 0, likes: 0 };
-  const allComments = (store.comments || []).filter((c) => c.slug === slug);
+  const stat = await getArticleStats(slug);
+
+  // Facebook-style matching: any comment on this slug OR aliased slug matches!
+  const allComments = (store.comments || []).filter((c) => isSameArticleSlug(c.slug, slug));
 
   // Build hierarchical replies
   const rootComments: CommentItem[] = [];
@@ -266,12 +303,19 @@ export async function getArticleStatsAndComments(rawSlug: string): Promise<{
 
 export async function incrementView(rawSlug: string): Promise<number> {
   const slug = normalizeSlug(rawSlug);
+  const canonical = getCanonicalSlug(slug);
   const store = await getStore();
-  if (!store.stats[slug]) {
-    store.stats[slug] = { views: 0, likes: 0 };
+
+  if (!store.stats[canonical]) {
+    store.stats[canonical] = { views: 0, likes: 0 };
   }
-  store.stats[slug].views += 1;
-  const newViews = store.stats[slug].views;
+  store.stats[canonical].views += 1;
+  const newViews = store.stats[canonical].views;
+
+  // Mirror to raw slug if different
+  if (slug !== canonical) {
+    store.stats[slug] = { ...store.stats[canonical] };
+  }
 
   inMemoryStore = store;
   lastCacheTime = Date.now();
@@ -283,16 +327,23 @@ export async function incrementView(rawSlug: string): Promise<number> {
 
 export async function toggleLike(rawSlug: string, isLike: boolean): Promise<number> {
   const slug = normalizeSlug(rawSlug);
+  const canonical = getCanonicalSlug(slug);
   const store = await getStore();
-  if (!store.stats[slug]) {
-    store.stats[slug] = { views: 0, likes: 0 };
+
+  if (!store.stats[canonical]) {
+    store.stats[canonical] = { views: 0, likes: 0 };
   }
   if (isLike) {
-    store.stats[slug].likes += 1;
+    store.stats[canonical].likes += 1;
   } else {
-    store.stats[slug].likes = Math.max(0, store.stats[slug].likes - 1);
+    store.stats[canonical].likes = Math.max(0, store.stats[canonical].likes - 1);
   }
-  const newLikes = store.stats[slug].likes;
+  const newLikes = store.stats[canonical].likes;
+
+  // Mirror to raw slug if different
+  if (slug !== canonical) {
+    store.stats[slug] = { ...store.stats[canonical] };
+  }
 
   inMemoryStore = store;
   lastCacheTime = Date.now();
@@ -310,6 +361,7 @@ export async function addComment(
   parentId: string | null = null
 ): Promise<CommentItem> {
   const slug = normalizeSlug(rawSlug);
+  const canonical = getCanonicalSlug(slug);
   const store = await getStore();
   const id = `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const cleanName = (authorName || '').trim() || (isAuthor ? 'আফফান লাবীব (লেখক)' : 'মুগ্ধ পাঠক');
@@ -317,7 +369,7 @@ export async function addComment(
 
   const newComment: CommentItem = {
     id,
-    slug,
+    slug: canonical,
     parentId: parentId || null,
     authorName: cleanName,
     content: content.trim(),

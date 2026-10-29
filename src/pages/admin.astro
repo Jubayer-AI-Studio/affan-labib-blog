@@ -7,11 +7,25 @@ import defaultBookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
-const [posts, categories, author] = await Promise.all([
+import { getAllInteractionsForAdmin, toBnDigits } from '../lib/interactions';
+
+const [posts, categories, author, interactions] = await Promise.all([
   getAllPostsAsync(),
   getCategoriesAsync(),
-  getAuthorAsync()
+  getAuthorAsync(),
+  getAllInteractionsForAdmin()
 ]);
+
+let ssrTotalViews = 0;
+let ssrTotalLikes = 0;
+const ssrComments = interactions.comments || [];
+Object.values(interactions.stats || {}).forEach((s) => {
+  ssrTotalViews += (s.views || 0);
+  ssrTotalLikes += (s.likes || 0);
+});
+const ssrTotalViewsBn = toBnDigits(ssrTotalViews);
+const ssrTotalLikesBn = toBnDigits(ssrTotalLikes);
+const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 ---
 
 <AdminLayout
@@ -92,9 +106,7 @@ const [posts, categories, author] = await Promise.all([
               <span id="admin-connection-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               <span id="admin-connection-status-text">স্টুডিও সক্রিয়</span>
             </span>
-            <span id="admin-connection-subtext" class="text-[11px] font-sans text-paper-muted dark:text-night-muted hidden md:inline">
-              ☁️ ক্লাউড ও ডেটাবেস সিঙ্ক সক্রিয়
-            </span>
+
           </div>
           <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
             নিভৃত সাহিত্য রচনাগার, ফোল্ডার এক্সপ্লোরার ও লাইভ রাইটার্স ডেস্ক
@@ -122,15 +134,7 @@ const [posts, categories, author] = await Promise.all([
           <span>↗</span>
         </a>
 
-        <button
-          id="sync-refresh-btn"
-          type="button"
-          class="px-3.5 py-2 rounded-xl bg-paper-accent/10 hover:bg-paper-accent/20 border border-paper-accent/30 text-paper-accent dark:text-night-accent text-xs font-sans font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-          title="ক্লাউড ডেটাবেসের সাথে সিঙ্ক করুন"
-        >
-          <span>🔄</span>
-          <span>সিঙ্ক রিফ্রেশ</span>
-        </button>
+
 
         <button
           id="admin-lock-btn"
@@ -152,7 +156,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all bg-paper-accent text-white shadow-xs cursor-pointer whitespace-nowrap"
         data-tab="tab-explorer"
       >
-        🗂️ ফোল্ডার এক্সপ্লোরার (C: Drive)
+        📑 সকল রচনা
       </button>
       <button
         id="tab-btn-writer"
@@ -160,7 +164,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-writer"
       >
-        ✍️ লাইভ রাইটার্স ডেস্ক (Split-View)
+        ✍️ নতুন রচনা লিখুন
       </button>
       <button
         id="tab-btn-menu"
@@ -168,7 +172,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-menu"
       >
-        📁 বিষয়শ্রেণী ও ফোল্ডার ম্যানেজার
+        📁 বিষয়শ্রেণীসমূহ
       </button>
       <button
         id="tab-btn-bookshelf"
@@ -176,7 +180,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-bookshelf"
       >
-        📚 পাঠাগার ও বুকশেলফ
+        📚 সম্প্রতি পঠিত বই
       </button>
       <button
         id="tab-btn-profile"
@@ -184,7 +188,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-profile"
       >
-        👤 লেখক প্রোফাইল ও বায়ো
+        👤 লেখক পরিচিতি
       </button>
       <button
         id="tab-btn-interactions"
@@ -192,7 +196,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-interactions"
       >
-        💬 পাঠক প্রতিক্রিয়া ও পরিসংখ্যান
+        💬 পাঠক প্রতিক্রিয়া
       </button>
       <button
         id="tab-btn-settings"
@@ -200,7 +204,7 @@ const [posts, categories, author] = await Promise.all([
         class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
         data-tab="tab-settings"
       >
-        ⚙️ ক্লাউড ডেটাবেস ও স্ট্যাটাস
+        🔒 পিন ও লক সেটিংস
       </button>
     </nav>
 
@@ -214,7 +218,7 @@ const [posts, categories, author] = await Promise.all([
           <div class="pb-3 border-b border-paper-border/60 dark:border-night-border/60 font-sans font-bold text-xs text-paper-text dark:text-night-text flex items-center justify-between">
             <span class="flex items-center gap-1.5">
               <span>💻</span>
-              <span>C:\লাবীবের_খেরোখাতা\</span>
+              <span>লেখকের সংগ্রহশালা</span>
             </span>
             <span id="folder-total-files-badge" class="text-[11px] text-paper-muted font-mono">{posts.length}টি ফাইল</span>
           </div>
@@ -839,7 +843,7 @@ const [posts, categories, author] = await Promise.all([
             <span>👁️ মোট পঠিত সংখ্যা (Views)</span>
             <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-views" class="text-3xl font-bold font-mono text-paper-text dark:text-night-text">০</div>
+          <div id="admin-total-views" class="text-3xl font-bold font-mono text-paper-text dark:text-night-text">{ssrTotalViewsBn}</div>
           <p class="text-[11px] text-paper-muted font-serif">সকল রচনার সর্বমোট লাইভ পাঠ সংখ্যা</p>
         </div>
 
@@ -848,7 +852,7 @@ const [posts, categories, author] = await Promise.all([
             <span>❤️ মোট ভালোবাসা (Likes)</span>
             <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-likes" class="text-3xl font-bold font-mono text-rose-500">০</div>
+          <div id="admin-total-likes" class="text-3xl font-bold font-mono text-rose-500">{ssrTotalLikesBn}</div>
           <p class="text-[11px] text-paper-muted font-serif">পাঠকদের দেওয়া ভালোবাসার স্থায়ী সংখ্যা</p>
         </div>
 
@@ -857,7 +861,7 @@ const [posts, categories, author] = await Promise.all([
             <span>💬 পাঠক মন্তব্য (Comments)</span>
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           </div>
-          <div id="admin-total-comments" class="text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">০</div>
+          <div id="admin-total-comments" class="text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{ssrTotalCommentsBn}</div>
           <p class="text-[11px] text-paper-muted font-serif">মন্তব্যঘরে জমা হওয়া মোট মন্তব্য</p>
         </div>
       </div>
@@ -899,7 +903,7 @@ const [posts, categories, author] = await Promise.all([
               <p class="text-xs text-paper-muted font-sans mt-0.5">সরাসরি পাঠকদের মন্তব্যের উত্তর দিন বা মুছুন</p>
             </div>
             <span id="admin-comments-feed-badge" class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300">
-              ০টি মন্তব্য
+              {ssrTotalCommentsBn}টি মন্তব্য
             </span>
           </div>
 
@@ -914,100 +918,53 @@ const [posts, categories, author] = await Promise.all([
     <!-- ======================================================== -->
     <section id="tab-settings" class="admin-tab-content hidden space-y-6">
       <div class="max-w-lg mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
-        <div>
-          <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2">
-            <span>⚙️</span>
-            <span>ক্লাউড ডেটাবেস ও সিস্টেম স্ট্যাটাস</span>
+        <div class="text-center space-y-2">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center text-2xl border border-amber-500/20">
+            <span>🔒</span>
+          </div>
+          <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+            স্টুডিও নিরাপত্তা ও পিন পরিবর্তন
           </h3>
-          <p class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">
-            আপনার লেখক স্টুডিওর ক্লাউড সংযোগ ও ডেটাবেস ব্যাকআপের সার্বিক চিত্র।
+          <p class="text-xs text-paper-muted dark:text-night-muted font-serif leading-relaxed">
+            লেখক ছাড়া অন্য কেউ যেন স্টুডিওতে প্রবেশ করতে না পারে, সেজন্য আপনার গোপন পিন কোড এখান থেকে পরিবর্তন করতে পারেন।
           </p>
         </div>
 
-        <div class="space-y-3 font-sans text-xs">
-          <div class="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <div>
-                <span class="font-bold text-paper-text dark:text-night-text block">Supabase PostgreSQL ক্লাউড ডেটাবেস</span>
-                <span class="text-[11px] text-paper-muted">রিয়েল-টাইম ক্লাউড স্টোরেজ ও ব্যাকআপ সক্রিয়</span>
-              </div>
-            </div>
-            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">সক্রিয় ও লাইভ ✓</span>
-          </div>
-
-          <div class="p-3.5 rounded-2xl border border-blue-500/30 bg-blue-500/10 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-              <div>
-                <span class="font-bold text-paper-text dark:text-night-text block">GitHub রেপোজিটর সিঙ্ক</span>
-                <span class="text-[11px] text-paper-muted">স্বয়ংক্রিয় ব্যাকআপ ও ভার্সন কন্ট্রোল</span>
-              </div>
-            </div>
-            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-blue-500/20 text-blue-800 dark:text-blue-300">সংযুক্ত ✓</span>
-          </div>
-
-          <div class="p-3.5 rounded-2xl border border-purple-500/30 bg-purple-500/10 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-              <div>
-                <span class="font-bold text-paper-text dark:text-night-text block">ব্রাউজার লোকাল ক্যাশ ব্যাকআপ</span>
-                <span class="text-[11px] text-paper-muted">অফলাইন ও ইনস্ট্যান্ট লোডিং ব্যাকআপ সক্রিয়</span>
-              </div>
-            </div>
-            <span class="px-2.5 py-1 rounded text-[11px] font-bold bg-purple-500/20 text-purple-800 dark:text-purple-300">সক্রিয় ✓</span>
-          </div>
-
-                    <!-- PIN Code Management -->
-          <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/40 dark:bg-night-bg/40 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text flex items-center gap-2">
-                  <span>🔐</span>
-                  <span>লেখক স্টুডিও পিন কোড</span>
-                </h4>
-                <p class="text-xs text-paper-muted font-sans mt-0.5">
-                  ডিফল্ট পিন: <code class="font-mono font-bold text-paper-accent dark:text-night-accent">786992</code>
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
+        <div class="space-y-4 pt-2">
+          <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 space-y-3">
+            <label for="new-pin-input" class="block text-xs font-sans font-semibold text-paper-text dark:text-night-text">
+              নতুন পিন কোড লিখুন (৪-৮ ডিজিট):
+            </label>
+            <div class="flex items-center gap-2">
               <input
                 id="new-pin-input"
                 type="password"
                 maxlength="8"
-                placeholder="নতুন পিন কোড লিখুন"
-                class="flex-grow px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-xs font-mono"
+                placeholder="নতুন পিন দিন..."
+                autocomplete="off"
+                class="flex-grow px-4 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-sm font-mono text-paper-text dark:text-night-text focus:outline-none focus:ring-2 focus:ring-paper-accent"
               />
               <button
                 id="save-new-pin-btn"
                 type="button"
-                class="px-4 py-2 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 cursor-pointer shadow-2xs whitespace-nowrap"
+                class="px-5 py-2.5 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-95 transition-all whitespace-nowrap"
               >
-                পিন সংরক্ষণ
+                পিন সেভ করুন
               </button>
             </div>
+            <p id="pin-change-status" class="hidden text-xs text-emerald-600 dark:text-emerald-400 font-sans font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+              ✓ পিন কোড সফলভাবে পরিবর্তন হয়েছে!
+            </p>
           </div>
 
-          <div id="offline-queue-card" class="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <span class="text-base">📶</span>
-              <div>
-                <span class="font-bold text-paper-text dark:text-night-text block">অফলাইন সিঙ্ক কিউ (স্বয়ংক্রিয় ক্লাউড আপলোড)</span>
-                <span id="offline-queue-desc" class="text-[11px] text-paper-muted">ইন্টারনেট পাওয়া মাত্রই অপেক্ষমাণ লেখা স্বয়ংক্রিয়ভাবে আপলোড হবে</span>
-              </div>
-            </div>
-            <span id="offline-queue-badge" class="px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300">০টি অপেক্ষমাণ</span>
-          </div>
-
-          <div class="pt-3 border-t border-paper-border/60">
+          <div class="pt-2">
             <button
-              id="force-cloud-sync-btn"
+              id="settings-lock-now-btn"
               type="button"
-              class="w-full py-3 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-98 transition-all flex items-center justify-center gap-2 text-xs"
+              class="w-full py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-sans font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>🔄</span>
-              <span>ক্লাউড ডেটাবেস থেকে সকল লেখা রিফ্রেশ করুন</span>
+              <span>🔒</span>
+              <span>স্টুডিও এখনই লক করুন</span>
             </button>
           </div>
         </div>
@@ -1020,6 +977,7 @@ const [posts, categories, author] = await Promise.all([
   <script id="server-categories-data" type="application/json" set:html={JSON.stringify(categories)} />
   <script id="server-author-data" type="application/json" set:html={JSON.stringify(author)} />
   <script id="server-bookshelf-data" type="application/json" set:html={JSON.stringify(defaultBookshelf)} />
+  <script id="server-interactions-data" type="application/json" set:html={JSON.stringify(interactions)} />
 
   <!-- Author Studio Client Engine -->
   <script is:inline>
@@ -1075,11 +1033,14 @@ const [posts, categories, author] = await Promise.all([
         if (e.key === 'Enter') attemptUnlock();
       });
 
-      adminLockBtn?.addEventListener('click', () => {
+      function lockStudio() {
         sessionStorage.removeItem('kherokhata_admin_authenticated');
         checkAuth();
         if (window.showAdminToast) window.showAdminToast('স্টুডিও লক করা হয়েছে। 🔒');
-      });
+      }
+
+      adminLockBtn?.addEventListener('click', lockStudio);
+      document.getElementById('settings-lock-now-btn')?.addEventListener('click', lockStudio);
 
       saveNewPinBtn?.addEventListener('click', () => {
         const val = newPinInput?.value.trim();
@@ -2521,6 +2482,21 @@ const [posts, categories, author] = await Promise.all([
         return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
       }
 
+      const SLUG_ALIASES = {
+        'takhassuser-jibon-shuru': 'তাখাসসুসের-জীবন-শুরু',
+        'তাখাসসুসের-জীবন-শুরু': 'তাখাসসুসের-জীবন-শুরু',
+        'dinlipi-shukrobar-amimul-ihsan': 'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত',
+        'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত': 'দিনলিপি-শুক্রবার-ও-মুফতীয়ে-আজম-আমীমুল-ইহসান-রহ-এর-মাকবারা-যিয়ারত',
+        'notun-mehman': 'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর',
+        'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর': 'নতুন-মেহমান-ও-বাংলাবাজারের-কিতাব-সফর'
+      };
+
+      function isSameArticleSlug(a, b) {
+        if (!a || !b) return false;
+        if (a === b) return true;
+        return (SLUG_ALIASES[a] || a) === (SLUG_ALIASES[b] || b);
+      }
+
       const adminTotalViews = document.getElementById('admin-total-views');
       const adminTotalLikes = document.getElementById('admin-total-likes');
       const adminTotalComments = document.getElementById('admin-total-comments');
@@ -2529,11 +2505,12 @@ const [posts, categories, author] = await Promise.all([
       const adminCommentsFeedBadge = document.getElementById('admin-comments-feed-badge');
       const refreshInteractionsBtn = document.getElementById('refresh-interactions-btn');
 
-      let currentInteractionsData = { stats: {}, comments: [] };
+      const serverInteractionsEl = document.getElementById('server-interactions-data');
+      let currentInteractionsData = serverInteractionsEl ? JSON.parse(serverInteractionsEl.textContent || '{"stats":{},"comments":[]}') : { stats: {}, comments: [] };
 
       async function loadInteractionsData() {
         try {
-          const res = await fetch('/api/interactions?admin=true');
+          const res = await fetch('/api/interactions?admin=true&_t=' + Date.now());
           const json = await res.json();
           if (json && json.success && json.data) {
             currentInteractionsData = json.data;
@@ -2569,7 +2546,7 @@ const [posts, categories, author] = await Promise.all([
           } else {
             adminArticlesStatsList.innerHTML = allPosts.map((p) => {
               const st = stats[p.slug] || { views: 0, likes: 0 };
-              const postComments = comments.filter((c) => c.slug === p.slug).length;
+              const postComments = comments.filter((c) => isSameArticleSlug(c.slug, p.slug)).length;
               return `
                 <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs">
                   <div class="min-w-0 flex-grow">
@@ -2608,7 +2585,7 @@ const [posts, categories, author] = await Promise.all([
             `;
           } else {
             adminCommentsFeedList.innerHTML = comments.map((c) => {
-              const postMatch = (serializedPosts || []).find((p) => p.slug === c.slug);
+              const postMatch = (serializedPosts || []).find((p) => isSameArticleSlug(p.slug, c.slug));
               const postTitle = postMatch ? postMatch.title : c.slug;
 
               return `

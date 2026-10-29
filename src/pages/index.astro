@@ -542,13 +542,7 @@ function toBn(n: number) {
       targetTab.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
       targetTab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
 
-      const grid = document.getElementById('posts-grid');
-      if (grid) grid.classList.add('opacity-40');
-
-      setTimeout(() => {
-        filterPosts(targetTab.getAttribute('data-filter') || 'all');
-        if (grid) grid.classList.remove('opacity-40');
-      }, 70);
+      filterPosts(targetTab.getAttribute('data-filter') || 'all');
 
       if (shouldScroll) {
         const sec = document.getElementById('categories');

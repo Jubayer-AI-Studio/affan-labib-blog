@@ -464,6 +464,9 @@ const renderedContent = renderBody(displayPost.body);
       function renderComments(comments) {
         if (commentsLoading) commentsLoading.classList.add('hidden');
         if (!comments || comments.length === 0) {
+          if (commentsList && commentsList.children.length > 0) {
+            return; // Protect pre-rendered SSR comments against empty API response
+          }
           if (commentsEmpty) commentsEmpty.classList.remove('hidden');
           if (commentsTotalBadge) commentsTotalBadge.textContent = '০টি মন্তব্য';
           if (commentsList) commentsList.innerHTML = '';

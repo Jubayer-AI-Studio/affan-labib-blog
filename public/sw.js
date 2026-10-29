@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v36 (Zero-Crash Instant Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v36';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v37 (True 0ms Instant PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v37';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -94,7 +94,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Rock-solid navigation & static asset handling (zero blank screen guarantee)
+// Fetch: Rock-solid navigation & static asset handling (zero blank screen & 0ms instant response guarantee)
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
@@ -122,7 +122,7 @@ self.addEventListener('fetch', (event) => {
       );
       return;
     }
-    // Allow mutation APIs to pass directly to network
+    // Allow mutation APIs and interactions to pass directly to network
     return;
   }
 
@@ -147,43 +147,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Navigation requests (HTML pages): Safe Network-First with Comprehensive Cache Fallback
+  // 3. Navigation requests (HTML pages): Safe Stale-While-Revalidate with Instant Cache Delivery (0ms)
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        try {
-          // Generous 5000ms timeout for mobile 3G/4G stability
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-          const networkResponse = await fetch(request, { signal: controller.signal });
-          clearTimeout(timeoutId);
+        const cache = await caches.open(CACHE_NAME);
 
-          if (networkResponse && networkResponse.status === 200) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, networkResponse.clone()).catch(() => {});
-            return networkResponse;
-          }
-        } catch (e) {
-          // Network failed or timed out: fall back gracefully to cache
-        }
-
-        // Cache fallback 1: Check active cache for exact route
-        const activeCache = await caches.open(CACHE_NAME);
-        let cachedResponse = await activeCache.match(request, { ignoreSearch: true });
+        // 1. Instant Cache Match (0ms response time on every tap)
+        let cachedResponse = await cache.match(request, { ignoreSearch: true });
         if (!cachedResponse && (url.pathname === '/' || url.pathname === '')) {
-          cachedResponse = await activeCache.match('/', { ignoreSearch: true });
+          cachedResponse = await cache.match('/', { ignoreSearch: true });
         }
-        if (cachedResponse) return cachedResponse;
+        if (!cachedResponse) {
+          cachedResponse = await caches.match(request, { ignoreSearch: true });
+        }
 
-        // Cache fallback 2: Check any cache across versions
-        const anyMatch = await caches.match(request, { ignoreSearch: true }) || await caches.match('/', { ignoreSearch: true });
-        if (anyMatch) return anyMatch;
+        // 2. Background Revalidation (Quietly updates cache in the background without blocking the UI)
+        const fetchPromise = fetch(request)
+          .then(async (networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const c = await caches.open(CACHE_NAME);
+              await c.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch(() => null);
 
-        // Cache fallback 3: Render offline page
+        // 3. If cached, RETURN IMMEDIATELY in 0ms!
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // 4. If not yet in cache, await network response
+        const networkResponse = await fetchPromise;
+        if (networkResponse) return networkResponse;
+
+        // 5. Offline fallback
         const offline = await caches.match('/offline', { ignoreSearch: true });
         if (offline) return offline;
 
-        // Emergency fallback shell: styled, Bengali, self-reloading
+        // 6. Styled reloadable emergency fallback
         return new Response(
           '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>লাবীবের খেরোখাতা</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px 20px;background:#FAF8F5;color:#1c1917}h2{font-size:22px;margin-bottom:8px}p{color:#78716c;font-size:14px}button{margin-top:20px;padding:12px 24px;background:#9A3412;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer}</style></head><body><h2>লাবীবের খেরোখাতা</h2><p>পেজটি প্রস্তুত হচ্ছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চাপ দিন।</p><button onclick="window.location.reload()">পুনরায় লোড করুন</button></body></html>',
           {

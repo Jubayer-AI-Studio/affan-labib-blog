@@ -8,6 +8,12 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Zero-Latency Instant Mobile Tap Feedback */
+  button, a, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 /* Sepia Mode Custom Palette */
