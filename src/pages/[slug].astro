@@ -2,7 +2,7 @@
 // src/pages/[slug].astro
 import Layout from '../layouts/Layout.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
-import { getAllPostsAsync } from '../lib/db';
+import { getAllPostsAsync, CATEGORY_LABELS_MAP } from '../lib/db';
 import { getArticleStats, toBnDigits } from '../lib/interactions';
 
 export const prerender = false;
@@ -33,15 +33,7 @@ const articleStats = await getArticleStats(displayPost.slug);
 const initialViewsBn = toBnDigits(articleStats.views || 0);
 const initialLikesBn = toBnDigits(articleStats.likes || 0);
 
-const categoryLabels: Record<string, string> = {
-  chinta: 'চিন্তা',
-  pathalap: 'পাঠালাপ',
-  itihas: 'ইতিহাস',
-  'boi-alochona': 'বই-আলোচনা',
-  onubad: 'অনুবাদ'
-};
-
-const categoryName = categoryLabels[displayPost.category] || displayPost.category;
+const categoryName = CATEGORY_LABELS_MAP[displayPost.category] || displayPost.category;
 const readTime = Math.max(1, Math.ceil((displayPost.wordCount || 200) / 100));
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
@@ -71,6 +63,18 @@ function renderBody(body: string) {
       }
       if (trimmed === '---') {
         return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
+      }
+
+      // Blockquote handling (> quote lines)
+      if (trimmed.startsWith('> ') || trimmed.startsWith('>')) {
+        const lines = trimmed.split('\n');
+        const quoteContent = lines
+          .map((line) => line.replace(/^>\s?/, ''))
+          .join('<br />');
+        let formattedQuote = quoteContent
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        return `<blockquote class="my-6 border-l-4 border-amber-600 dark:border-amber-400 bg-amber-500/8 dark:bg-amber-400/10 px-5 py-4 rounded-r-2xl font-serif text-base sm:text-lg text-paper-text dark:text-night-text italic leading-relaxed shadow-2xs">${formattedQuote}</blockquote>`;
       }
 
       // Convert **bold** and *italic*
@@ -262,6 +266,81 @@ const renderedContent = renderBody(displayPost.body);
         <span id="main-like-count" data-likes={articleStats.likes || 0} class="font-mono text-base font-bold">{initialLikesBn}</span>
       </button>
     </div>
+    <!-- Reader Comments (মন্তব্যঘর) Section -->
+    <section id="comments-section" class="pt-10 border-t border-paper-border/80 dark:border-night-border/80 space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text flex items-center gap-2.5">
+            <span>💬</span>
+            <span>মন্তব্যঘর</span>
+          </h3>
+          <p class="text-xs font-serif text-paper-muted dark:text-night-muted mt-1">
+            লেখাটি পড়ে আপনার অনুভূতি বা প্রাসঙ্গিক ভাবনা লিখে যেতে পারেন
+          </p>
+        </div>
+        <span id="comments-total-badge" class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-paper-accent/15 dark:bg-night-accent/20 text-paper-accent dark:text-night-accent border border-paper-accent/20">
+          ০টি মন্তব্য
+        </span>
+      </div>
+
+      <!-- Comment Submission Form -->
+      <form id="comment-form" class="space-y-4 rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-5 sm:p-6 shadow-xs">
+        <div class="space-y-1.5">
+          <label for="comment-author-input" class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">
+            আপনার নাম <span class="text-[11px] opacity-75">(ঐচ্ছিক — ফাঁকা রাখলে 'মুগ্ধ পাঠক' হিসেবে যাবে)</span>
+          </label>
+          <input
+            type="text"
+            id="comment-author-input"
+            maxlength="50"
+            placeholder="যেমন: সাদমান শাকিল (বা খালি রাখুন)"
+            class="w-full px-4 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text placeholder:text-paper-muted/60 text-sm font-sans focus:outline-none focus:ring-2 focus:ring-paper-accent/40 transition-all"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="comment-body-input" class="block text-xs font-sans font-medium text-paper-text dark:text-night-text">
+            আপনার মন্তব্য <span class="text-rose-500">*</span>
+          </label>
+          <textarea
+            id="comment-body-input"
+            rows="3"
+            maxlength="800"
+            required
+            placeholder="লেখাটি পড়ে আপনার ভাবনা বা ভালোলাগার কথা লিখুন..."
+            class="w-full px-4 py-3 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text placeholder:text-paper-muted/60 text-sm font-serif leading-relaxed focus:outline-none focus:ring-2 focus:ring-paper-accent/40 transition-all resize-y"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span id="comment-char-counter" class="text-[11px] font-mono text-paper-muted dark:text-night-muted">
+            ৮০০ অক্ষর বাকি
+          </span>
+
+          <button
+            id="comment-submit-btn"
+            type="submit"
+            class="px-5 py-2.5 rounded-xl bg-paper-accent hover:opacity-90 active:scale-95 text-white font-sans text-xs sm:text-sm font-semibold transition-all shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <span>মন্তব্য প্রকাশ করুন</span>
+            <span>✉️</span>
+          </button>
+        </div>
+
+        <p id="comment-form-status" class="text-xs font-sans text-emerald-600 dark:text-emerald-400 hidden pt-1"></p>
+      </form>
+
+      <!-- Live Comments Stream Container -->
+      <div id="comments-stream-container" class="space-y-4">
+        <div id="comments-loading" class="py-6 text-center text-xs font-sans text-paper-muted animate-pulse">
+          মন্তব্য লোড হচ্ছে...
+        </div>
+        <div id="comments-empty" class="hidden py-8 text-center rounded-2xl border border-dashed border-paper-border/80 dark:border-night-border/80 text-sm font-serif text-paper-muted">
+          🍃 এখনো কোনো মন্তব্য আসেনি। লেখাটি সম্পর্কে প্রথম মন্তব্যটি আপনিই করুন!
+        </div>
+        <div id="comments-list" class="space-y-4"></div>
+      </div>
+    </section>
   </article>
 
   <!-- Floating Quick-Love Action Pill (Reveals on scroll) -->
@@ -338,6 +417,68 @@ const renderedContent = renderBody(displayPost.body);
       const floatingLikeIcon = document.getElementById('floating-like-icon');
       const floatingLikeCount = document.getElementById('floating-like-count');
 
+      const commentsTotalBadge = document.getElementById('comments-total-badge');
+      const commentForm = document.getElementById('comment-form');
+      const commentAuthorInput = document.getElementById('comment-author-input');
+      const commentBodyInput = document.getElementById('comment-body-input');
+      const commentCharCounter = document.getElementById('comment-char-counter');
+      const commentSubmitBtn = document.getElementById('comment-submit-btn');
+      const commentFormStatus = document.getElementById('comment-form-status');
+      const commentsLoading = document.getElementById('comments-loading');
+      const commentsEmpty = document.getElementById('comments-empty');
+      const commentsList = document.getElementById('comments-list');
+
+      function renderComments(comments) {
+        if (commentsLoading) commentsLoading.classList.add('hidden');
+        if (!comments || comments.length === 0) {
+          if (commentsEmpty) commentsEmpty.classList.remove('hidden');
+          if (commentsTotalBadge) commentsTotalBadge.textContent = '০টি মন্তব্য';
+          if (commentsList) commentsList.innerHTML = '';
+          return;
+        }
+
+        if (commentsEmpty) commentsEmpty.classList.add('hidden');
+        if (commentsTotalBadge) commentsTotalBadge.textContent = `${toBn(comments.length)}টি মন্তব্য`;
+
+        if (!commentsList) return;
+        commentsList.innerHTML = comments.map((c) => {
+          const isAuthor = c.isAuthor;
+          const authorBadge = isAuthor
+            ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">✍️ লেখক</span>`
+            : '';
+          const cardBorder = isAuthor
+            ? 'border-amber-500/40 dark:border-amber-400/40 bg-amber-500/5 dark:bg-amber-400/5'
+            : 'border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80';
+
+          const repliesHtml = (c.replies && c.replies.length > 0)
+            ? `<div class="mt-3 pl-4 sm:pl-6 border-l-2 border-amber-500/30 space-y-3">
+                ${c.replies.map((r) => `
+                  <div class="p-3 sm:p-4 rounded-xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/25 space-y-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold font-serif text-paper-text dark:text-night-text text-xs">${r.authorName}</span>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-500/25 text-amber-800 dark:text-amber-200">✍️ লেখক</span>
+                    </div>
+                    <p class="text-xs sm:text-sm font-serif text-paper-text/95 dark:text-night-text/95 leading-relaxed whitespace-pre-wrap">${r.content}</p>
+                  </div>
+                `).join('')}
+              </div>`
+            : '';
+
+          return `
+            <div class="p-4 sm:p-5 rounded-2xl border ${cardBorder} backdrop-blur-xl transition-all shadow-2xs space-y-2">
+              <div class="flex items-center justify-between gap-2 text-xs font-sans">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">${c.authorName}</span>
+                  ${authorBadge}
+                </div>
+              </div>
+              <p class="text-sm sm:text-base font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed whitespace-pre-wrap">${c.content}</p>
+              ${repliesHtml}
+            </div>
+          `;
+        }).join('');
+      }
+
       let currentLikes = parseInt(mainLikeCount?.getAttribute('data-likes') || '0', 10);
       let isLiked = false;
 
@@ -388,18 +529,24 @@ const renderedContent = renderBody(displayPost.body);
         }
       } catch (_) {}
 
-      // 2. Fetch fresh stats from Cloud DB with cache busting
+      // 2. Fetch fresh stats and comments from Cloud DB with cache busting
       fetch(`/api/interactions?slug=${encodeURIComponent(slug)}&_t=${Date.now()}`)
         .then((r) => r.json())
         .then((data) => {
-          if (data && data.success && data.stats) {
-            const v = toBn(data.stats.views || 0);
-            if (topViewsEl) topViewsEl.textContent = v;
-            if (bottomViewsEl) bottomViewsEl.textContent = v;
-            updateLikeUI(isLiked, data.stats.likes || 0);
+          if (data && data.success) {
+            if (data.stats) {
+              const v = toBn(data.stats.views || 0);
+              if (topViewsEl) topViewsEl.textContent = v;
+              if (bottomViewsEl) bottomViewsEl.textContent = v;
+              updateLikeUI(isLiked, data.stats.likes || 0);
+            }
+            renderComments(data.comments || []);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (commentsLoading) commentsLoading.classList.add('hidden');
+          if (commentsEmpty) commentsEmpty.classList.remove('hidden');
+        });
 
       // 3. Like Toggle Handler (Syncs to Cloud permanently with lock)
       let isLikingInProgress = false;
@@ -445,6 +592,64 @@ const renderedContent = renderBody(displayPost.body);
 
       mainLikeBtn?.addEventListener('click', handleLikeClick);
       floatingLikeBtn?.addEventListener('click', handleLikeClick);
+
+      // Comment character counter
+      commentBodyInput?.addEventListener('input', () => {
+        const remaining = 800 - (commentBodyInput.value || '').length;
+        if (commentCharCounter) commentCharCounter.textContent = `${toBn(Math.max(0, remaining))} অক্ষর বাকি`;
+      });
+
+      // Comment Form Submission Handler (Live Cloud Submission)
+      commentForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const content = (commentBodyInput?.value || '').trim();
+        if (!content) return;
+
+        const authorName = (commentAuthorInput?.value || '').trim() || 'মুগ্ধ পাঠক';
+        if (commentSubmitBtn) commentSubmitBtn.disabled = true;
+
+        fetch('/api/interactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug, action: 'comment', authorName, content })
+        })
+          .then((r) => r.json())
+          .then((res) => {
+            if (commentSubmitBtn) commentSubmitBtn.disabled = false;
+            if (res && res.success && res.comment) {
+              if (commentBodyInput) commentBodyInput.value = '';
+              if (commentAuthorInput) commentAuthorInput.value = '';
+              if (commentFormStatus) {
+                commentFormStatus.textContent = '✓ আপনার মন্তব্যটি সরাসরি প্রকাশিত হয়েছে। অনেক ধন্যবাদ!';
+                commentFormStatus.classList.remove('hidden');
+                setTimeout(() => commentFormStatus.classList.add('hidden'), 4000);
+              }
+
+              if (commentsEmpty) commentsEmpty.classList.add('hidden');
+              const newCardHtml = `
+                <div class="p-4 sm:p-5 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-xl transition-all shadow-2xs space-y-2 animate-fadeIn">
+                  <div class="flex items-center justify-between gap-2 text-xs font-sans">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">${res.comment.authorName}</span>
+                    </div>
+                  </div>
+                  <p class="text-sm sm:text-base font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed whitespace-pre-wrap">${res.comment.content}</p>
+                </div>
+              `;
+              if (commentsList) {
+                commentsList.insertAdjacentHTML('afterbegin', newCardHtml);
+                const total = commentsList.children.length;
+                if (commentsTotalBadge) commentsTotalBadge.textContent = `${toBn(total)}টি মন্তব্য`;
+              }
+            } else {
+              alert(res?.error || 'মন্তব্য পাঠাতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+            }
+          })
+          .catch(() => {
+            if (commentSubmitBtn) commentSubmitBtn.disabled = false;
+            alert('নেটওয়ার্ক সংযোগ পরীক্ষা করুন।');
+          });
+      });
 
       // 4. Floating Love Pill scroll reveal
       window.addEventListener('scroll', () => {
@@ -624,7 +829,11 @@ const renderedContent = renderBody(displayPost.body);
           pathalap: 'পাঠালাপ',
           itihas: 'ইতিহাস',
           'boi-alochona': 'বই-আলোচনা',
-          onubad: 'অনুবাদ'
+          onubad: 'অনুবাদ',
+          dinlipi: 'দিনলিপি',
+          smritikotha: 'স্মৃতিকথা',
+          bhromongatha: 'ভ্রমণগাঁথা',
+          goddo: 'গদ্য'
         };
         if (catEl) {
           catEl.innerText = categoryLabels[p.category] || p.category;
@@ -650,6 +859,12 @@ const renderedContent = renderBody(displayPost.body);
             if (trimmed.startsWith('### ')) return `<h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-3">${trimmed.slice(4)}</h3>`;
             if (trimmed.startsWith('## ')) return `<h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mt-10 mb-4">${trimmed.slice(3)}</h2>`;
             if (trimmed === '---') return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
+            if (trimmed.startsWith('> ') || trimmed.startsWith('>')) {
+              const lines = trimmed.split('\n');
+              const quoteContent = lines.map((l) => l.replace(/^>\s?/, '')).join('<br />');
+              let formattedQuote = quoteContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+              return `<blockquote class="my-6 border-l-4 border-amber-600 dark:border-amber-400 bg-amber-500/8 dark:bg-amber-400/10 px-5 py-4 rounded-r-2xl font-serif text-base sm:text-lg text-paper-text dark:text-night-text italic leading-relaxed shadow-2xs">${formattedQuote}</blockquote>`;
+            }
             let formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br />');
             formatted = formatted.replace(/\[(\d+)\]/g, `<button type="button" data-fn-id="$1" class="footnote-btn inline-flex items-center justify-center mx-1 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-colors cursor-pointer select-none align-super"><span>[$1]</span></button>`);
             return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;

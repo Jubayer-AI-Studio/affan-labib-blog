@@ -1,6 +1,6 @@
 // src/lib/interactions.ts
-// Universal Cloud Interactions Engine (Views & Likes Only)
-// Direct Supabase Cloud Sync with In-Memory and Local Resilience
+// Universal Cloud Interactions Engine (Views, Likes, Comments & Author Replies)
+// Equipped with Direct Supabase Cloud Sync and In-Memory/Local Resilience
 
 import { supabase, isSupabaseConfigured } from './supabase.ts';
 import staticInteractions from '../data/interactions.json';
@@ -26,47 +26,86 @@ function getLocalPath(rel: string): string {
   } catch {}
   return '';
 }
+
 const CLOUD_STORE_SLUG = '__interactions_store__';
+
+export interface CommentItem {
+  id: string;
+  slug: string;
+  parentId?: string | null;
+  authorName: string;
+  content: string;
+  createdAt: string;
+  isAuthor?: boolean;
+  replies?: CommentItem[];
+}
 
 export interface ArticleStat {
   views: number;
   likes: number;
 }
 
-type StatsMap = Record<string, ArticleStat>;
+export interface InteractionsStore {
+  stats: Record<string, ArticleStat>;
+  comments: CommentItem[];
+}
 
-let inMemoryStats: StatsMap | null = null;
+let inMemoryStore: InteractionsStore | null = null;
 let lastCacheTime = 0;
-const CACHE_TTL_MS = 2000; // 2s cache // 5s cache
+const CACHE_TTL_MS = 2000; // 2s cache for instant cross-edge synchronicity
 
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 export function toBnDigits(n: number | string): string {
   return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
 }
 
-function loadLocalStore(): StatsMap {
+function normalizeStore(raw: any): InteractionsStore {
+  if (!raw || typeof raw !== 'object') {
+    return { stats: {}, comments: [] };
+  }
+  let stats: Record<string, ArticleStat> = {};
+  let comments: CommentItem[] = [];
+
+  if (raw.stats && typeof raw.stats === 'object') {
+    stats = raw.stats;
+    comments = Array.isArray(raw.comments) ? raw.comments : [];
+  } else {
+    // Legacy flat stats map format
+    stats = raw;
+    comments = [];
+  }
+
+  return { stats, comments };
+}
+
+function loadLocalStore(): InteractionsStore {
   try {
-    const fs = getFs(); const p = getLocalPath('src/data/interactions.json');
+    const fs = getFs();
+    const p = getLocalPath('src/data/interactions.json');
     if (fs && p && fs.existsSync(p)) {
       const data = fs.readFileSync(p, 'utf-8');
       const parsed = JSON.parse(data);
-      return parsed.stats || parsed || {};
+      return normalizeStore(parsed);
     }
   } catch (err) {
     // Cloudflare Edge runtime fallback
   }
-  return (staticInteractions as any)?.stats || {};
+  return normalizeStore(staticInteractions);
 }
 
-function saveLocalStore(stats: StatsMap): void {
+function saveLocalStore(store: InteractionsStore): void {
   try {
-    const fs = getFs(); const p = getLocalPath('src/data/interactions.json'); if (fs && p) { fs.writeFileSync(p, JSON.stringify({ stats }, null, 2), 'utf-8'); }
+    const fs = getFs();
+    const p = getLocalPath('src/data/interactions.json');
+    if (fs && p) {
+      fs.writeFileSync(p, JSON.stringify(store, null, 2), 'utf-8');
+    }
   } catch {
     // In serverless, filesystem is read-only which is expected
   }
 }
 
-async function fetchFromSupabase(): Promise<StatsMap | null> {
+async function fetchFromSupabase(): Promise<InteractionsStore | null> {
   if (!isSupabaseConfigured || !supabase) return null;
   try {
     const { data, error } = await supabase
@@ -77,7 +116,7 @@ async function fetchFromSupabase(): Promise<StatsMap | null> {
 
     if (!error && data && data.body) {
       const parsed = JSON.parse(data.body);
-      return parsed && typeof parsed === 'object' ? parsed : {};
+      return normalizeStore(parsed);
     }
   } catch (err) {
     console.warn('[Interactions] Supabase fetch warning:', err);
@@ -85,7 +124,7 @@ async function fetchFromSupabase(): Promise<StatsMap | null> {
   return null;
 }
 
-async function saveToSupabase(stats: StatsMap): Promise<boolean> {
+async function saveToSupabase(store: InteractionsStore): Promise<boolean> {
   if (!isSupabaseConfigured || !supabase) return false;
   try {
     const { error } = await supabase.from('posts').upsert(
@@ -93,11 +132,11 @@ async function saveToSupabase(stats: StatsMap): Promise<boolean> {
         slug: CLOUD_STORE_SLUG,
         title: 'System Cloud Interactions Store',
         category: 'chinta',
-        description: 'Auto-synced reactions & views',
+        description: 'Auto-synced reactions, views & comments',
         published_at: '2026-01-01T00:00:00Z',
         formatted_date: '১ জানুয়ারি, ২০২৬',
         tags: [],
-        body: JSON.stringify(stats),
+        body: JSON.stringify(store),
         word_count: 0,
         footnotes: [],
         updated_at: new Date().toISOString()
@@ -115,71 +154,159 @@ async function saveToSupabase(stats: StatsMap): Promise<boolean> {
   }
 }
 
-async function getStatsMap(): Promise<StatsMap> {
-  if (inMemoryStats && Date.now() - lastCacheTime < CACHE_TTL_MS) {
-    return inMemoryStats;
+async function getStore(): Promise<InteractionsStore> {
+  if (inMemoryStore && Date.now() - lastCacheTime < CACHE_TTL_MS) {
+    return inMemoryStore;
   }
 
   // 1. Try Supabase Cloud
-  const cloudStats = await fetchFromSupabase();
-  if (cloudStats !== null) {
-    inMemoryStats = cloudStats;
+  const cloudStore = await fetchFromSupabase();
+  if (cloudStore !== null) {
+    inMemoryStore = cloudStore;
     lastCacheTime = Date.now();
-    saveLocalStore(cloudStats);
-    return cloudStats;
+    saveLocalStore(cloudStore);
+    return cloudStore;
   }
 
   // 2. Fallback to Local/In-Memory
-  if (!inMemoryStats) {
-    inMemoryStats = loadLocalStore();
+  if (!inMemoryStore) {
+    inMemoryStore = loadLocalStore();
   }
   lastCacheTime = Date.now();
-  return inMemoryStats;
+  return inMemoryStore;
 }
 
 export async function getArticleStats(slug: string): Promise<ArticleStat> {
-  const map = await getStatsMap();
-  return map[slug] || { views: 0, likes: 0 };
+  const store = await getStore();
+  return store.stats[slug] || { views: 0, likes: 0 };
+}
+
+export async function getArticleStatsAndComments(slug: string): Promise<{
+  views: number;
+  likes: number;
+  comments: CommentItem[];
+}> {
+  const store = await getStore();
+  const stat = store.stats[slug] || { views: 0, likes: 0 };
+  const allComments = (store.comments || []).filter((c) => c.slug === slug);
+
+  // Build hierarchical replies
+  const rootComments: CommentItem[] = [];
+  const replyMap = new Map<string, CommentItem[]>();
+
+  for (const c of allComments) {
+    if (c.parentId) {
+      const arr = replyMap.get(c.parentId) || [];
+      arr.push(c);
+      replyMap.set(c.parentId, arr);
+    } else {
+      rootComments.push(c);
+    }
+  }
+
+  for (const root of rootComments) {
+    root.replies = replyMap.get(root.id) || [];
+  }
+
+  return {
+    views: stat.views,
+    likes: stat.likes,
+    comments: rootComments
+  };
 }
 
 export async function incrementView(slug: string): Promise<number> {
-  const map = await getStatsMap();
-  if (!map[slug]) {
-    map[slug] = { views: 0, likes: 0 };
+  const store = await getStore();
+  if (!store.stats[slug]) {
+    store.stats[slug] = { views: 0, likes: 0 };
   }
-  map[slug].views += 1;
-  const newViews = map[slug].views;
+  store.stats[slug].views += 1;
+  const newViews = store.stats[slug].views;
 
-  // Persist immediately to Cloud & Local
-  inMemoryStats = map;
+  inMemoryStore = store;
   lastCacheTime = Date.now();
-  saveLocalStore(map);
-  await saveToSupabase(map);
+  saveLocalStore(store);
+  await saveToSupabase(store);
 
   return newViews;
 }
 
 export async function toggleLike(slug: string, isLike: boolean): Promise<number> {
-  const map = await getStatsMap();
-  if (!map[slug]) {
-    map[slug] = { views: 0, likes: 0 };
+  const store = await getStore();
+  if (!store.stats[slug]) {
+    store.stats[slug] = { views: 0, likes: 0 };
   }
   if (isLike) {
-    map[slug].likes += 1;
+    store.stats[slug].likes += 1;
   } else {
-    map[slug].likes = Math.max(0, map[slug].likes - 1);
+    store.stats[slug].likes = Math.max(0, store.stats[slug].likes - 1);
   }
-  const newLikes = map[slug].likes;
+  const newLikes = store.stats[slug].likes;
 
-  // Persist immediately to Cloud & Local
-  inMemoryStats = map;
+  inMemoryStore = store;
   lastCacheTime = Date.now();
-  saveLocalStore(map);
-  await saveToSupabase(map);
+  saveLocalStore(store);
+  await saveToSupabase(store);
 
   return newLikes;
 }
 
-export async function getAllStatsForAdmin(): Promise<StatsMap> {
-  return await getStatsMap();
+export async function addComment(
+  slug: string,
+  content: string,
+  authorName?: string,
+  isAuthor = false,
+  parentId: string | null = null
+): Promise<CommentItem> {
+  const store = await getStore();
+  const id = `cmt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const cleanName = (authorName || '').trim() || (isAuthor ? 'আফফান লাবীব (লেখক)' : 'মুগ্ধ পাঠক');
+  const now = new Date().toISOString();
+
+  const newComment: CommentItem = {
+    id,
+    slug,
+    parentId: parentId || null,
+    authorName: cleanName,
+    content: content.trim(),
+    createdAt: now,
+    isAuthor,
+    replies: []
+  };
+
+  if (!store.comments) store.comments = [];
+  store.comments.unshift(newComment); // Newest comments first
+
+  inMemoryStore = store;
+  lastCacheTime = Date.now();
+  saveLocalStore(store);
+  await saveToSupabase(store);
+
+  return newComment;
+}
+
+export async function deleteComment(id: string): Promise<boolean> {
+  const store = await getStore();
+  if (!store.comments) return false;
+  const initialLen = store.comments.length;
+  // Delete comment and its replies
+  store.comments = store.comments.filter((c) => c.id !== id && c.parentId !== id);
+  const changed = store.comments.length < initialLen;
+  if (!changed) return false;
+
+  inMemoryStore = store;
+  lastCacheTime = Date.now();
+  saveLocalStore(store);
+  await saveToSupabase(store);
+
+  return true;
+}
+
+export async function getAllInteractionsForAdmin(): Promise<InteractionsStore> {
+  return await getStore();
+}
+
+export async function getAllStatsForAdmin(): Promise<Record<string, ArticleStat>> {
+  const store = await getStore();
+  return store.stats;
 }

@@ -1,5 +1,7 @@
 ---
 // src/components/PostCard.astro
+import { CATEGORY_LABELS_MAP } from '../lib/db';
+
 export interface Props {
   post: {
     slug: string;
@@ -15,15 +17,7 @@ export interface Props {
 
 const { post } = Astro.props;
 
-const categoryLabels: Record<string, string> = {
-  chinta: 'চিন্তা',
-  pathalap: 'পাঠালাপ',
-  itihas: 'ইতিহাস',
-  'boi-alochona': 'বই-আলোচনা',
-  onubad: 'অনুবাদ'
-};
-
-const categoryName = categoryLabels[post.category] || post.category;
+const categoryName = CATEGORY_LABELS_MAP[post.category] || post.category;
 const readTime = Math.max(1, Math.ceil((post.wordCount || 200) / 100));
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);

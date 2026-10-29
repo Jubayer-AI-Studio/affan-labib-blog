@@ -145,6 +145,26 @@ export function getAllPosts(): Post[] {
   return [...local];
 }
 
+function saveLocalPosts(list: Post[]): void {
+  try {
+    const fs = getFs();
+    const p = getLocalPath('src/data/posts.json');
+    if (fs && p) {
+      fs.writeFileSync(p, JSON.stringify(list, null, 2), 'utf-8');
+    }
+  } catch {}
+}
+
+function saveLocalCategories(list: Category[]): void {
+  try {
+    const fs = getFs();
+    const p = getLocalPath('src/data/categories.json');
+    if (fs && p) {
+      fs.writeFileSync(p, JSON.stringify(list, null, 2), 'utf-8');
+    }
+  } catch {}
+}
+
 export async function savePost(newPost: Post): Promise<boolean> {
   try {
     // 1. Update in-memory cache immediately
@@ -186,11 +206,7 @@ export async function savePost(newPost: Post): Promise<boolean> {
     }
 
     // 3. Write to local file if writable (e.g. dev/local environment)
-    try {
-      fs.writeFileSync(POSTS_PATH, JSON.stringify(current, null, 2), 'utf-8');
-    } catch (e) {
-      // In serverless, filesystem is read-only, which is expected
-    }
+    saveLocalPosts(current);
 
     // 4. Trigger GitHub background sync so repo stays updated forever
     syncPostsToGitHub(current).catch((e) =>
@@ -223,9 +239,7 @@ export async function deletePostBySlug(slug: string): Promise<boolean> {
     }
 
     // 2. Delete from local if writable
-    try {
-      fs.writeFileSync(POSTS_PATH, JSON.stringify(filtered, null, 2), 'utf-8');
-    } catch (e) {}
+    saveLocalPosts(filtered);
 
     // 3. Trigger GitHub background sync
     syncPostsToGitHub(filtered).catch(() => {});
@@ -264,13 +278,35 @@ export function updateAuthorAvatar(avatarDataUrl: string): boolean {
   return false;
 }
 
-const DEFAULT_CATEGORIES: Category[] = [
+const CLOUD_CATEGORIES_SLUG = '__categories_store__';
+
+export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'chinta', title: 'চিন্তা', desc: 'সরল মনন, জীবন ও দৈনন্দিন ভাবনার নানা প্রসঙ্গ', icon: '💭' },
   { id: 'pathalap', title: 'পাঠালাপ', desc: 'বই পড়তে পড়তে জেগে ওঠা চিন্তা ও আলাপচারিতা', icon: '📖' },
   { id: 'itihas', title: 'ইতিহাস', desc: 'অতীত ঐতিহ্য, মনীষী জীবন ও ইতিহাসের গভীর অনুসন্ধান', icon: '🏛️' },
   { id: 'boi-alochona', title: 'বই-আলোচনা', desc: 'পঠিত প্রিয় বইগুলোর ব্যক্তিগত পর্যালোচনা ও পাঠপ্রতিক্রিয়া', icon: '📚' },
-  { id: 'onubad', title: 'অনুবাদ', desc: 'আরবি ও অন্যান্য ভাষার ধ্রুপদী ও সমকালীন সাহিত্যের অনুবাদ', icon: '🌐' }
+  { id: 'onubad', title: 'অনুবাদ', desc: 'আরবি ও অন্যান্য ভাষার ধ্রুপদী ও সমকালীন সাহিত্যের অনুবাদ', icon: '🌐' },
+  { id: 'dinlipi', title: 'দিনলিপি', desc: 'ব্যক্তিগত দিনলিপি, দিনযাপনের টুকরো ভাবনা ও অনুভূতি', icon: '📔' },
+  { id: 'smritikotha', title: 'স্মৃতিকথা', desc: 'স্মৃতিচারণ, ফেলে আসা দিন ও স্মৃতির পাতা থেকে', icon: '🕰️' },
+  { id: 'bhromongatha', title: 'ভ্রমণগাঁথা', desc: 'ভ্রমণবৃত্তান্ত, পথচলার অভিজ্ঞতা ও দেশ-বিদেশের স্মৃতি', icon: '🧭' },
+  { id: 'goddo', title: 'গদ্য', desc: 'অনবদ্য সাহিত্যিক গদ্য, মননশীল প্রবন্ধ ও মুক্তচিন্তা', icon: '✍️' }
 ];
+
+export const CATEGORY_LABELS_MAP: Record<string, string> = {
+  chinta: 'চিন্তা',
+  pathalap: 'পাঠালাপ',
+  itihas: 'ইতিহাস',
+  'boi-alochona': 'বই-আলোচনা',
+  onubad: 'অনুবাদ',
+  dinlipi: 'দিনলিপি',
+  smritikotha: 'স্মৃতিকথা',
+  bhromongatha: 'ভ্রমণগাঁথা',
+  goddo: 'গদ্য'
+};
+
+export function getCategoryLabel(id: string): string {
+  return CATEGORY_LABELS_MAP[id] || id;
+}
 
 export function getLocalCategories(): Category[] {
   try {
@@ -292,28 +328,33 @@ export async function getCategoriesAsync(): Promise<Category[]> {
     return [...inMemoryCategoriesCache];
   }
 
-  // 2. Try Supabase if configured (guarded by 4s timeout)
+  // 2. Try Supabase cloud categories store (__categories_store__)
   if (isSupabaseConfigured && supabase) {
     try {
-      const query = supabase
-        .from('categories')
-        .select('*');
-      const { data, error } = await withTimeout(query, 4000);
+      const { data, error } = await supabase
+        .from('posts')
+        .select('body')
+        .eq('slug', CLOUD_CATEGORIES_SLUG)
+        .maybeSingle();
 
-      if (!error && data && data.length > 0) {
-        const filteredRows = data.filter((row: any) => !row.slug?.startsWith('__'));
-        const mapped = filteredRows.map((row: any) => ({
-          id: row.id,
-          title: row.title,
-          desc: row.desc || '',
-          icon: row.icon || '📁'
-        }));
-        inMemoryCategoriesCache = mapped;
-        lastCategoriesCacheTime = Date.now();
-        return [...mapped];
+      if (!error && data && data.body) {
+        const parsed = JSON.parse(data.body);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((c: any) => c.id));
+          const merged = [...parsed];
+          for (const def of DEFAULT_CATEGORIES) {
+            if (!existingIds.has(def.id)) {
+              merged.push(def);
+            }
+          }
+          inMemoryCategoriesCache = merged;
+          lastCategoriesCacheTime = Date.now();
+          saveLocalCategories(merged);
+          return [...merged];
+        }
       }
     } catch (e: any) {
-      // Table may not exist yet, fallback smoothly
+      // Fallback smoothly
     }
   }
 
@@ -362,25 +403,31 @@ export async function saveCategory(newCat: Category): Promise<boolean> {
     inMemoryCategoriesCache = current;
     lastCategoriesCacheTime = Date.now();
 
-    // Supabase upsert (silent if table doesn't exist)
+    saveLocalCategories(current);
+
+    // Persist permanently to Supabase Cloud store in posts table
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('categories').upsert(
+        await supabase.from('posts').upsert(
           {
-            id: categoryToSave.id,
-            title: categoryToSave.title,
-            desc: categoryToSave.desc,
-            icon: categoryToSave.icon
+            slug: CLOUD_CATEGORIES_SLUG,
+            title: 'System Cloud Categories Store',
+            category: 'chinta',
+            description: 'Auto-synced categories store',
+            published_at: '2026-01-01T00:00:00Z',
+            formatted_date: '১ জানুয়ারি, ২০২৬',
+            tags: [],
+            body: JSON.stringify(current),
+            word_count: 0,
+            footnotes: [],
+            updated_at: new Date().toISOString()
           },
-          { onConflict: 'id' }
+          { onConflict: 'slug' }
         );
-      } catch (err) {}
+      } catch (err) {
+        console.error('[DB] Supabase categories save error:', err);
+      }
     }
-
-    // Write to local file
-    try {
-      fs.writeFileSync(CATEGORIES_PATH, JSON.stringify(current, null, 2), 'utf-8');
-    } catch (e) {}
 
     return true;
   } catch (err) {
@@ -391,7 +438,7 @@ export async function saveCategory(newCat: Category): Promise<boolean> {
 
 export async function deleteCategory(id: string): Promise<boolean> {
   try {
-    const coreIds = ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad'];
+    const coreIds = ['chinta', 'pathalap', 'itihas', 'boi-alochona', 'onubad', 'dinlipi', 'smritikotha', 'bhromongatha', 'goddo'];
     if (coreIds.includes(id)) {
       return false; // protect core baseline categories
     }
@@ -402,16 +449,28 @@ export async function deleteCategory(id: string): Promise<boolean> {
 
     inMemoryCategoriesCache = filtered;
     lastCategoriesCacheTime = Date.now();
+    saveLocalCategories(filtered);
 
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('categories').delete().eq('id', id);
+        await supabase.from('posts').upsert(
+          {
+            slug: CLOUD_CATEGORIES_SLUG,
+            title: 'System Cloud Categories Store',
+            category: 'chinta',
+            description: 'Auto-synced categories store',
+            published_at: '2026-01-01T00:00:00Z',
+            formatted_date: '১ জানুয়ারি, ২০২৬',
+            tags: [],
+            body: JSON.stringify(filtered),
+            word_count: 0,
+            footnotes: [],
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'slug' }
+        );
       } catch (e) {}
     }
-
-    try {
-      fs.writeFileSync(CATEGORIES_PATH, JSON.stringify(filtered, null, 2), 'utf-8');
-    } catch (e) {}
 
     return true;
   } catch (err) {
