@@ -2,7 +2,11 @@
 // src/pages/about.astro
 import Layout from '../layouts/Layout.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
-import author from '../data/author.json';
+import { getAuthorAsync } from '../lib/db';
+
+export const prerender = false;
+
+const author = await getAuthorAsync();
 ---
 
 <Layout

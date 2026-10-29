@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAllPostsAsync, deletePostBySlug, savePost } from '../../lib/db';
+import { getAllPostsAsync, deletePostBySlug, savePost, togglePostPin } from '../../lib/db';
 
 export const prerender = false;
 
@@ -50,6 +50,22 @@ export const DELETE: APIRoute = async ({ request }) => {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const postData = await request.json();
+
+    if (postData.action === 'toggle_pin') {
+      const { slug } = postData;
+      if (!slug) {
+        return new Response(JSON.stringify({ success: false, message: 'Slug is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      const pinned = await togglePostPin(slug);
+      return new Response(JSON.stringify({ success: true, slug, pinned }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     if (!postData.title || !postData.body) {
       return new Response(JSON.stringify({ success: false, message: 'Title and body required' }), {
         status: 400,

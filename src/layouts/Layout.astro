@@ -276,10 +276,21 @@ const schemaData = {
               if (data.name) document.querySelectorAll('.author-name-text').forEach((el) => { el.textContent = data.name; });
               if (data.education) document.querySelectorAll('.author-edu-text').forEach((el) => { el.textContent = data.education; });
               if (data.tagline) document.querySelectorAll('.author-tagline-text').forEach((el) => { el.textContent = data.tagline; });
-              if (data.bio) document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.textContent = data.bio; });
+              if (data.bioShort || data.bio) document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.textContent = data.bioShort || data.bio; });
+              if (data.bioFull) document.querySelectorAll('.author-biofull-text, .author-manifesto-text').forEach((el) => { el.textContent = data.bioFull; });
             } catch (e) {}
           }
         }
+
+        // Background cloud sync for author profile
+        try {
+          fetch('/api/author').then((r) => r.json()).then((res) => {
+            if (res.success && res.author) {
+              localStorage.setItem('kherokhata_author_custom', JSON.stringify(res.author));
+              syncAuthorProfile();
+            }
+          }).catch(() => {});
+        } catch (e) {}
 
         syncAuthorProfile();
         document.addEventListener('DOMContentLoaded', syncAuthorProfile);

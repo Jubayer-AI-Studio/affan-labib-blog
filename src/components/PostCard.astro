@@ -12,6 +12,7 @@ export interface Props {
     publishedAt: string;
     tags: string[];
     wordCount?: number;
+    pinned?: boolean;
   };
 }
 
@@ -37,10 +38,18 @@ const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseIn
   <div class="relative space-y-4">
     <!-- Meta Bar with Category Pill -->
     <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted relative z-20">
-      <a href={`/#${post.category}`} data-category-filter={post.category} class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
-        <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
-        {categoryName}
-      </a>
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href={`/#${post.category}`} data-category-filter={post.category} class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
+          {categoryName}
+        </a>
+        {post.pinned && (
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-sans font-semibold bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30">
+            <span>📌</span>
+            <span>পিন করা</span>
+          </span>
+        )}
+      </div>
       <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
         <time datetime={post.publishedAt} class="opacity-80">{post.formattedDate}</time>
         <span>·</span>

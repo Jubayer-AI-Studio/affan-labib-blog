@@ -4,8 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import PostCard from '../components/PostCard.astro';
 import QuoteSection from '../components/QuoteSection.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
-import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
-import author from '../data/author.json';
+import { getAllPostsAsync, getCategoriesAsync, getAuthorAsync } from '../lib/db';
 import bookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
@@ -13,13 +12,14 @@ export const prerender = false;
 // Global Edge CDN cache with background revalidation (delivers in 30ms, revalidates instantly)
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
 
-const [posts, categories] = await Promise.all([
+const [posts, categories, author] = await Promise.all([
   getAllPostsAsync(),
-  getCategoriesAsync()
+  getCategoriesAsync(),
+  getAuthorAsync()
 ]);
 
-// Feature post: always the latest published post by author
-const spotlightPost = posts[0] || {
+// Feature post: pinned post takes first spotlight priority, otherwise latest published
+const spotlightPost = posts.find((p) => p.pinned) || posts[0] || {
   slug: 'gazar-dinlipi',
   title: 'গাযার দিনলিপি: ধ্বংসস্তূপের ভেতর দিয়ে হেঁটে যাওয়া',
   category: 'chinta',
@@ -133,8 +133,8 @@ function toBn(n: number) {
 
       <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 dark:border-amber-400/30 shadow-2xs">
-          <span class="animate-spin-slow">✨</span>
-          <span>প্রধান নির্বাচিত রচনা</span>
+          <span>{spotlightPost.pinned ? '📌' : '✨'}</span>
+          <span>{spotlightPost.pinned ? 'পিনকৃত বিশেষ রচনা' : 'প্রধান নির্বাচিত রচনা'}</span>
         </div>
         <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
           <a href={`/#${spotlightPost.category}`} class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm" id="spotlight-cat-name">

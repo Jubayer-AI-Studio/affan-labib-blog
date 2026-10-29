@@ -2,15 +2,15 @@
 // src/pages/admin.astro
 // Standalone, Jitter-Free Author Studio for Affan Labib
 import AdminLayout from '../layouts/AdminLayout.astro';
-import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
-import author from '../data/author.json';
+import { getAllPostsAsync, getCategoriesAsync, getAuthorAsync } from '../lib/db';
 import defaultBookshelf from '../data/bookshelf.json';
 
 export const prerender = false;
 
-const [posts, categories] = await Promise.all([
+const [posts, categories, author] = await Promise.all([
   getAllPostsAsync(),
-  getCategoriesAsync()
+  getCategoriesAsync(),
+  getAuthorAsync()
 ]);
 ---
 
@@ -238,8 +238,11 @@ const [posts, categories] = await Promise.all([
               >
                 <div class="space-y-1 min-w-0 flex-1">
                   <div class="font-serif font-bold text-sm sm:text-base text-paper-text dark:text-night-text flex items-center gap-2">
-                    <span class="shrink-0 text-base">📄</span>
+                    <span class="shrink-0 text-base">{post.pinned ? '📌' : '📄'}</span>
                     <span class="truncate block">{post.title}</span>
+                    {post.pinned && (
+                      <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-sans shrink-0">পিনকৃত</span>
+                    )}
                   </div>
                   <div class="text-[11px] font-sans text-paper-muted dark:text-night-muted flex items-center gap-2 flex-wrap">
                     <span class="px-2 py-0.5 rounded-md bg-paper-accent/10 text-paper-accent dark:text-night-accent font-medium">
@@ -253,6 +256,16 @@ const [posts, categories] = await Promise.all([
                 </div>
 
                 <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+                  <button
+                    type="button"
+                    class="toggle-pin-btn px-3 py-2 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
+                    data-slug={post.slug}
+                    data-pinned={post.pinned ? 'true' : 'false'}
+                    title={post.pinned ? 'পিন বাতিল করুন' : 'শীর্ষে পিন করুন'}
+                  >
+                    <span>{post.pinned ? '📌' : '📍'}</span>
+                    <span class="pin-status-label">{post.pinned ? 'পিনকৃত' : 'পিন করুন'}</span>
+                  </button>
                   <button
                     type="button"
                     class="load-in-writer-btn flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-paper-accent text-white hover:opacity-95 text-xs font-sans font-semibold transition-all cursor-pointer shadow-2xs flex items-center justify-center gap-1.5"
@@ -359,6 +372,19 @@ const [posts, categories] = await Promise.all([
               placeholder="চিন্তা, পাঠাভ্যাস, ইতিহাস"
               class="w-full px-3.5 py-2 rounded-xl border border-paper-border dark:border-night-border bg-paper-bg dark:bg-night-bg text-paper-text dark:text-night-text text-xs focus:outline-none focus:border-paper-accent font-sans"
             />
+          </div>
+
+          <!-- Pin Article Checkbox -->
+          <div class="flex items-center gap-2.5 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-400/5">
+            <input
+              id="editor-pinned"
+              type="checkbox"
+              class="w-4 h-4 text-paper-accent rounded border-paper-border focus:ring-paper-accent cursor-pointer"
+            />
+            <label for="editor-pinned" class="text-xs font-serif font-medium text-paper-text dark:text-night-text cursor-pointer select-none flex items-center gap-1.5">
+              <span>📌</span>
+              <span>এই রচনাটি শীর্ষে পিন করে রাখুন (Pin to top as Spotlight)</span>
+            </label>
           </div>
 
           <!-- Markdown Toolbar with Voice Dictation Button -->
@@ -1175,6 +1201,7 @@ const [posts, categories] = await Promise.all([
         });
         attachLoadPostListeners();
         attachDeleteListeners();
+        attachPinListeners();
       }
 
       // Initial sync of file rows on boot
@@ -1253,6 +1280,7 @@ const [posts, categories] = await Promise.all([
       const editorDate = document.getElementById('editor-date');
       const editorDesc = document.getElementById('editor-description');
       const editorTags = document.getElementById('editor-tags');
+      const editorPinned = document.getElementById('editor-pinned');
       const editorBody = document.getElementById('editor-body');
 
       const prevTitle = document.getElementById('preview-title');
@@ -1425,6 +1453,7 @@ const [posts, categories] = await Promise.all([
         if (editorTitle) editorTitle.value = '';
         if (editorDesc) editorDesc.value = '';
         if (editorTags) editorTags.value = '';
+        if (editorPinned) editorPinned.checked = false;
         if (editorBody) editorBody.value = '';
         writerFootnotes = [];
         renderFootnotesEditor();
@@ -1448,6 +1477,7 @@ const [posts, categories] = await Promise.all([
             if (editorDate) editorDate.value = post.publishedAt;
             if (editorDesc) editorDesc.value = post.description;
             if (editorTags) editorTags.value = (post.tags || []).join(', ');
+            if (editorPinned) editorPinned.checked = Boolean(post.pinned);
             if (editorBody) editorBody.value = post.body;
 
             writerFootnotes = Array.isArray(post.footnotes) ? JSON.parse(JSON.stringify(post.footnotes)) : [];
@@ -1464,6 +1494,59 @@ const [posts, categories] = await Promise.all([
       attachLoadPostListeners();
 
       // 9. Post Deletion Handler (Reactive with ZERO reload)
+            // 9b. Pin/Unpin Toggle Listener
+      function attachPinListeners() {
+        document.querySelectorAll('.toggle-pin-btn').forEach((btn) => {
+          if (btn.getAttribute('data-pin-bound')) return;
+          btn.setAttribute('data-pin-bound', 'true');
+
+          btn.addEventListener('click', async () => {
+            const slug = btn.getAttribute('data-slug');
+            if (!slug) return;
+
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span>⏳</span>';
+
+            try {
+              const res = await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'toggle_pin', slug })
+              });
+              const data = await res.json();
+              if (data.success) {
+                const isPinned = Boolean(data.pinned);
+                const p = serializedPosts.find((item) => item.slug === slug);
+                if (p) p.pinned = isPinned;
+
+                // Sort pinned first
+                serializedPosts.sort((a, b) => {
+                  if (a.pinned && !b.pinned) return -1;
+                  if (!a.pinned && b.pinned) return 1;
+                  return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+                });
+
+                renderEntireFileList();
+                renderFileList();
+
+                if (window.showAdminToast) {
+                  window.showAdminToast(isPinned ? 'লেখাটি শীর্ষে পিন করা হয়েছে! 📌' : 'পিন প্রত্যাহার করা হয়েছে।');
+                }
+              } else {
+                throw new Error(data.message || 'Pin toggle failed');
+              }
+            } catch (err) {
+              console.error('[Admin] Pin toggle error:', err);
+              if (window.showAdminToast) window.showAdminToast('পিন পরিবর্তন করতে সমস্যা হয়েছে');
+            } finally {
+              btn.disabled = false;
+              btn.innerHTML = originalHtml;
+            }
+          });
+        });
+      }
+
       function attachDeleteListeners() {
         document.querySelectorAll('.delete-post-btn').forEach((btn) => {
           if (btn.getAttribute('data-delete-bound')) return;
@@ -1596,6 +1679,7 @@ const [posts, categories] = await Promise.all([
             publishedAt: date,
             formattedDate: date,
             tags,
+            pinned: Boolean(editorPinned?.checked),
             body,
             wordCount: body.trim().split(/\s+/).length,
             footnotes: writerFootnotes
@@ -2102,7 +2186,26 @@ const [posts, categories] = await Promise.all([
       const waInp = document.getElementById('edit-author-wa');
       const saveProfileBtn = document.getElementById('save-profile-btn');
 
-      function loadProfileIntoForm() {
+      async function loadProfileIntoForm() {
+        try {
+          const res = await fetch('/api/author');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.author) {
+              const current = data.author;
+              if (nameInp) nameInp.value = current.name || '';
+              if (eduInp) eduInp.value = current.education || '';
+              if (tagInp) tagInp.value = current.tagline || '';
+              if (shortbioInp) shortbioInp.value = current.bioShort || '';
+              if (fullbioInp) fullbioInp.value = current.bioFull || '';
+              if (fbInp) fbInp.value = current.social?.facebook || '';
+              if (waInp) waInp.value = current.social?.whatsapp || '';
+              localStorage.setItem('kherokhata_author_custom', JSON.stringify(current));
+              return;
+            }
+          }
+        } catch (e) {}
+
         const custom = localStorage.getItem('kherokhata_author_custom');
         const current = custom ? { ...author, ...JSON.parse(custom) } : author;
 
@@ -2117,7 +2220,11 @@ const [posts, categories] = await Promise.all([
 
       loadProfileIntoForm();
 
-      saveProfileBtn?.addEventListener('click', () => {
+      saveProfileBtn?.addEventListener('click', async () => {
+        saveProfileBtn.disabled = true;
+        const origHtml = saveProfileBtn.innerHTML;
+        saveProfileBtn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
+
         const updated = {
           name: nameInp?.value.trim() || author.name,
           education: eduInp?.value.trim() || author.education,
@@ -2130,10 +2237,33 @@ const [posts, categories] = await Promise.all([
           }
         };
 
-        localStorage.setItem('kherokhata_author_custom', JSON.stringify(updated));
-        document.querySelectorAll('.author-name-text').forEach((el) => { el.innerText = updated.name; });
-
-        if (window.showAdminToast) window.showAdminToast('প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে! ✓');
+        try {
+          const res = await fetch('/api/author', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+          });
+          const result = await res.json();
+          if (result.success) {
+            localStorage.setItem('kherokhata_author_custom', JSON.stringify(result.author || updated));
+            document.querySelectorAll('.author-name-text').forEach((el) => { el.innerText = updated.name; });
+            document.querySelectorAll('.author-edu-text').forEach((el) => { el.innerText = updated.education; });
+            document.querySelectorAll('.author-tagline-text').forEach((el) => { el.innerText = updated.tagline; });
+            document.querySelectorAll('.author-shortbio-text').forEach((el) => { el.innerText = updated.bioShort; });
+            document.querySelectorAll('.author-biofull-text').forEach((el) => { el.innerText = updated.bioFull; });
+            window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
+            if (window.showAdminToast) window.showAdminToast('ক্লাউড ডেটাবেসে প্রোফাইল সফলভাবে সংরক্ষিত হয়েছে! ✓');
+          } else {
+            throw new Error(result.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
+          }
+        } catch (err) {
+          console.error('[Admin] Profile save error:', err);
+          localStorage.setItem('kherokhata_author_custom', JSON.stringify(updated));
+          if (window.showAdminToast) window.showAdminToast('লোকালে সংরক্ষিত হয়েছে (ক্লাউড সিঙ্ক অপেক্ষা করছে)');
+        } finally {
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.innerHTML = origHtml;
+        }
       });
 
     })();

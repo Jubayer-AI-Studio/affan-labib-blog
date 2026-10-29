@@ -48,6 +48,24 @@ export interface Post {
   body: string;
   wordCount?: number;
   footnotes?: Array<{ id: number; text: string }>;
+  pinned?: boolean;
+}
+
+export interface AuthorProfile {
+  name: string;
+  tagline: string;
+  education: string;
+  bioShort: string;
+  bioFull: string;
+  avatar: string;
+  aboutManifestoTitle?: string;
+  aboutManifesto?: string;
+  social: {
+    facebook?: string;
+    whatsapp?: string;
+    whatsappNumber?: string;
+    email?: string;
+  };
 }
 
 // In-memory runtime cache for serverless instances
@@ -58,17 +76,33 @@ let lastCategoriesCacheTime = 0;
 const CACHE_TTL_MS = 60 * 1000;
 
 export function getLocalPosts(): Post[] {
+  let list: any[] = [];
   try {
     const fs = getFs(); const p = getLocalPath('src/data/posts.json');
     if (fs && p && fs.existsSync(p)) {
       const data = fs.readFileSync(p, 'utf-8');
-      const list = JSON.parse(data);
-      return Array.isArray(list) ? list.filter((p: any) => !p.slug?.startsWith('__')) : [];
+      list = JSON.parse(data);
     }
   } catch (err) {
     // Cloudflare Edge runtime fallback
   }
-  return Array.isArray(staticPosts) ? (staticPosts as any[]).filter((p: any) => !p.slug?.startsWith('__')) : [];
+  if (!Array.isArray(list) || list.length === 0) {
+    list = Array.isArray(staticPosts) ? (staticPosts as any[]) : [];
+  }
+  const mapped = list
+    .filter((p: any) => !p.slug?.startsWith('__'))
+    .map((p: any) => ({
+      ...p,
+      pinned: p.pinned === true || (Array.isArray(p.tags) && p.tags.includes('__pinned__')),
+      tags: Array.isArray(p.tags) ? p.tags.filter((t: string) => !t.startsWith('__')) : []
+    }));
+
+  mapped.sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
+  return mapped;
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms = 4000): Promise<T> {
@@ -102,18 +136,30 @@ export async function getAllPostsAsync(): Promise<Post[]> {
 
       if (!error && data && data.length > 0) {
         const filteredRows = data.filter((row: any) => !row.slug?.startsWith('__'));
-        const mapped = filteredRows.map((row: any) => ({
-          slug: row.slug,
-          title: row.title,
-          category: row.category,
-          description: row.description || '',
-          publishedAt: row.published_at,
-          formattedDate: row.formatted_date || row.published_at,
-          tags: Array.isArray(row.tags) ? row.tags : [],
-          body: row.body || '',
-          wordCount: row.word_count || 0,
-          footnotes: Array.isArray(row.footnotes) ? row.footnotes : []
-        }));
+        const mapped: Post[] = filteredRows.map((row: any) => {
+          const rawTags = Array.isArray(row.tags) ? row.tags : [];
+          const isPinned = rawTags.includes('__pinned__') || row.pinned === true;
+          return {
+            slug: row.slug,
+            title: row.title,
+            category: row.category,
+            description: row.description || '',
+            publishedAt: row.published_at,
+            formattedDate: row.formatted_date || row.published_at,
+            tags: rawTags.filter((t: string) => !t.startsWith('__')),
+            body: row.body || '',
+            wordCount: row.word_count || 0,
+            footnotes: Array.isArray(row.footnotes) ? row.footnotes : [],
+            pinned: isPinned
+          };
+        });
+
+        mapped.sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+        });
+
         inMemoryPostsCache = mapped;
         lastPostsCacheTime = Date.now();
         return [...mapped];
@@ -189,7 +235,11 @@ export async function savePost(newPost: Post): Promise<boolean> {
             description: newPost.description,
             published_at: newPost.publishedAt,
             formatted_date: newPost.formattedDate,
-            tags: newPost.tags,
+            tags: (() => {
+              const clean = (newPost.tags || []).filter((t: string) => !t.startsWith('__'));
+              if (newPost.pinned) clean.push('__pinned__');
+              return clean;
+            })(),
             body: newPost.body,
             word_count: newPost.wordCount || 0,
             footnotes: newPost.footnotes || [],
@@ -218,6 +268,15 @@ export async function savePost(newPost: Post): Promise<boolean> {
     console.error('[DB] Error saving post:', err);
     return false;
   }
+}
+
+export async function togglePostPin(slug: string): Promise<boolean> {
+  const current = await getAllPostsAsync();
+  const post = current.find((p) => p.slug === slug);
+  if (!post) return false;
+  post.pinned = !post.pinned;
+  await savePost(post);
+  return post.pinned;
 }
 
 export async function deletePostBySlug(slug: string): Promise<boolean> {
@@ -251,31 +310,139 @@ export async function deletePostBySlug(slug: string): Promise<boolean> {
   }
 }
 
-export function getAuthor(): any {
+const CLOUD_AUTHOR_SLUG = '__author_store__';
+let inMemoryAuthorCache: AuthorProfile | null = null;
+let lastAuthorCacheTime = 0;
+
+export function getLocalAuthor(): AuthorProfile {
   try {
-    const fs = getFs(); const p = getLocalPath('src/data/author.json');
+    const fs = getFs();
+    const p = getLocalPath('src/data/author.json');
     if (fs && p && fs.existsSync(p)) {
       return JSON.parse(fs.readFileSync(p, 'utf-8'));
     }
-  } catch (err) {
-    // Cloudflare Edge runtime fallback
+  } catch (err) {}
+  return staticAuthor as AuthorProfile;
+}
+
+export function saveLocalAuthor(author: AuthorProfile): void {
+  try {
+    const fs = getFs();
+    const p = getLocalPath('src/data/author.json');
+    if (fs && p) {
+      fs.writeFileSync(p, JSON.stringify(author, null, 2), 'utf-8');
+    }
+  } catch {}
+}
+
+export async function getAuthorAsync(): Promise<AuthorProfile> {
+  if (inMemoryAuthorCache && Date.now() - lastAuthorCacheTime < CACHE_TTL_MS) {
+    return { ...inMemoryAuthorCache };
   }
-  return staticAuthor;
+
+  // 1. Try Supabase cloud store (__author_store__)
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('posts')
+          .select('body')
+          .eq('slug', CLOUD_AUTHOR_SLUG)
+          .maybeSingle(),
+        3500
+      );
+
+      if (!error && data && data.body) {
+        const parsed = JSON.parse(data.body);
+        if (parsed && typeof parsed === 'object' && parsed.name) {
+          const merged: AuthorProfile = {
+            ...staticAuthor,
+            ...parsed,
+            social: {
+              ...(staticAuthor as any).social,
+              ...(parsed.social || {})
+            }
+          };
+          inMemoryAuthorCache = merged;
+          lastAuthorCacheTime = Date.now();
+          saveLocalAuthor(merged);
+          return { ...merged };
+        }
+      }
+    } catch (e: any) {
+      console.warn('[DB] Supabase author query failed:', e.message);
+    }
+  }
+
+  if (inMemoryAuthorCache) {
+    return { ...inMemoryAuthorCache };
+  }
+
+  const local = getLocalAuthor();
+  inMemoryAuthorCache = local;
+  lastAuthorCacheTime = Date.now();
+  return { ...local };
+}
+
+export function getAuthor(): AuthorProfile {
+  if (inMemoryAuthorCache) return { ...inMemoryAuthorCache };
+  return getLocalAuthor();
+}
+
+export async function saveAuthorAsync(updated: Partial<AuthorProfile>): Promise<AuthorProfile> {
+  const current = await getAuthorAsync();
+  const merged: AuthorProfile = {
+    ...current,
+    ...updated,
+    social: {
+      ...current.social,
+      ...(updated.social || {})
+    }
+  };
+
+  inMemoryAuthorCache = merged;
+  lastAuthorCacheTime = Date.now();
+  saveLocalAuthor(merged);
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      await withTimeout(supabase.from('posts').upsert(
+        {
+          slug: CLOUD_AUTHOR_SLUG,
+          title: 'System Cloud Author Profile Store',
+          category: 'chinta',
+          description: 'Auto-synced author profile & bio',
+          published_at: '2026-01-01T00:00:00Z',
+          formatted_date: '১ জানুয়ারি, ২০২৬',
+          tags: [],
+          body: JSON.stringify(merged),
+          word_count: 0,
+          footnotes: [],
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'slug' }
+      ), 4000);
+    } catch (err) {
+      console.error('[DB] Supabase author save error:', err);
+    }
+  }
+
+  return { ...merged };
+}
+
+export async function updateAuthorAvatarAsync(avatarDataUrl: string): Promise<boolean> {
+  try {
+    await saveAuthorAsync({ avatar: avatarDataUrl });
+    return true;
+  } catch (err) {
+    console.error('[DB] Error updating author avatar:', err);
+    return false;
+  }
 }
 
 export function updateAuthorAvatar(avatarDataUrl: string): boolean {
-  try {
-    const fs = getFs(); const p = getLocalPath('src/data/author.json');
-    if (fs && p && fs.existsSync(p)) {
-      const data = JSON.parse(fs.readFileSync(p, 'utf-8'));
-      data.avatar = avatarDataUrl;
-      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf-8');
-      return true;
-    }
-  } catch (err) {
-    console.error('[DB] Error updating author avatar:', err);
-  }
-  return false;
+  updateAuthorAvatarAsync(avatarDataUrl).catch(() => {});
+  return true;
 }
 
 const CLOUD_CATEGORIES_SLUG = '__categories_store__';
@@ -408,7 +575,7 @@ export async function saveCategory(newCat: Category): Promise<boolean> {
     // Persist permanently to Supabase Cloud store in posts table
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('posts').upsert(
+        await withTimeout(supabase.from('posts').upsert(
           {
             slug: CLOUD_CATEGORIES_SLUG,
             title: 'System Cloud Categories Store',
@@ -423,7 +590,7 @@ export async function saveCategory(newCat: Category): Promise<boolean> {
             updated_at: new Date().toISOString()
           },
           { onConflict: 'slug' }
-        );
+        ), 4000);
       } catch (err) {
         console.error('[DB] Supabase categories save error:', err);
       }
@@ -453,7 +620,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
 
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('posts').upsert(
+        await withTimeout(supabase.from('posts').upsert(
           {
             slug: CLOUD_CATEGORIES_SLUG,
             title: 'System Cloud Categories Store',
@@ -468,7 +635,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
             updated_at: new Date().toISOString()
           },
           { onConflict: 'slug' }
-        );
+        ), 4000);
       } catch (e) {}
     }
 
