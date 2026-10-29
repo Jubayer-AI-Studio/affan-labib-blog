@@ -117,8 +117,8 @@ function normalizeStore(raw: any): InteractionsStore {
       };
     }
     const rawComments = Array.isArray(raw.comments) ? raw.comments : [];
-    comments = rawComments.map((c: any) => ({
-      id: String(c.id || ''),
+    comments = rawComments.map((c: any, index: number) => ({
+      id: String(c.id || '').trim() || `cmt_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 6)}`,
       slug: normalizeSlug(c.slug || ''),
       parentId: c.parentId ? String(c.parentId) : null,
       authorName: String(c.authorName || 'মুগ্ধ পাঠক'),
@@ -389,12 +389,17 @@ export async function addComment(
   return newComment;
 }
 
-export async function deleteComment(id: string): Promise<boolean> {
+export async function deleteComment(targetIdOrContent: string): Promise<boolean> {
   const store = await getStore();
-  if (!store.comments) return false;
+  if (!store.comments || store.comments.length === 0) return false;
   const initialLen = store.comments.length;
-  // Delete comment and its replies
-  store.comments = store.comments.filter((c) => c.id !== id && c.parentId !== id);
+  const cleanTarget = String(targetIdOrContent || '').trim();
+  if (!cleanTarget) return false;
+
+  // Delete comment and its replies, matching by id or content or parentId
+  store.comments = store.comments.filter(
+    (c) => c.id !== cleanTarget && c.parentId !== cleanTarget && c.content !== cleanTarget
+  );
   const changed = store.comments.length < initialLen;
   if (!changed) return false;
 

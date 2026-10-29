@@ -505,6 +505,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             </div>
           </div>
 
+          <!-- Pin Article Option Checkbox -->
+          <div class="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2 cursor-pointer font-serif text-xs font-semibold text-amber-900 dark:text-amber-200">
+              <input id="writer-pin-checkbox" type="checkbox" class="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 cursor-pointer">
+              <span>📌 এই রচনাটি ব্লগের শীর্ষে পিন করে রাখুন (হোমপেজে প্রধান পিনকৃত বিশেষ রচনা হিসেবে দেখাবে)</span>
+            </label>
+          </div>
+
           <!-- Action Buttons -->
           <div class="pt-3 border-t border-paper-border/60 flex items-center justify-between gap-3">
             <button
@@ -996,13 +1004,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 🍃 পাঠকদের কোনো মন্তব্য এখনো আসেনি।
               </div>
             ) : (
-              ssrComments.map((c) => {
+              ssrComments.map((c, index) => {
                 const postMatch = posts.find((p) => p.slug === c.slug);
                 const postTitle = postMatch ? postMatch.title : c.slug;
                 const authorInitial = (c.authorName || 'পা')[0] || 'পা';
+                const safeId = String(c.id || '').trim() || ('cmt_ssr_' + index);
 
                 return (
-                  <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id={c.id}>
+                  <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id={safeId} data-comment-content={c.content}>
                     <div class="flex items-start justify-between gap-3 text-xs">
                       <div class="flex items-start gap-2.5">
                         <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -1010,7 +1019,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                         </div>
                         <div>
                           <div class="flex items-center gap-2">
-                            <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">{c.authorName}</span>
+                            <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">{c.authorName || 'মুগ্ধ পাঠক'}</span>
                             {c.isAuthor && (
                               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">লেখক</span>
                             )}
@@ -1025,7 +1034,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                       </time>
                     </div>
 
-                    <div class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
+                    <div class="comment-body-text text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
                       {c.content}
                     </div>
 
@@ -1034,37 +1043,43 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                         type="button"
                         class="admin-reply-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-serif text-xs font-medium cursor-pointer"
                         data-slug={c.slug}
-                        data-id={c.id}
+                        data-id={safeId}
                         data-author={c.authorName}
                       >
                         <span>✍️</span>
                         <span>উত্তর দিন</span>
                       </button>
 
-                      <button
-                        type="button"
-                        class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
-                        data-id={c.id}
-                        title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
-                      >
-                        <span>🗑️</span>
-                        <span>মুছে ফেলুন</span>
-                      </button>
+                      <div class="del-wrap flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
+                          data-id={safeId}
+                          title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
+                        >
+                          <span>🗑️</span>
+                          <span>মুছে ফেলুন</span>
+                        </button>
+                        <div class="confirm-del-box hidden flex items-center gap-1.5 bg-rose-500/15 px-2.5 py-1 rounded-xl border border-rose-500/30">
+                          <span class="text-[11px] font-sans font-semibold text-rose-700 dark:text-rose-400">মুছবেন?</span>
+                          <button type="button" class="confirm-del-yes-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 cursor-pointer shadow-2xs" data-id={safeId}>হ্যাঁ</button>
+                          <button type="button" class="confirm-del-no-btn px-2 py-1 rounded-lg text-paper-muted hover:text-paper-text text-xs cursor-pointer">না</button>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Inline Author Reply Box (Hidden by default) -->
-                    <div id={`reply-form-${c.id}`} class="hidden pt-3 border-t border-paper-border/60 space-y-2">
+                    <div class="reply-form-box hidden pt-3 border-t border-paper-border/60 space-y-2">
                       <textarea
-                        id={`reply-input-${c.id}`}
                         rows="2"
                         placeholder="আফফান লাবীব হিসেবে আপনার উত্তর লিখুন..."
-                        class="w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        class="reply-textarea-input w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
                       ></textarea>
                       <div class="flex items-center justify-end gap-2">
                         <button
                           type="button"
                           class="cancel-reply-btn px-3 py-1 rounded-lg text-xs font-sans text-paper-muted hover:text-paper-text cursor-pointer"
-                          data-id={c.id}
+                          data-id={safeId}
                         >
                           বাতিল
                         </button>
@@ -1072,7 +1087,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                           type="button"
                           class="submit-reply-btn px-3.5 py-1.5 rounded-lg bg-paper-accent hover:opacity-90 text-white text-xs font-serif font-semibold cursor-pointer shadow-2xs"
                           data-slug={c.slug}
-                          data-id={c.id}
+                          data-id={safeId}
                         >
                           উত্তর প্রকাশ করুন
                         </button>
@@ -2681,6 +2696,16 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       const saveProfileBtn = document.getElementById('save-profile-btn');
       const resetProfileBtn = document.getElementById('reset-profile-btn');
 
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
       async function loadProfileIntoForm() {
         try {
           const res = await fetch('/api/author?_t=' + Date.now());
@@ -2719,43 +2744,24 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         if (emailInp && !emailInp.value) emailInp.value = current.social?.email || '';
       }
 
-      loadProfileIntoForm();
-
-      document.getElementById('tab-btn-profile')?.addEventListener('click', loadProfileIntoForm);
-
-      resetProfileBtn?.addEventListener('click', () => {
-        if (!confirm('আপনি কি লেখক পরিচিতির সমস্ত তথ্য মূল ডিফল্ট সংস্করণে ফিরিয়ে নিতে চান?')) return;
-        if (nameInp) nameInp.value = author.name || 'আফফান লাবীব';
-        if (eduInp) eduInp.value = author.education || '';
-        if (tagInp) tagInp.value = author.tagline || '';
-        if (shortbioInp) shortbioInp.value = author.bioShort || '';
-        if (fullbioInp) fullbioInp.value = author.bioFull || '';
-        if (manifestoTitleInp) manifestoTitleInp.value = author.aboutManifestoTitle || 'কেন এই পড়ার ঘর?';
-        if (manifestoInp) manifestoInp.value = author.aboutManifesto || '';
-        if (fbInp) fbInp.value = author.social?.facebook || '';
-        if (waInp) waInp.value = author.social?.whatsapp || '';
-        if (emailInp) emailInp.value = author.social?.email || '';
-        if (window.showAdminToast) window.showAdminToast('ডিফল্ট তথ্যে ফিরিয়ে নেওয়া হয়েছে। সংরক্ষণ বাটনে চাপ দিন।');
-      });
-
-      saveProfileBtn?.addEventListener('click', async (e) => {
-        e?.preventDefault();
-        saveProfileBtn.disabled = true;
-        const origHtml = saveProfileBtn.innerHTML;
-        saveProfileBtn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
+      async function doSaveProfile() {
+        const btn = document.getElementById('save-profile-btn');
+        if (btn) btn.disabled = true;
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
 
         const updated = {
-          name: nameInp?.value.trim() || author.name,
-          education: eduInp?.value.trim() || '',
-          tagline: tagInp?.value.trim() || '',
-          bioShort: shortbioInp?.value.trim() || '',
-          bioFull: fullbioInp?.value.trim() || '',
-          aboutManifestoTitle: manifestoTitleInp?.value.trim() || 'কেন এই পড়ার ঘর?',
-          aboutManifesto: manifestoInp?.value.trim() || '',
+          name: (document.getElementById('profile-name')?.value || '').trim() || author.name,
+          education: (document.getElementById('profile-education')?.value || '').trim(),
+          tagline: (document.getElementById('profile-tagline')?.value || '').trim(),
+          bioShort: (document.getElementById('profile-bio-short')?.value || '').trim(),
+          bioFull: (document.getElementById('profile-bio-full')?.value || '').trim(),
+          aboutManifestoTitle: (document.getElementById('profile-manifesto-title')?.value || '').trim() || 'কেন এই পড়ার ঘর?',
+          aboutManifesto: (document.getElementById('profile-manifesto')?.value || '').trim(),
           social: {
-            facebook: fbInp?.value.trim() || '',
-            whatsapp: waInp?.value.trim() || '',
-            email: emailInp?.value.trim() || ''
+            facebook: (document.getElementById('profile-facebook')?.value || '').trim(),
+            whatsapp: (document.getElementById('profile-whatsapp')?.value || '').trim(),
+            email: (document.getElementById('profile-email')?.value || '').trim()
           }
         };
 
@@ -2791,19 +2797,22 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             }
 
             // High-visibility button feedback
-            saveProfileBtn.classList.remove('bg-paper-accent', 'dark:bg-night-accent');
-            saveProfileBtn.classList.add('bg-emerald-600', 'text-white');
-            saveProfileBtn.innerHTML = '<span>✓</span><span>সফলভাবে সংরক্ষিত!</span>';
+            if (btn) {
+              btn.classList.remove('bg-paper-accent', 'dark:bg-night-accent');
+              btn.classList.add('bg-emerald-600', 'text-white');
+              btn.innerHTML = '<span>✓</span><span>সফলভাবে সংরক্ষিত!</span>';
+            }
 
             window.dispatchEvent(new CustomEvent('kherokhata-author-sync'));
             if (window.showAdminToast) window.showAdminToast('✓ লেখক পরিচিতি সফলভাবে সংরক্ষিত হয়েছে!');
-            alert('✓ আপনার নতুন লেখক পরিচিতি ও দর্শনের তথ্য সফলভাবে সংরক্ষিত ও ব্লগে লাইভ হয়েছে!');
 
             setTimeout(() => {
-              saveProfileBtn.disabled = false;
-              saveProfileBtn.classList.remove('bg-emerald-600');
-              saveProfileBtn.classList.add('bg-paper-accent', 'dark:bg-night-accent');
-              saveProfileBtn.innerHTML = origHtml;
+              if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('bg-emerald-600', 'text-white');
+                btn.classList.add('bg-paper-accent', 'dark:bg-night-accent');
+                btn.innerHTML = origHtml || '<span>💾</span><span>প্রোফাইল সংরক্ষণ করুন</span>';
+              }
             }, 3500);
           } else {
             throw new Error(result.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
@@ -2811,10 +2820,26 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         } catch (err) {
           console.error('[Admin] Profile save error:', err);
           localStorage.setItem('kherokhata_author_custom', JSON.stringify(updated));
-          if (window.showAdminToast) window.showAdminToast('লোকালে সংরক্ষিত হয়েছে (ক্লাউড সিঙ্ক অপেক্ষা করছে)');
-          saveProfileBtn.disabled = false;
-          saveProfileBtn.innerHTML = origHtml;
+          if (window.showAdminToast) window.showAdminToast('✓ লোকালে সংরক্ষিত হয়েছে (ক্লাউড সিঙ্ক অপেক্ষা করছে)');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml || '<span>💾</span><span>প্রোফাইল সংরক্ষণ করুন</span>';
+          }
         }
+      }
+
+      resetProfileBtn?.addEventListener('click', () => {
+        if (nameInp) nameInp.value = author.name;
+        if (eduInp) eduInp.value = author.education;
+        if (tagInp) tagInp.value = author.tagline;
+        if (shortbioInp) shortbioInp.value = author.bioShort;
+        if (fullbioInp) fullbioInp.value = author.bioFull;
+        if (manifestoTitleInp) manifestoTitleInp.value = author.aboutManifestoTitle;
+        if (manifestoInp) manifestoInp.value = author.aboutManifesto;
+        if (fbInp) fbInp.value = author.social.facebook;
+        if (waInp) waInp.value = author.social.whatsapp;
+        if (emailInp) emailInp.value = author.social.email;
+        if (window.showAdminToast) window.showAdminToast('ডিফল্ট তথ্যে ফিরে আসা হয়েছে');
       });
 
       // ========================================================
@@ -2863,125 +2888,6 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         }
       }
 
-      function attachCommentModerationHandlers() {
-        if (!adminCommentsFeedList) return;
-
-        // Delete button
-        adminCommentsFeedList.querySelectorAll('.admin-delete-cmt-btn').forEach((btn) => {
-          if (btn.getAttribute('data-del-bound')) return;
-          btn.setAttribute('data-del-bound', 'true');
-
-          btn.addEventListener('click', async () => {
-            const commentId = btn.getAttribute('data-id');
-            if (!confirm('আপনি কি এই মন্তব্যটি সত্যি স্থায়ীভাবে মুছে ফেলতে চান?')) return;
-            try {
-              btn.disabled = true;
-              btn.innerHTML = '<span>⏳ মুছছে...</span>';
-
-              const res = await fetch('/api/interactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'delete_comment', commentId })
-              });
-              const json = await res.json();
-              if (json && json.success) {
-                // Find card and animate removal
-                const card = adminCommentsFeedList.querySelector(`[data-comment-id="${commentId}"]`);
-                if (card) {
-                  card.style.opacity = '0';
-                  card.style.transform = 'scale(0.95)';
-                  setTimeout(() => card.remove(), 200);
-                }
-                currentInteractionsData.comments = (currentInteractionsData.comments || []).filter((x) => x.id !== commentId);
-                const newCount = currentInteractionsData.comments.length;
-                if (adminTotalComments) adminTotalComments.textContent = toBn(newCount);
-                if (adminCommentsFeedBadge) adminCommentsFeedBadge.textContent = `${toBn(newCount)}টি মন্তব্য`;
-                if (window.showAdminToast) window.showAdminToast('✓ মন্তব্যটি স্থায়ীভাবে মুছে ফেলা হয়েছে।');
-              } else {
-                throw new Error('মুছে ফেলা সম্ভব হয়নি');
-              }
-            } catch (e) {
-              alert('মুছে ফেলতে সমস্যা হয়েছে: ' + (e.message || e));
-              btn.disabled = false;
-              btn.innerHTML = '<span>🗑️</span><span>মুছে ফেলুন</span>';
-            }
-          });
-        });
-
-        // Reply toggle
-        adminCommentsFeedList.querySelectorAll('.admin-reply-btn').forEach((btn) => {
-          if (btn.getAttribute('data-rep-bound')) return;
-          btn.setAttribute('data-rep-bound', 'true');
-
-          btn.addEventListener('click', () => {
-            const commentId = btn.getAttribute('data-id');
-            const formEl = document.getElementById(`reply-form-${commentId}`);
-            if (formEl) {
-              formEl.classList.toggle('hidden');
-              if (!formEl.classList.contains('hidden')) {
-                document.getElementById(`reply-input-${commentId}`)?.focus();
-              }
-            }
-          });
-        });
-
-        // Cancel reply
-        adminCommentsFeedList.querySelectorAll('.cancel-reply-btn').forEach((btn) => {
-          if (btn.getAttribute('data-ccl-bound')) return;
-          btn.setAttribute('data-ccl-bound', 'true');
-
-          btn.addEventListener('click', () => {
-            const commentId = btn.getAttribute('data-id');
-            document.getElementById(`reply-form-${commentId}`)?.classList.add('hidden');
-          });
-        });
-
-        // Submit reply
-        adminCommentsFeedList.querySelectorAll('.submit-reply-btn').forEach((btn) => {
-          if (btn.getAttribute('data-sub-bound')) return;
-          btn.setAttribute('data-sub-bound', 'true');
-
-          btn.addEventListener('click', async () => {
-            const commentId = btn.getAttribute('data-id');
-            const slug = btn.getAttribute('data-slug');
-            const text = document.getElementById(`reply-input-${commentId}`)?.value.trim();
-            if (!text) return alert('উত্তরের বিবরণ খালি রাখা যাবে না।');
-
-            try {
-              btn.disabled = true;
-              btn.innerHTML = '<span>⏳ প্রকাশ হচ্ছে...</span>';
-
-              const res = await fetch('/api/interactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  action: 'reply',
-                  slug,
-                  parentId: commentId,
-                  content: text,
-                  authorName: 'আফফান লাবীব (লেখক)'
-                })
-              });
-              const json = await res.json();
-              if (json && json.success) {
-                if (window.showAdminToast) window.showAdminToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে।');
-                // Hide reply form
-                const formEl = document.getElementById(`reply-form-${commentId}`);
-                if (formEl) formEl.classList.add('hidden');
-                loadInteractionsData();
-              } else {
-                throw new Error('উত্তর প্রকাশ ব্যর্থ হয়েছে');
-              }
-            } catch (e) {
-              alert('উত্তর প্রকাশে সমস্যা হয়েছে: ' + (e.message || e));
-            } finally {
-              btn.disabled = false;
-              btn.innerHTML = 'উত্তর প্রকাশ করুন';
-            }
-          });
-        });
-      }
-
       function renderAdminInteractions() {
         const stats = currentInteractionsData.stats || {};
         const comments = currentInteractionsData.comments || [];
@@ -3012,9 +2918,9 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 flex items-center justify-between gap-3 text-xs hover:border-amber-500/30 transition-all">
                   <div class="min-w-0 flex-grow">
                     <a href="/${p.slug}" target="_blank" class="font-serif font-bold text-paper-text dark:text-night-text truncate block hover:text-paper-accent transition-colors">
-                      ${p.title}
+                      ${escapeHtml(p.title)}
                     </a>
-                    <span class="text-[11px] text-paper-muted font-sans">${p.formattedDate || p.publishedAt}</span>
+                    <span class="text-[11px] text-paper-muted font-sans">${escapeHtml(p.formattedDate || p.publishedAt)}</span>
                   </div>
                   <div class="flex items-center gap-2.5 font-serif text-xs shrink-0 select-none">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-900 dark:text-amber-200 border border-amber-500/20" title="ভিউ">
@@ -3045,13 +2951,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               </div>
             `;
           } else {
-            adminCommentsFeedList.innerHTML = comments.map((c) => {
+            adminCommentsFeedList.innerHTML = comments.map((c, index) => {
               const postMatch = (serializedPosts || []).find((p) => isSameArticleSlug(p.slug, c.slug));
               const postTitle = postMatch ? postMatch.title : c.slug;
               const authorInitial = (c.authorName || 'পা')[0] || 'পা';
+              const safeId = String(c.id || '').trim() || ('cmt_gen_' + index);
 
               return `
-                <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id="${c.id}">
+                <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id="${safeId}" data-comment-content="${escapeHtml(c.content)}" data-slug="${c.slug}">
                   <div class="flex items-start justify-between gap-3 text-xs">
                     <div class="flex items-start gap-2.5">
                       <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -3059,57 +2966,63 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                       </div>
                       <div>
                         <div class="flex items-center gap-2">
-                          <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">${c.authorName}</span>
+                          <span class="font-bold font-serif text-paper-text dark:text-night-text text-sm">${escapeHtml(c.authorName || 'মুগ্ধ পাঠক')}</span>
                           ${c.isAuthor ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 border border-amber-500/30">লেখক</span>' : ''}
                         </div>
                         <a href="/${c.slug}" target="_blank" class="text-xs font-sans text-paper-accent dark:text-night-accent hover:underline block truncate max-w-[200px] sm:max-w-xs mt-0.5">
-                          রচনা: ${postTitle}
+                          রচনা: ${escapeHtml(postTitle)}
                         </a>
                       </div>
                     </div>
                     <time class="text-[10px] font-sans text-paper-muted dark:text-night-muted shrink-0">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</time>
                   </div>
 
-                  <p class="text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
-                    ${c.content}
-                  </p>
+                  <div class="comment-body-text text-xs sm:text-sm font-serif text-paper-text dark:text-night-text leading-relaxed bg-paper-surface/60 dark:bg-night-surface/60 p-3 rounded-xl border border-paper-border/60 whitespace-pre-wrap">
+                    ${escapeHtml(c.content)}
+                  </div>
 
                   <div class="flex items-center justify-between pt-1 text-xs">
                     <button
                       type="button"
                       class="admin-reply-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-paper-accent/30 text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 transition-colors font-serif text-xs font-medium cursor-pointer"
                       data-slug="${c.slug}"
-                      data-id="${c.id}"
-                      data-author="${c.authorName}"
+                      data-id="${safeId}"
+                      data-author="${escapeHtml(c.authorName || '')}"
                     >
                       <span>✍️</span>
                       <span>উত্তর দিন</span>
                     </button>
 
-                    <button
-                      type="button"
-                      class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
-                      data-id="${c.id}"
-                      title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
-                    >
-                      <span>🗑️</span>
-                      <span>মুছে ফেলুন</span>
-                    </button>
+                    <div class="del-wrap flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        class="admin-delete-cmt-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 transition-colors font-serif text-xs font-medium cursor-pointer"
+                        data-id="${safeId}"
+                        title="মন্তব্যটি সম্পূর্ণ মুছে ফেলুন"
+                      >
+                        <span>🗑️</span>
+                        <span>মুছে ফেলুন</span>
+                      </button>
+                      <div class="confirm-del-box hidden flex items-center gap-1.5 bg-rose-500/15 px-2.5 py-1 rounded-xl border border-rose-500/30">
+                        <span class="text-[11px] font-sans font-semibold text-rose-700 dark:text-rose-400">মুছবেন?</span>
+                        <button type="button" class="confirm-del-yes-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 cursor-pointer shadow-2xs" data-id="${safeId}">হ্যাঁ</button>
+                        <button type="button" class="confirm-del-no-btn px-2 py-1 rounded-lg text-paper-muted hover:text-paper-text text-xs cursor-pointer">না</button>
+                      </div>
+                    </div>
                   </div>
 
-                  <!-- Inline Author Reply Form (Hidden by default) -->
-                  <div id="reply-form-${c.id}" class="hidden pt-3 border-t border-paper-border/60 space-y-2">
+                  <!-- Inline Author Reply Box (Hidden by default) -->
+                  <div class="reply-form-box hidden pt-3 border-t border-paper-border/60 space-y-2">
                     <textarea
-                      id="reply-input-${c.id}"
                       rows="2"
                       placeholder="আফফান লাবীব হিসেবে আপনার উত্তর লিখুন..."
-                      class="w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      class="reply-textarea-input w-full px-3 py-2 rounded-xl border border-amber-500/40 bg-paper-bg dark:bg-night-bg text-xs font-serif text-paper-text focus:outline-none focus:ring-1 focus:ring-amber-500"
                     ></textarea>
                     <div class="flex items-center justify-end gap-2">
                       <button
                         type="button"
                         class="cancel-reply-btn px-3 py-1 rounded-lg text-xs font-sans text-paper-muted hover:text-paper-text cursor-pointer"
-                        data-id="${c.id}"
+                        data-id="${safeId}"
                       >
                         বাতিল
                       </button>
@@ -3117,7 +3030,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                         type="button"
                         class="submit-reply-btn px-3.5 py-1.5 rounded-lg bg-paper-accent hover:opacity-90 text-white text-xs font-serif font-semibold cursor-pointer shadow-2xs"
                         data-slug="${c.slug}"
-                        data-id="${c.id}"
+                        data-id="${safeId}"
                       >
                         উত্তর প্রকাশ করুন
                       </button>
@@ -3127,19 +3040,178 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               `;
             }).join('');
           }
-          attachCommentModerationHandlers();
         }
       }
 
-      // Attach initial comment handlers to pre-rendered SSR comments
-      attachCommentModerationHandlers();
+      // ========================================================
+      // Universal Non-blocking Event Delegation (Profile & Moderation)
+      // ========================================================
+      document.addEventListener('click', async (e) => {
+        // 1. Profile Save
+        const saveProfileTrigger = e.target.closest('#save-profile-btn');
+        if (saveProfileTrigger) {
+          e.preventDefault();
+          await doSaveProfile();
+          return;
+        }
+
+        // 2. Reply Toggle
+        const replyBtn = e.target.closest('.admin-reply-btn');
+        if (replyBtn) {
+          e.preventDefault();
+          const card = replyBtn.closest('.comment-card-item');
+          const formBox = card ? card.querySelector('.reply-form-box') : null;
+          if (formBox) {
+            formBox.classList.toggle('hidden');
+            if (!formBox.classList.contains('hidden')) {
+              formBox.querySelector('.reply-textarea-input')?.focus();
+            }
+          }
+          return;
+        }
+
+        // 3. Cancel Reply
+        const cancelReplyBtn = e.target.closest('.cancel-reply-btn');
+        if (cancelReplyBtn) {
+          e.preventDefault();
+          const card = cancelReplyBtn.closest('.comment-card-item');
+          const formBox = card ? card.querySelector('.reply-form-box') : null;
+          if (formBox) formBox.classList.add('hidden');
+          return;
+        }
+
+        // 4. Submit Reply
+        const submitReplyBtn = e.target.closest('.submit-reply-btn');
+        if (submitReplyBtn) {
+          e.preventDefault();
+          const card = submitReplyBtn.closest('.comment-card-item');
+          const formBox = card ? card.querySelector('.reply-form-box') : null;
+          const textarea = formBox ? formBox.querySelector('.reply-textarea-input') : null;
+          const text = textarea?.value?.trim();
+          if (!text) {
+            if (textarea) textarea.focus();
+            if (window.showAdminToast) window.showAdminToast('⚠️ উত্তরের বিবরণ খালি রাখা যাবে না');
+            return;
+          }
+
+          const slug = submitReplyBtn.getAttribute('data-slug') || card?.getAttribute('data-slug') || '';
+          const commentId = submitReplyBtn.getAttribute('data-id') || card?.getAttribute('data-comment-id') || '';
+
+          submitReplyBtn.disabled = true;
+          const origSubmitText = submitReplyBtn.innerHTML;
+          submitReplyBtn.innerHTML = '<span>⏳ প্রকাশ হচ্ছে...</span>';
+
+          try {
+            const res = await fetch('/api/interactions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'reply',
+                slug,
+                parentId: commentId,
+                content: text,
+                authorName: 'আফফান লাবীব (লেখক)'
+              })
+            });
+            const json = await res.json();
+            if (json && json.success) {
+              if (formBox) formBox.classList.add('hidden');
+              if (textarea) textarea.value = '';
+              if (window.showAdminToast) window.showAdminToast('✓ আপনার উত্তরটি সফলভাবে প্রকাশিত হয়েছে!');
+              loadInteractionsData();
+            } else {
+              throw new Error(json.error || 'উত্তর প্রকাশ ব্যর্থ হয়েছে');
+            }
+          } catch (err) {
+            if (window.showAdminToast) window.showAdminToast('⚠️ উত্তর প্রকাশে সমস্যা: ' + (err.message || err));
+          } finally {
+            submitReplyBtn.disabled = false;
+            submitReplyBtn.innerHTML = origSubmitText;
+          }
+          return;
+        }
+
+        // 5. Delete Button Clicked -> Show inline confirmation
+        const deleteBtn = e.target.closest('.admin-delete-cmt-btn');
+        if (deleteBtn) {
+          e.preventDefault();
+          const wrap = deleteBtn.closest('.del-wrap');
+          const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
+          if (confirmBox) {
+            deleteBtn.classList.add('hidden');
+            confirmBox.classList.remove('hidden');
+          }
+          return;
+        }
+
+        // 6. Confirm Delete "No" -> Cancel
+        const confirmNoBtn = e.target.closest('.confirm-del-no-btn');
+        if (confirmNoBtn) {
+          e.preventDefault();
+          const wrap = confirmNoBtn.closest('.del-wrap');
+          const deleteBtn = wrap ? wrap.querySelector('.admin-delete-cmt-btn') : null;
+          const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
+          if (confirmBox) confirmBox.classList.add('hidden');
+          if (deleteBtn) deleteBtn.classList.remove('hidden');
+          return;
+        }
+
+        // 7. Confirm Delete "Yes" -> Permanent Delete
+        const confirmYesBtn = e.target.closest('.confirm-del-yes-btn');
+        if (confirmYesBtn) {
+          e.preventDefault();
+          const card = confirmYesBtn.closest('.comment-card-item');
+          const commentId = confirmYesBtn.getAttribute('data-id') || card?.getAttribute('data-comment-id');
+          const content = card?.getAttribute('data-comment-content') || card?.querySelector('.comment-body-text')?.textContent?.trim() || '';
+
+          confirmYesBtn.disabled = true;
+          confirmYesBtn.innerHTML = '⏳';
+
+          try {
+            const res = await fetch('/api/interactions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'delete_comment',
+                commentId,
+                content
+              })
+            });
+            const json = await res.json();
+            if (json && json.success) {
+              if (card) {
+                card.style.transition = 'all 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 300);
+              }
+              currentInteractionsData.comments = (currentInteractionsData.comments || []).filter(
+                (x) => x.id !== commentId && x.content !== content
+              );
+              const newCount = currentInteractionsData.comments.length;
+              if (adminTotalComments) adminTotalComments.textContent = toBn(newCount);
+              if (adminCommentsFeedBadge) adminCommentsFeedBadge.textContent = `${toBn(newCount)}টি মন্তব্য`;
+              if (window.showAdminToast) window.showAdminToast('✓ মন্তব্যটি স্থায়ীভাবে মুছে ফেলা হয়েছে।');
+            } else {
+              throw new Error(json.error || 'মুছে ফেলা সম্ভব হয়নি');
+            }
+          } catch (err) {
+            if (window.showAdminToast) window.showAdminToast('⚠️ মন্তব্য মুছতে সমস্যা হয়েছে: ' + (err.message || err));
+            confirmYesBtn.disabled = false;
+            confirmYesBtn.innerHTML = 'হ্যাঁ';
+          }
+          return;
+        }
+      });
 
       refreshInteractionsBtn?.addEventListener('click', () => {
         loadInteractionsData();
         if (window.showAdminToast) window.showAdminToast('✓ পাঠকদের প্রতিক্রিয়া রিফ্রেশ করা হয়েছে।');
       });
 
-      // Load when tab is opened
+      // Load initial profile data
+      loadProfileIntoForm();
+
       document.getElementById('tab-btn-interactions')?.addEventListener('click', () => {
         loadInteractionsData();
       });

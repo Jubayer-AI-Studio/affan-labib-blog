@@ -215,6 +215,20 @@ export async function savePost(newPost: Post): Promise<boolean> {
   try {
     // 1. Update in-memory cache immediately
     const current = await getAllPostsAsync();
+
+    // Enforce single-pinned rule: If this post is pinned, unpin all other posts
+    if (newPost.pinned) {
+      for (const p of current) {
+        if (p.slug !== newPost.slug && p.pinned) {
+          p.pinned = false;
+          if (isSupabaseConfigured && supabase) {
+            const cleanTags = (p.tags || []).filter((t: string) => !t.startsWith('__'));
+            supabase.from('posts').update({ tags: cleanTags }).eq('slug', p.slug).then(() => {}).catch(() => {});
+          }
+        }
+      }
+    }
+
     const existingIndex = current.findIndex((p) => p.slug === newPost.slug);
     if (existingIndex >= 0) {
       current[existingIndex] = newPost;

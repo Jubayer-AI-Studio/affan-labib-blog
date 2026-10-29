@@ -166,14 +166,15 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 5. Delete Comment Action (Admin Moderation)
     if (action === 'delete_comment') {
-      const { commentId } = body;
-      if (!commentId) {
+      const { commentId, content } = body;
+      const target = String(commentId || content || '').trim();
+      if (!target) {
         return new Response(
-          JSON.stringify({ success: false, error: 'commentId is required' }),
+          JSON.stringify({ success: false, error: 'commentId or content is required' }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
-      const deleted = await deleteComment(commentId);
+      const deleted = await deleteComment(target);
       return new Response(
         JSON.stringify({ success: deleted }),
         {
