@@ -37,7 +37,7 @@ type StatsMap = Record<string, ArticleStat>;
 
 let inMemoryStats: StatsMap | null = null;
 let lastCacheTime = 0;
-const CACHE_TTL_MS = 5 * 1000; // 5s cache
+const CACHE_TTL_MS = 2000; // 2s cache // 5s cache
 
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
 export function toBnDigits(n: number | string): string {
@@ -85,16 +85,16 @@ async function fetchFromSupabase(): Promise<StatsMap | null> {
   return null;
 }
 
-async function saveToSupabase(stats: StatsMap): Promise<void> {
-  if (!isSupabaseConfigured || !supabase) return;
+async function saveToSupabase(stats: StatsMap): Promise<boolean> {
+  if (!isSupabaseConfigured || !supabase) return false;
   try {
-    await supabase.from('posts').upsert(
+    const { error } = await supabase.from('posts').upsert(
       {
         slug: CLOUD_STORE_SLUG,
         title: 'System Cloud Interactions Store',
         category: 'chinta',
         description: 'Auto-synced reactions & views',
-        published_at: '2026-01-01',
+        published_at: '2026-01-01T00:00:00Z',
         formatted_date: '১ জানুয়ারি, ২০২৬',
         tags: [],
         body: JSON.stringify(stats),
@@ -104,8 +104,14 @@ async function saveToSupabase(stats: StatsMap): Promise<void> {
       },
       { onConflict: 'slug' }
     );
-  } catch (err) {
-    console.warn('[Interactions] Supabase save warning:', err);
+    if (error) {
+      console.error('[Interactions] Supabase upsert error:', error);
+      return false;
+    }
+    return true;
+  } catch (err: any) {
+    console.error('[Interactions] Supabase save exception:', err.message);
+    return false;
   }
 }
 
@@ -148,7 +154,7 @@ export async function incrementView(slug: string): Promise<number> {
   inMemoryStats = map;
   lastCacheTime = Date.now();
   saveLocalStore(map);
-  saveToSupabase(map).catch(() => {});
+  await saveToSupabase(map);
 
   return newViews;
 }
@@ -169,7 +175,7 @@ export async function toggleLike(slug: string, isLike: boolean): Promise<number>
   inMemoryStats = map;
   lastCacheTime = Date.now();
   saveLocalStore(map);
-  saveToSupabase(map).catch(() => {});
+  await saveToSupabase(map);
 
   return newLikes;
 }

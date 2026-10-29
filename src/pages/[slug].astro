@@ -3,11 +3,12 @@
 import Layout from '../layouts/Layout.astro';
 import ThemeAvatar from '../components/ThemeAvatar.astro';
 import { getAllPostsAsync } from '../lib/db';
+import { getArticleStats, toBnDigits } from '../lib/interactions';
 
 export const prerender = false;
 
-// Global Edge CDN cache with background revalidation (delivers article in 30ms, revalidates instantly)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
+// Direct Dynamic Response (prevents stale CDN caching of views and likes)
+Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
 
 const { slug } = Astro.params;
 const allPosts = await getAllPostsAsync();
@@ -26,6 +27,11 @@ const displayPost = post || {
   wordCount: 0,
   footnotes: []
 };
+
+// Server-side pre-fetch of live views and likes for instant 0ms flicker-free display
+const articleStats = await getArticleStats(displayPost.slug);
+const initialViewsBn = toBnDigits(articleStats.views || 0);
+const initialLikesBn = toBnDigits(articleStats.likes || 0);
 
 const categoryLabels: Record<string, string> = {
   chinta: 'চিন্তা',
@@ -140,7 +146,7 @@ const renderedContent = renderBody(displayPost.body);
           <span>·</span>
           <span id="article-views-top-badge" class="inline-flex items-center gap-1 font-mono text-paper-accent dark:text-night-accent font-medium" title="মোট পঠিত সংখ্যা">
             <span>👁️</span>
-            <span id="article-views-count-top">--</span>
+            <span id="article-views-count-top">{initialViewsBn}</span>
           </span>
         </div>
       </div>
@@ -240,7 +246,7 @@ const renderedContent = renderBody(displayPost.body);
         <span>পাঠক প্রতিক্রিয়া:</span>
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-border/40 dark:bg-night-border/40 font-mono text-paper-text dark:text-night-text">
           <span>👁️</span>
-          <span id="article-views-count-bottom">--</span>
+          <span id="article-views-count-bottom">{initialViewsBn}</span>
           <span class="font-sans text-[11px]">পঠিত</span>
         </span>
       </div>
@@ -253,7 +259,7 @@ const renderedContent = renderBody(displayPost.body);
         title="ভালো লাগলে ভালোবাসা দিন"
       >
         <span id="main-like-icon" class="text-xl transition-transform duration-200 group-hover:scale-125">🤍</span>
-        <span id="main-like-count" class="font-mono text-base font-bold">০</span>
+        <span id="main-like-count" data-likes={articleStats.likes || 0} class="font-mono text-base font-bold">{initialLikesBn}</span>
       </button>
     </div>
   </article>
@@ -271,7 +277,7 @@ const renderedContent = renderBody(displayPost.body);
       title="ভালো লাগলে ভালোবাসা দিন"
     >
       <span id="floating-like-icon" class="text-lg transition-transform duration-200 group-hover:scale-125">🤍</span>
-      <span id="floating-like-count" class="font-mono text-sm font-bold">০</span>
+      <span id="floating-like-count" data-likes={articleStats.likes || 0} class="font-mono text-sm font-bold">{initialLikesBn}</span>
     </button>
   </aside>
 
@@ -332,7 +338,7 @@ const renderedContent = renderBody(displayPost.body);
       const floatingLikeIcon = document.getElementById('floating-like-icon');
       const floatingLikeCount = document.getElementById('floating-like-count');
 
-      let currentLikes = 0;
+      let currentLikes = parseInt(mainLikeCount?.getAttribute('data-likes') || '0', 10);
       let isLiked = false;
 
       try {
@@ -340,10 +346,12 @@ const renderedContent = renderBody(displayPost.body);
       } catch (_) {}
 
       function updateLikeUI(liked, count) {
-        currentLikes = count;
-        const countBn = toBn(count);
-        if (mainLikeCount) mainLikeCount.textContent = countBn;
-        if (floatingLikeCount) floatingLikeCount.textContent = countBn;
+        if (typeof count === 'number' && !isNaN(count)) {
+          currentLikes = count;
+          const countBn = toBn(count);
+          if (mainLikeCount) mainLikeCount.textContent = countBn;
+          if (floatingLikeCount) floatingLikeCount.textContent = countBn;
+        }
 
         if (liked) {
           if (mainLikeIcon) mainLikeIcon.textContent = '❤️';
@@ -357,6 +365,9 @@ const renderedContent = renderBody(displayPost.body);
           floatingLikeBtn?.classList.remove('bg-rose-500/25', 'border-rose-500');
         }
       }
+
+      // Immediately render local like state on mount with zero delay
+      updateLikeUI(isLiked, currentLikes);
 
       // 1. Deduplicated View Counter Call (increments once per session)
       try {
@@ -377,8 +388,8 @@ const renderedContent = renderBody(displayPost.body);
         }
       } catch (_) {}
 
-      // 2. Fetch initial stats from Cloud DB
-      fetch(`/api/interactions?slug=${encodeURIComponent(slug)}`)
+      // 2. Fetch fresh stats from Cloud DB with cache busting
+      fetch(`/api/interactions?slug=${encodeURIComponent(slug)}&_t=${Date.now()}`)
         .then((r) => r.json())
         .then((data) => {
           if (data && data.success && data.stats) {
@@ -390,8 +401,12 @@ const renderedContent = renderBody(displayPost.body);
         })
         .catch(() => {});
 
-      // 3. Like Toggle Handler (Syncs to Cloud permanently)
+      // 3. Like Toggle Handler (Syncs to Cloud permanently with lock)
+      let isLikingInProgress = false;
       function handleLikeClick() {
+        if (isLikingInProgress) return;
+        isLikingInProgress = true;
+
         const nextLiked = !isLiked;
         isLiked = nextLiked;
         try {
@@ -420,7 +435,12 @@ const renderedContent = renderBody(displayPost.body);
               updateLikeUI(isLiked, res.likes);
             }
           })
-          .catch(() => {});
+          .catch((err) => {
+            console.error('Like toggle error:', err);
+          })
+          .finally(() => {
+            setTimeout(() => { isLikingInProgress = false; }, 300);
+          });
       }
 
       mainLikeBtn?.addEventListener('click', handleLikeClick);

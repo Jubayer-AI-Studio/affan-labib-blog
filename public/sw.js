@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v31 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v31';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v32 (True 0ms Instant PWA Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v32';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -132,49 +132,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 1. Navigation requests (HTML pages): True 0ms Instant Cache-First with Background Revalidation
+  // 1. Navigation requests (HTML pages): Network-First with Cache Fallback for fresh SSR views & likes
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
-        // Step A: Instant 0ms Cache Resolution
+        try {
+          let networkResponse = null;
+          if (event.preloadResponse) {
+            networkResponse = await event.preloadResponse;
+          }
+          if (!networkResponse) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            networkResponse = await fetch(request, { signal: controller.signal });
+            clearTimeout(timeoutId);
+          }
+          if (networkResponse && networkResponse.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(request, networkResponse.clone());
+            return networkResponse;
+          }
+        } catch (e) {
+          // Network failed or timed out: fall back to cache
+        }
+
+        // Cache fallback:
         let cachedResponse = await caches.match(request, { ignoreSearch: true });
         if (!cachedResponse && (url.pathname === '/' || url.pathname === '')) {
           cachedResponse = await caches.match('/', { ignoreSearch: true });
         }
-
-        // Step B: Background revalidation fetch (non-blocking, updates cache silently)
-        const backgroundFetchPromise = (async () => {
-          try {
-            let networkResponse = null;
-            if (event.preloadResponse) {
-              networkResponse = await event.preloadResponse;
-            }
-            if (!networkResponse) {
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 3500);
-              networkResponse = await fetch(request, { signal: controller.signal });
-              clearTimeout(timeoutId);
-            }
-            if (networkResponse && networkResponse.status === 200) {
-              const cache = await caches.open(CACHE_NAME);
-              await cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          } catch (e) {
-            return null;
-          }
-        })();
-
-        // CRITICAL 0ms INSTANT PWA LAUNCH:
-        // If cached copy exists, RETURN IT IMMEDIATELY in 0ms!
         if (cachedResponse) {
-          event.waitUntil(backgroundFetchPromise);
           return cachedResponse;
         }
-
-        // If not in cache (cold first visit), wait for network
-        const networkResponse = await backgroundFetchPromise;
-        if (networkResponse) return networkResponse;
 
         // Fallback to cached homepage if available
         const homeFallback = await caches.match('/', { ignoreSearch: true });

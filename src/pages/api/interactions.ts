@@ -17,11 +17,11 @@ export const GET: APIRoute = async ({ url }) => {
 
     if (isAdmin) {
       const stats = await getAllStatsForAdmin();
-      return new Response(JSON.stringify({ success: true, stats }), {
+      return new Response(JSON.stringify({ success: true, data: { stats, comments: [] }, stats }), {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store'
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
       });
     }
@@ -79,7 +79,13 @@ export const POST: APIRoute = async ({ request }) => {
       const views = await incrementView(slug);
       return new Response(
         JSON.stringify({ success: true, views, viewsBn: toBnDigits(views) }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          }
+        }
       );
     }
 
@@ -89,7 +95,13 @@ export const POST: APIRoute = async ({ request }) => {
       const likes = await toggleLike(slug, isLike);
       return new Response(
         JSON.stringify({ success: true, likes, likesBn: toBnDigits(likes) }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          }
+        }
       );
     }
 
