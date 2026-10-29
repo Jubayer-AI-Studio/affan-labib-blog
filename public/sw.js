@@ -1,5 +1,5 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v34 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v35';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v36 (Zero-Crash Instant Launch Engine)
+const CACHE_NAME = 'kherokhata-cache-v36';
 const PRECACHE_URLS = [
   '/',
   '/offline',
@@ -21,28 +21,36 @@ const PRECACHE_URLS = [
   '/images/meshk-logo-dark.png'
 ];
 
-// Install: Pre-cache core shell in parallel without blocking on single failure
+// Install: Pre-cache core shell before activating to ensure zero cold-start failures
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      // 1. Precache Core Shell in parallel
-      await Promise.allSettled(
-        PRECACHE_URLS.map(async (url) => {
-          try {
-            await cache.add(url);
-          } catch (err) {
-            console.warn('[PWA SW] Precache item skipped:', url, err);
-          }
-        })
-      );
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        await Promise.allSettled(
+          PRECACHE_URLS.map(async (url) => {
+            try {
+              const res = await fetch(url, { cache: 'no-cache' });
+              if (res && res.status === 200) {
+                await cache.put(url, res);
+              }
+            } catch (err) {
+              console.warn('[PWA SW] Precache item skipped:', url);
+            }
+          })
+        );
+      } catch (e) {}
 
-      // 2. Precache all published articles dynamically for 100% full offline reading
+      // Once the shell is safely cached, activate immediately
+      self.skipWaiting();
+
+      // Dynamic precache of published articles in the background
       try {
         const postsRes = await fetch('/api/posts');
         if (postsRes && postsRes.ok) {
           const postsData = await postsRes.json();
           if (postsData && Array.isArray(postsData.posts)) {
+            const cache = await caches.open(CACHE_NAME);
             await Promise.allSettled(
               postsData.posts.map(async (p) => {
                 if (p && p.slug) {
@@ -53,39 +61,45 @@ self.addEventListener('install', (event) => {
           }
         }
       } catch (e) {}
-    })
+    })()
   );
 });
 
-// Activate: Enable Navigation Preload, clean up old caches and claim clients immediately
+// Activate: Disable navigationPreload to prevent Chromium cold-start white screen bugs, clean old caches safely
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
+      // Chromium bugfix: Disable navigationPreload to prevent cold-start standalone WebAPK crash/freeze
       if ('navigationPreload' in self.registration) {
         try {
-          await self.registration.navigationPreload.enable();
+          await self.registration.navigationPreload.disable();
         } catch (e) {}
       }
-      const keys = await caches.keys();
-      await Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log('[PWA SW] Purging old cache:', key);
-            return caches.delete(key);
-          }
-        })
-      );
+
+      // Safely purge obsolete kherokhata caches
+      try {
+        const keys = await caches.keys();
+        await Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME && key.startsWith('kherokhata-cache')) {
+              console.log('[PWA SW] Purging old cache:', key);
+              return caches.delete(key);
+            }
+          })
+        );
+      } catch (e) {}
+
       await self.clients.claim();
     })()
   );
 });
 
-// Fetch: Smart caching strategy optimized for instant app launch & exact article routing
+// Fetch: Rock-solid navigation & static asset handling (zero blank screen guarantee)
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // API routes handling: Offline cache fallback for GET /api/posts, pass-through for mutations
+  // 1. API routes handling
   if (url.pathname.startsWith('/api')) {
     if (request.method === 'GET' && url.pathname.startsWith('/api/posts')) {
       event.respondWith(
@@ -94,7 +108,7 @@ self.addEventListener('fetch', (event) => {
             const networkResponse = await fetch(request);
             if (networkResponse && networkResponse.status === 200) {
               const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
             }
             return networkResponse;
           } catch (err) {
@@ -108,10 +122,11 @@ self.addEventListener('fetch', (event) => {
       );
       return;
     }
+    // Allow mutation APIs to pass directly to network
     return;
   }
 
-  // Dedicated Network-First with Cache Fallback for Admin Studio (Full Offline Author Studio)
+  // 2. Dedicated Network-First for Admin Studio
   if (url.pathname.startsWith('/admin')) {
     event.respondWith(
       (async () => {
@@ -119,74 +134,69 @@ self.addEventListener('fetch', (event) => {
           const networkResponse = await fetch(request);
           if (networkResponse && networkResponse.status === 200) {
             const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
           }
           return networkResponse;
         } catch (err) {
           const cachedAdmin = await caches.match(request, { ignoreSearch: true }) || await caches.match('/admin', { ignoreSearch: true });
           if (cachedAdmin) return cachedAdmin;
-          return caches.match('/offline');
+          return caches.match('/offline') || new Response('Offline', { status: 503 });
         }
       })()
     );
     return;
   }
 
-  // 1. Navigation requests (HTML pages): Network-First with Cache Fallback for fresh SSR views & likes
+  // 3. Navigation requests (HTML pages): Safe Network-First with Comprehensive Cache Fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
         try {
-          let networkResponse = null;
-          if (event.preloadResponse) {
-            networkResponse = await event.preloadResponse;
-          }
-          if (!networkResponse) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
-            networkResponse = await fetch(request, { signal: controller.signal });
-            clearTimeout(timeoutId);
-          }
+          // Generous 5000ms timeout for mobile 3G/4G stability
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          const networkResponse = await fetch(request, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
           if (networkResponse && networkResponse.status === 200) {
             const cache = await caches.open(CACHE_NAME);
-            await cache.put(request, networkResponse.clone());
+            cache.put(request, networkResponse.clone()).catch(() => {});
             return networkResponse;
           }
         } catch (e) {
-          // Network failed or timed out: fall back to cache
+          // Network failed or timed out: fall back gracefully to cache
         }
 
-        // Cache fallback:
-        let cachedResponse = await caches.match(request, { ignoreSearch: true });
+        // Cache fallback 1: Check active cache for exact route
+        const activeCache = await caches.open(CACHE_NAME);
+        let cachedResponse = await activeCache.match(request, { ignoreSearch: true });
         if (!cachedResponse && (url.pathname === '/' || url.pathname === '')) {
-          cachedResponse = await caches.match('/', { ignoreSearch: true });
+          cachedResponse = await activeCache.match('/', { ignoreSearch: true });
         }
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        if (cachedResponse) return cachedResponse;
 
-        // Fallback to cached homepage if available
-        const homeFallback = await caches.match('/', { ignoreSearch: true });
-        if (homeFallback) return homeFallback;
+        // Cache fallback 2: Check any cache across versions
+        const anyMatch = await caches.match(request, { ignoreSearch: true }) || await caches.match('/', { ignoreSearch: true });
+        if (anyMatch) return anyMatch;
 
-        // Final fallback to offline page
+        // Cache fallback 3: Render offline page
         const offline = await caches.match('/offline', { ignoreSearch: true });
-        return (
-          offline ||
-          new Response(
-            '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
-            {
-              status: 200,
-              headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            }
-          )
+        if (offline) return offline;
+
+        // Emergency fallback shell: styled, Bengali, self-reloading
+        return new Response(
+          '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>লাবীবের খেরোখাতা</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px 20px;background:#FAF8F5;color:#1c1917}h2{font-size:22px;margin-bottom:8px}p{color:#78716c;font-size:14px}button{margin-top:20px;padding:12px 24px;background:#9A3412;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer}</style></head><body><h2>লাবীবের খেরোখাতা</h2><p>পেজটি প্রস্তুত হচ্ছে। ইন্টারনেট সংযোগ পরীক্ষা করে পুনরায় চাপ দিন।</p><button onclick="window.location.reload()">পুনরায় লোড করুন</button></body></html>',
+          {
+            status: 200,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          }
         );
       })()
     );
     return;
   }
 
-  // 2. Static Assets (CSS, JS, Fonts, Icons, Images): Stale-While-Revalidate
+  // 4. Static Assets (CSS, JS, Fonts, Icons, Images): Stale-While-Revalidate
   if (
     url.pathname.startsWith('/_astro/') ||
     url.pathname.startsWith('/icons/') ||
@@ -207,7 +217,7 @@ self.addEventListener('fetch', (event) => {
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               const clone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => {});
             }
             return networkResponse;
           })
@@ -225,7 +235,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Fallback
+  // 5. Default Fallback
   event.respondWith(
     (async () => {
       const cached = await caches.match(request, { ignoreSearch: true });
@@ -239,10 +249,9 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Instant update trigger: skip waiting on demand
+// Skip waiting on explicit client message
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
-

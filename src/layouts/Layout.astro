@@ -301,15 +301,19 @@ const schemaData = {
       })();
     </script>
 
-    <!-- Auto-Updating Service Worker Registration (Busts Stale Caches Instantly) -->
+    <!-- Auto-Updating Service Worker Registration (Busts Stale Caches Instantly & Safely) -->
     <script is:inline>
       if ('serviceWorker' in navigator) {
         let refreshing = false;
         const hadController = Boolean(navigator.serviceWorker.controller);
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (hadController && !refreshing) {
-            refreshing = true;
-            window.location.reload();
+          if (hadController && !refreshing && document.visibilityState === 'visible') {
+            const lastReload = parseInt(sessionStorage.getItem('kherokhata_sw_reload') || '0', 10);
+            if (Date.now() - lastReload > 6000) {
+              refreshing = true;
+              sessionStorage.setItem('kherokhata_sw_reload', Date.now().toString());
+              window.location.reload();
+            }
           }
         });
 
