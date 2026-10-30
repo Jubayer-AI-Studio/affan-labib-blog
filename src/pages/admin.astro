@@ -1011,7 +1011,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 const safeId = String(c.id || '').trim() || ('cmt_ssr_' + index);
 
                 return (
-                  <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id={safeId} data-comment-content={c.content}>
+                  <div class="comment-card-item p-4 rounded-2xl border border-paper-border/80 dark:border-night-border/80 bg-paper-bg/60 dark:bg-night-bg/60 space-y-3 transition-all hover:border-paper-accent/30" data-comment-id={safeId} data-comment-content={c.content} data-slug={c.slug}>
                     <div class="flex items-start justify-between gap-3 text-xs">
                       <div class="flex items-start gap-2.5">
                         <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 font-serif font-bold flex items-center justify-center shrink-0 border border-amber-500/30">
@@ -2750,18 +2750,19 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         const origHtml = btn ? btn.innerHTML : '';
         if (btn) btn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
 
+        // Uses correctly-bound variables: nameInp -> #edit-author-name, etc.
         const updated = {
-          name: (document.getElementById('profile-name')?.value || '').trim() || author.name,
-          education: (document.getElementById('profile-education')?.value || '').trim(),
-          tagline: (document.getElementById('profile-tagline')?.value || '').trim(),
-          bioShort: (document.getElementById('profile-bio-short')?.value || '').trim(),
-          bioFull: (document.getElementById('profile-bio-full')?.value || '').trim(),
-          aboutManifestoTitle: (document.getElementById('profile-manifesto-title')?.value || '').trim() || 'কেন এই পড়ার ঘর?',
-          aboutManifesto: (document.getElementById('profile-manifesto')?.value || '').trim(),
+          name: (nameInp?.value || '').trim() || author.name,
+          education: (eduInp?.value || '').trim(),
+          tagline: (tagInp?.value || '').trim(),
+          bioShort: (shortbioInp?.value || '').trim(),
+          bioFull: (fullbioInp?.value || '').trim(),
+          aboutManifestoTitle: (manifestoTitleInp?.value || '').trim() || 'কেন এই পড়ার ঘর?',
+          aboutManifesto: (manifestoInp?.value || '').trim(),
           social: {
-            facebook: (document.getElementById('profile-facebook')?.value || '').trim(),
-            whatsapp: (document.getElementById('profile-whatsapp')?.value || '').trim(),
-            email: (document.getElementById('profile-email')?.value || '').trim()
+            facebook: (fbInp?.value || '').trim(),
+            whatsapp: (waInp?.value || '').trim(),
+            email: (emailInp?.value || '').trim()
           }
         };
 
