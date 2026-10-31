@@ -856,7 +856,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               <span class="text-emerald-600 dark:text-emerald-400 text-sm">✓</span>
               <span>লেখক পরিচিতির সকল তথ্য সফলভাবে সংরক্ষিত ও লাইভ হয়েছে!</span>
             </div>
-            <button id="save-profile-btn" type="button" class="px-7 py-3.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-sm hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
+            <button id="save-profile-btn" onclick="if(window.doSaveProfile)window.doSaveProfile()" type="button" class="px-7 py-3.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-semibold text-sm hover:opacity-95 shadow-md active:scale-98 transition-all cursor-pointer flex items-center gap-2">
               <span>💾</span>
               <span>প্রোফাইল সংরক্ষণ করুন</span>
             </button>
@@ -1170,6 +1170,30 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 
   <!-- Author Studio Client Engine -->
   <script is:inline>
+      // ============================================
+      // 🍞 GLOBAL TOAST NOTIFICATION SYSTEM
+      // ============================================
+      window.showAdminToast = function(msg, type) {
+        // Remove any existing toast
+        const existing = document.getElementById('admin-toast-popup');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.id = 'admin-toast-popup';
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;' +
+          'background:#1f2937;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;' +
+          'font-family:inherit;box-shadow:0 4px 20px rgba(0,0,0,0.35);max-width:90vw;text-align:center;' +
+          'animation:toastIn 0.25s ease;pointer-events:none;';
+        toast.textContent = msg || '';
+        if (!document.getElementById('admin-toast-style')) {
+          const style = document.createElement('style');
+          style.id = 'admin-toast-style';
+          style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+          document.head.appendChild(style);
+        }
+        document.body.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
+      };
+
     (() => {
       // ========================================================
       // 🔐 UNIVERSAL CLOUD PIN LOCK ENGINE (Client Protection)
@@ -1339,7 +1363,8 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       // 2. Client-Side Resilience & Cloud DB Sync
       function getCustomPosts() {
         try {
-          return JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          const val = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
+          return Array.isArray(val) ? val : [];
         } catch (e) {
           return [];
         }
@@ -1347,7 +1372,8 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 
       function getDeletedSlugs() {
         try {
-          return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+          const val = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
+          return Array.isArray(val) ? val : [];
         } catch (e) {
           return [];
         }
@@ -2744,25 +2770,36 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         if (emailInp && !emailInp.value) emailInp.value = current.social?.email || '';
       }
 
-      async function doSaveProfile() {
+      window.doSaveProfile = async function doSaveProfile() {
         const btn = document.getElementById('save-profile-btn');
         if (btn) btn.disabled = true;
         const origHtml = btn ? btn.innerHTML : '';
         if (btn) btn.innerHTML = '<span>⏳</span><span>সংরক্ষণ হচ্ছে...</span>';
 
-        // Uses correctly-bound variables: nameInp -> #edit-author-name, etc.
+        // Directly query DOM elements to guarantee live values
+        const nameVal = (document.getElementById('edit-author-name')?.value || nameInp?.value || '').trim();
+        const eduVal = (document.getElementById('edit-author-edu')?.value || eduInp?.value || '').trim();
+        const tagVal = (document.getElementById('edit-author-tagline')?.value || tagInp?.value || '').trim();
+        const shortbioVal = (document.getElementById('edit-author-shortbio')?.value || shortbioInp?.value || '').trim();
+        const fullbioVal = (document.getElementById('edit-author-fullbio')?.value || fullbioInp?.value || '').trim();
+        const manifestoTitleVal = (document.getElementById('edit-author-manifesto-title')?.value || manifestoTitleInp?.value || '').trim() || 'কেন এই পড়ার ঘর?';
+        const manifestoVal = (document.getElementById('edit-author-manifesto')?.value || manifestoInp?.value || '').trim();
+        const fbVal = (document.getElementById('edit-author-fb')?.value || fbInp?.value || '').trim();
+        const waVal = (document.getElementById('edit-author-wa')?.value || waInp?.value || '').trim();
+        const emailVal = (document.getElementById('edit-author-email')?.value || emailInp?.value || '').trim();
+
         const updated = {
-          name: (nameInp?.value || '').trim() || author.name,
-          education: (eduInp?.value || '').trim(),
-          tagline: (tagInp?.value || '').trim(),
-          bioShort: (shortbioInp?.value || '').trim(),
-          bioFull: (fullbioInp?.value || '').trim(),
-          aboutManifestoTitle: (manifestoTitleInp?.value || '').trim() || 'কেন এই পড়ার ঘর?',
-          aboutManifesto: (manifestoInp?.value || '').trim(),
+          name: nameVal || author.name,
+          education: eduVal,
+          tagline: tagVal,
+          bioShort: shortbioVal,
+          bioFull: fullbioVal,
+          aboutManifestoTitle: manifestoTitleVal,
+          aboutManifesto: manifestoVal,
           social: {
-            facebook: (fbInp?.value || '').trim(),
-            whatsapp: (waInp?.value || '').trim(),
-            email: (emailInp?.value || '').trim()
+            facebook: fbVal,
+            whatsapp: waVal,
+            email: emailVal
           }
         };
 
@@ -3063,9 +3100,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           const card = replyBtn.closest('.comment-card-item');
           const formBox = card ? card.querySelector('.reply-form-box') : null;
           if (formBox) {
-            formBox.classList.toggle('hidden');
-            if (!formBox.classList.contains('hidden')) {
+            const isHidden = formBox.classList.contains('hidden') || formBox.style.display === 'none';
+            if (isHidden) {
+              formBox.classList.remove('hidden');
+              formBox.style.display = 'block';
               formBox.querySelector('.reply-textarea-input')?.focus();
+            } else {
+              formBox.classList.add('hidden');
+              formBox.style.display = 'none';
             }
           }
           return;
@@ -3077,7 +3119,10 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           e.preventDefault();
           const card = cancelReplyBtn.closest('.comment-card-item');
           const formBox = card ? card.querySelector('.reply-form-box') : null;
-          if (formBox) formBox.classList.add('hidden');
+          if (formBox) {
+            formBox.classList.add('hidden');
+            formBox.style.display = 'none';
+          }
           return;
         }
 
@@ -3140,7 +3185,9 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
           if (confirmBox) {
             deleteBtn.classList.add('hidden');
+            deleteBtn.style.display = 'none';
             confirmBox.classList.remove('hidden');
+            confirmBox.style.display = 'flex';
           }
           return;
         }
@@ -3152,8 +3199,14 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           const wrap = confirmNoBtn.closest('.del-wrap');
           const deleteBtn = wrap ? wrap.querySelector('.admin-delete-cmt-btn') : null;
           const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
-          if (confirmBox) confirmBox.classList.add('hidden');
-          if (deleteBtn) deleteBtn.classList.remove('hidden');
+          if (confirmBox) {
+            confirmBox.classList.add('hidden');
+            confirmBox.style.display = 'none';
+          }
+          if (deleteBtn) {
+            deleteBtn.classList.remove('hidden');
+            deleteBtn.style.display = '';
+          }
           return;
         }
 
