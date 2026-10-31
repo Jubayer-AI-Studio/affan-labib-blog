@@ -3177,49 +3177,17 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
           return;
         }
 
-        // 5. Delete Button Clicked -> Show inline confirmation
+        // 5. Direct 1-Click Comment Delete (Immediate Permanent Removal)
         const deleteBtn = e.target.closest('.admin-delete-cmt-btn');
         if (deleteBtn) {
           e.preventDefault();
-          const wrap = deleteBtn.closest('.del-wrap');
-          const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
-          if (confirmBox) {
-            deleteBtn.classList.add('hidden');
-            deleteBtn.style.display = 'none';
-            confirmBox.classList.remove('hidden');
-            confirmBox.style.display = 'flex';
-          }
-          return;
-        }
-
-        // 6. Confirm Delete "No" -> Cancel
-        const confirmNoBtn = e.target.closest('.confirm-del-no-btn');
-        if (confirmNoBtn) {
-          e.preventDefault();
-          const wrap = confirmNoBtn.closest('.del-wrap');
-          const deleteBtn = wrap ? wrap.querySelector('.admin-delete-cmt-btn') : null;
-          const confirmBox = wrap ? wrap.querySelector('.confirm-del-box') : null;
-          if (confirmBox) {
-            confirmBox.classList.add('hidden');
-            confirmBox.style.display = 'none';
-          }
-          if (deleteBtn) {
-            deleteBtn.classList.remove('hidden');
-            deleteBtn.style.display = '';
-          }
-          return;
-        }
-
-        // 7. Confirm Delete "Yes" -> Permanent Delete
-        const confirmYesBtn = e.target.closest('.confirm-del-yes-btn');
-        if (confirmYesBtn) {
-          e.preventDefault();
-          const card = confirmYesBtn.closest('.comment-card-item');
-          const commentId = confirmYesBtn.getAttribute('data-id') || card?.getAttribute('data-comment-id');
+          const card = deleteBtn.closest('.comment-card-item');
+          const commentId = deleteBtn.getAttribute('data-id') || card?.getAttribute('data-comment-id');
           const content = card?.getAttribute('data-comment-content') || card?.querySelector('.comment-body-text')?.textContent?.trim() || '';
 
-          confirmYesBtn.disabled = true;
-          confirmYesBtn.innerHTML = '⏳';
+          deleteBtn.disabled = true;
+          const origHtml = deleteBtn.innerHTML;
+          deleteBtn.innerHTML = '<span>⏳</span><span>মুছছে...</span>';
 
           try {
             const res = await fetch('/api/interactions', {
@@ -3234,10 +3202,10 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
             const json = await res.json();
             if (json && json.success) {
               if (card) {
-                card.style.transition = 'all 0.3s ease';
+                card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                 card.style.opacity = '0';
-                card.style.transform = 'scale(0.95)';
-                setTimeout(() => card.remove(), 300);
+                card.style.transform = 'scale(0.92) translateY(-10px)';
+                setTimeout(() => card.remove(), 320);
               }
               currentInteractionsData.comments = (currentInteractionsData.comments || []).filter(
                 (x) => x.id !== commentId && x.content !== content
@@ -3250,9 +3218,10 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               throw new Error(json.error || 'মুছে ফেলা সম্ভব হয়নি');
             }
           } catch (err) {
+            console.error('[Admin] Delete comment error:', err);
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = origHtml;
             if (window.showAdminToast) window.showAdminToast('⚠️ মন্তব্য মুছতে সমস্যা হয়েছে: ' + (err.message || err));
-            confirmYesBtn.disabled = false;
-            confirmYesBtn.innerHTML = 'হ্যাঁ';
           }
           return;
         }
